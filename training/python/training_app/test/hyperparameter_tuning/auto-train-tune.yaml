@@ -1,0 +1,98 @@
+apiVersion: kubeflow.org/v1beta1
+kind: Experiment
+metadata:
+  namespace: kubeflow-user-example-com # If you installed Katib as part of Kubeflow, you can’t run experiments in the Kubeflow namespace.
+  name: image-classification-random
+spec:
+  objective:
+    objectiveMetricName: accuracy
+    type: maximize
+    goal: 0.90
+  algorithm:
+    algorithmName: random
+  parallelTrialCount: 3
+  maxTrialCount: 12
+  maxFailedTrialCount: 3
+  parameters:
+    - name: lr
+      parameterType: double
+      feasibleSpace:
+        min: "0.01"
+        max: "0.03"
+  metricsCollectorSpec:
+    collector:
+      kind: File
+    source:
+      filter:
+        metricsFormat:
+          - "\"[\\w|-]+(accuracy)\":\\s*((-?\\d+)(\\.\\d+)?)\\s*"
+      fileSystemPath:
+        path: "/treasures/output/eval_results.json" # update
+        kind: File
+  trialTemplate:
+    primaryContainerName: training-container
+    trialParameters:
+      - name: learningRate
+        description: Learning rate for the training model
+        reference: lr
+    trialSpec:
+      apiVersion: batch/v1
+      kind: Job
+      spec:
+        template:
+          metadata:
+            annotations:
+              sidecar.istio.io/inject: "false"
+          spec:
+            containers:
+              - name: training-container
+                image: treasures/training:latest # update
+                imagePullPolicy: IfNotPresent
+                command:
+                  - "python"
+                  - "/treasures/run_image_classification.py"
+                  - "--model_name_or_path=/treasures/model"
+                  - "--train_dir=/treasures/data"
+                  - "--output_dir=/treasures/output"
+                  - "--remove_unused_columns=False"
+                  - "--do_train"
+                  - "--do_eval"
+                  - "--learning_rate=${trialParameters.learningRate}" # hp
+                  - "--num_train_epochs=5"
+                  - "--per_device_train_batch_size=8"
+                  - "--per_device_eval_batch_size=8"
+                  - "--logging_strategy=steps"
+                  - "--logging_steps=10"
+                  - "--evaluation_strategy=epoch"
+                  - "--save_strategy=epoch"
+                  - "--load_best_model_at_end=False"
+                  - "--save_total_limit=3"
+                  - "--seed=1337"
+                  - "--ignore_mismatched_sizes=True"
+                env:
+                  - name: "TRANSFORMERS_OFFLINE"
+                    value: 1
+                  - name: "HF_DATASETS_OFFLINE"
+                    value: 1
+                resources:
+                  limits:
+                    memory: "1Gi"
+                    cpu: "0.5"
+                volumeMounts:
+                  - name: data-dir
+                    mountPath: /treasures/data
+                  - name: model-dir
+                    mountPath: /treasures/model
+                  - name: output-dir
+                    mountPath: /treasures/output
+            volumes:
+              - name: data-dir
+                hostPath:
+                  path: /root/workspace/YJX/katib/data
+              - name: model-dir
+                hostPath:
+                  path: /root/workspace/YJX/katib/model
+              - name: output-dir
+                hostPath:
+                  path: /root/workspace/YJX/katib/output
+            restartPolicy: Never

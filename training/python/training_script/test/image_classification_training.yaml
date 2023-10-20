@@ -1,0 +1,144 @@
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: training-treaseres
+#   namespace: zauto
+# spec:
+#   replicas: 1
+#   selector:
+#     matchLabels:
+#       team: bdilab
+#   template:
+#     metadata:
+#       labels:
+#         team: bdilab
+#     spec:
+#       nodeName: master # 可选
+#       containers:
+#         - name: training-treasures
+#           image: treasures/training:latest
+#           imagePullPolicy: IfNotPresent
+#           command:
+#             - "python"
+#             - "/treasures/run_image_classification.py"
+#             - "--model_name_or_path=/treasures/model"
+#             - "--train_dir=/treasures/data"
+#             - "--output_dir=/treasures/output"
+#             - "--remove_unused_columns=False"
+#             - "--do_train"
+#             - "--do_eval"
+#             - "--learning_rate=${trialParameters.learningRate}"
+#             - "--num_train_epochs=5"
+#             - "--per_device_train_batch_size=8"
+#             - "--per_device_eval_batch_size=8"
+#             - "--logging_strategy=steps"
+#             - "--logging_steps=10"
+#             - "--evaluation_strategy=epoch"
+#             - "--save_strategy=epoch"
+#             - "--load_best_model_at_end=False"
+#             - "--save_total_limit=3"
+#             - "--seed=1337"
+#             - "--ignore_mismatched_sizes=True"
+#           env:
+#             - name: "TRANSFORMERS_OFFLINE"
+#               value: 1
+#             - name: "HF_DATASETS_OFFLINE"
+#               value: 1
+#           resources:
+#             limits:
+#               memory: "1Gi"
+#               cpu: "0.5"
+#           volumeMounts:
+#             - name: data-dir
+#               mountPath: /treasures/data
+#             - name: model-dir
+#               mountPath: /treasures/model
+#             - name: output-dir
+#               mountPath: /treasures/output
+#       volumes:
+#         - name: data-dir
+#           hostPath: 
+#             path: /root/workspace/YJX/katib/data
+#         - name: model-dir
+#           hostPath:
+#             path: /root/workspace/YJX/katib/model
+#         - name: output-dir
+#           hostPath:
+#             path: /root/workspace/YJX/katib/output
+#           ports:
+#             - containerPort: 32081 # Pod端口，应和应用程序监听端口一致
+
+# ---
+# apiVersion: v1
+# kind: Service
+# metadata:
+#   name: training-treasures
+#   namespace: zauto
+# spec:
+#   type: NodePort
+#   ports:
+#     - port: 32081 # Service端口，映射Pod中的容器端口，可被外部访问
+#       targetPort: 32081 # Pod容器端口
+#       nodePort: 32081
+#   selector:
+#     team: bdilab
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: training-test-yjx
+  namespace: zauto
+spec:
+  nodeName: node1
+  containers:
+    - name: yjx-test
+      image: treasures/training:latest  # update
+      imagePullPolicy: IfNotPresent
+      command:
+        - "python"
+        - "/treasures/run_image_classification.py"
+        - "--model_name_or_path=/treasures/model"
+        - "--train_dir=/treasures/data"
+        - "--output_dir=/treasures/output"
+        - "--remove_unused_columns=False"
+        - "--do_train"
+        - "--do_eval"
+        - "--learning_rate=${trialParameters.learningRate}"
+        - "--num_train_epochs=5"
+        - "--per_device_train_batch_size=8"
+        - "--per_device_eval_batch_size=8"
+        - "--logging_strategy=steps"
+        - "--logging_steps=10"
+        - "--evaluation_strategy=epoch"
+        - "--save_strategy=epoch"
+        - "--load_best_model_at_end=False"
+        - "--save_total_limit=3"
+        - "--seed=1337"
+        - "--ignore_mismatched_sizes=True"
+      env:
+        - name: "TRANSFORMERS_OFFLINE"
+          value: 1
+        - name: "HF_DATASETS_OFFLINE"
+          value: 1
+      resources:
+        limits:
+          memory: "1Gi"
+          cpu: "0.5"
+      volumeMounts:
+        - name: data-dir
+          mountPath: /treasures/data
+        - name: model-dir
+          mountPath: /treasures/model
+        - name: output-dir
+          mountPath: /treasures/output
+  volumes:
+    - name: data-dir
+      hostPath: 
+        path: /root/workspace/YJX/katib/data  # update
+    - name: model-dir
+      hostPath:
+        path: /root/workspace/YJX/katib/model # update
+    - name: output-dir
+      hostPath:
+        path: /root/workspace/YJX/katib/output  # update

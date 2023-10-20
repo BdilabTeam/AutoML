@@ -1,0 +1,2 @@
+from .model import ImageClassificationModel
+from .ic_model_repository import ImageClassificationModelRepository
