@@ -9,7 +9,7 @@
 - project_name  （tserve）
     - docs
     - python
-        - module_name   （image_classification_server）
+        - module_name   （tserve）
             - module1   （test）
                 - **
             - module2   （tserve）
