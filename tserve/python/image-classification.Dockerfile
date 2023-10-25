@@ -1,0 +1,48 @@
+ARG PYTHON_VERSION=3.8.9
+ARG BASE_IMAGE=python:${PYTHON_VERSION}-slim-bullseye
+ARG VENV_PATH=/prod_venv
+
+FROM ${BASE_IMAGE} as builder
+
+# Install Poetry
+ARG POETRY_HOME=/opt/poetry
+ARG POETRY_VERSION=1.6.1
+
+# Required for building packages for arm64 arch
+RUN apt-get update && apt-get install -y --no-install-recommends python3-dev build-essential
+
+RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
+ENV PATH="$PATH:${POETRY_HOME}/bin"
+
+# Activate virtual env
+ARG VENV_PATH
+ENV VIRTUAL_ENV=${VENV_PATH}
+RUN python3 -m venv ${VIRTUAL_ENV}
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+COPY tserve/pyproject.toml tserve/poetry.lock tserve/
+RUN cd tserve && poetry install --no-root --no-interaction --no-cache
+COPY tserve tserve
+RUN cd tserve && poetry install --no-interaction --no-cache
+
+COPY image_classification_server/pyproject.toml image_classification_server/poetry.lock image_classification_server/
+RUN cd image_classification_server && poetry install --no-root --no-interaction --no-cache
+COPY image_classification_server image_classification_server
+RUN cd image_classification_server && poetry install --no-interaction --no-cache
+
+
+FROM ${BASE_IMAGE} as prod
+
+# Activate virtual env
+ARG VENV_PATH
+ENV VIRTUAL_ENV=${VENV_PATH}
+ENV PATH="${VIRTUAL_ENV}/bin:$PATH"
+
+RUN useradd tserve -m -u 1000 -d /home/tserve
+
+COPY --from=builder --chown=tserve:tserve ${VIRTUAL_ENV} ${VIRTUAL_ENV}
+COPY --from=builder tserve tserve
+COPY --from=builder image_classification_server image_classification_server
+
+USER 1000
+# ENTRYPOINT ["python", "-m", "sklearnserver"]
