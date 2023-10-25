@@ -246,7 +246,7 @@ def main():
 
     # Load the accuracy metric from the datasets package
     # metric = evaluate.load("accuracy")
-    metric = evaluate.load("/treasures/accuracy.py")
+    metric = evaluate.load("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/training/python/training_script/image_classification_training_script/accuracy.py")
 
     # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.

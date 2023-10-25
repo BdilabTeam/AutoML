@@ -57,8 +57,7 @@ import shutil
 logger = logging.get_logger(__name__)
 
 
-# to_client = TrainingOperatorClient(config_file="/root/workspace/YJX/Env/yjx/app/public/config")
-to_client = TrainingOperatorClient(config_file="/Users/treasures/AllProjects/Env/fastapi/PlayGround/app/public/config")
+to_client = TrainingOperatorClient(config_file=f"{Path().cwd().__str__()}/meta/config")
 
 
 # Dependency
@@ -74,18 +73,18 @@ app = FastAPI()
 
 
 def generate_training_project_base_path(training_project_id: int) -> str:
-    return f"{Path().cwd().__str__()}/public/training_project_meta/{training_project_id}"
+    return f"{Path().cwd().__str__()}/meta/training_project/{training_project_id}"
 
 
 def generate_training_project_output_path(training_project_id: int) -> str:
-    return f"{Path().cwd().__str__()}/public/training_project_meta/{training_project_id}/output"
+    return f"{Path().cwd().__str__()}/meta/training_project/{training_project_id}/output"
 
 
 def generate_training_project_data_path(training_project_id: int) -> str:
-    return f"{Path().cwd().__str__()}/public/training_project_meta/{training_project_id}/data"
+    return f"{Path().cwd().__str__()}/meta/training_project/{training_project_id}/data"
 
 
-@app.post("/projects/", description="创建项目, 返回项目ID")
+@app.post("/projects", description="创建项目, 返回项目ID")
 def create_training_project(
     training_project: schemas.TrainingProjectCreate = Body(),
     db: Session = Depends(get_db)
@@ -111,7 +110,7 @@ def create_training_project(
         return JSONResponse(content=json.dumps(asdict(training_project)))
 
 
-@app.put("/projects/", description="修改项目, 返回项目ID")
+@app.put("/projects", description="修改项目, 返回项目ID")
 def update_training_project(
     training_project: schemas.TrainingProjectCreate = Body(),
     db: Session = Depends(get_db)
@@ -173,7 +172,7 @@ def get_training_job_conditions(
         raise HTTPException(status.HTTP_500_INTERNAL_SERVER_ERROR, detail=f"获取Training Job Conditions失败, 具体原因: {e.args}")
         
 
-@app.get("/models/", description="点击任务类型，响应相应类型任务的模型列表")
+@app.get("/models", description="点击任务类型，响应相应类型任务的模型列表")
 def get_models_by_task_type(task_type: str):
     pass
 

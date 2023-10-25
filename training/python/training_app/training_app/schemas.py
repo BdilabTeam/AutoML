@@ -6,7 +6,7 @@ from pydantic import (
 )
 
 from typing import Optional
-from dataclasses import dataclass
+from pydantic.dataclasses import dataclass
 
 
 config = ConfigDict(
@@ -34,13 +34,7 @@ class TrainingProjectCreate(TrainingProjectBase):
     pass
 
 
-@dataclass(config=config)     
+@dataclass(config=config) 
 class TrainingProject(TrainingProjectBase):
     id: Optional[int] = Field(title="项目ID")
     data_name_or_path: Optional[str] = Field(default="", description="已上传的数据文件路径")
-    
-    # 使用 Pydantic 的 orm_mode
-    # Pydantic orm_mode 将告诉 Pydantic模型读取数据，即它不是一个dict，而是一个 ORM 模型（或任何其他具有属性的任意对象）。
-    # class Config():
-    #     from_attributes = True
-    #     # orm_mode = True
