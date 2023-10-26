@@ -30,7 +30,7 @@ from pathlib import Path
 
 import schemas
 
-from database import (
+from .database import (
     SessionLocal,
     Base,
     # AsyncSessionLocal
@@ -39,7 +39,7 @@ from sqlalchemy.orm import Session
 import crud
 
 
-from training_operator_client import (
+from .training_operator_client import (
     TrainingOperatorClient
 )
 
@@ -48,7 +48,7 @@ import subprocess
 import json
 from dataclasses import asdict
 
-from utils import (
+from .utils import (
     logging
 )
 

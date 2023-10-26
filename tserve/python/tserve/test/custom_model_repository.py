@@ -15,6 +15,6 @@ class CustomModelRepository(ModelRepository):
         return self.load_model(name)
 
     def load_model(self, name: str) -> bool:
-        model = CustomModel()
+        model = CustomModel(name=name, model_dir=self.models_dir)
         logger.info("加载模型 ......")
         return model.ready

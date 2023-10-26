@@ -9,12 +9,12 @@ from .custom_model import CustomModel
 
 logger = logging.getLogger(__name__)
 DEFAULT_MODEL_NAME = "model"
-DEFAULT_LOCAL_MODEL_DIR = "/Users/treasures/Downloads/model"
+DEFAULT_LOCAL_MODEL_DIR = "/Users/treasures/Downloads"
 
 parser = argparse.ArgumentParser(parents=[tserve.model_server.parser])
 parser.add_argument('--model_dir', required=False, default=DEFAULT_LOCAL_MODEL_DIR,
                     help='A URI pointer to the model binary')
-parser.add_argument('--model_name', default=DEFAULT_MODEL_NAME,
+parser.add_argument('--model_name', required=False, default=DEFAULT_MODEL_NAME,
                     help='The name that the model is served under.')
 args, _ = parser.parse_known_args()
 

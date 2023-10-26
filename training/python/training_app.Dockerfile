@@ -14,7 +14,7 @@ ARG POETRY_VERSION=1.6.1
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
 RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/python3 -m pip install --upgrade pip && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 ENV PATH="$PATH:${POETRY_HOME}/bin"
-RUN poetry config repositories.pypi https://pypi.tuna.tsinghua.edu.cn/simple
+RUN poetry config repositories.tsinghua https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Activate virtual env
 ARG VENV_PATH
