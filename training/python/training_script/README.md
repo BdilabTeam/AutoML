@@ -1,4 +1,15 @@
 # Huggingface model训练脚本
+# Env Prepare:
+```bash
+# 激活虚拟环境
+conda activate xxx / source ${VIRTUAL_ENV_PATH}/bin/activate
+# 更新虚拟环境中的pip包
+pip install --upgrade pip
+# 在虚拟环境中安装poetry
+pip install poetry
+# 通过poetry进行依赖包安装
+poetry install
+```
 # Start image_classification_training_script
 ```
 cd training/python/training_script/image_classification_training_script
@@ -23,5 +34,6 @@ python run_image_classification.py \
     --load_best_model_at_end True \
     --save_total_limit 3 \
     --seed 1337 \
-    --ignore_mismatched_sizes True
+    --ignore_mismatched_sizes True \
+    --use_cpu True
 ```

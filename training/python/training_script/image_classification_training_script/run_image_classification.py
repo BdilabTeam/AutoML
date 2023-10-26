@@ -3,6 +3,7 @@ import os
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
+from pathlib import Path
 
 import evaluate
 import numpy as np
@@ -246,7 +247,7 @@ def main():
 
     # Load the accuracy metric from the datasets package
     # metric = evaluate.load("accuracy")
-    metric = evaluate.load("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/training/python/training_script/image_classification_training_script/accuracy.py")
+    metric = evaluate.load(f"{Path().cwd().__str__()}/accuracy.py")
 
     # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.

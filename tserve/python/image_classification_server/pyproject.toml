@@ -8,6 +8,11 @@ packages = [
     { include = "image_classification_server" },
 ]
 
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "default"
+
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
 tserve = { path = "../tserve", develop = true }

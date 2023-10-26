@@ -1,5 +1,5 @@
 ARG PYTHON_VERSION=3.8.9
-ARG BASE_IMAGE=python:${PYTHON_VERSION}-slim-bullseye
+ARG BASE_IMAGE=python:${PYTHON_VERSION}-slim
 ARG VENV_PATH=/prod_venv
 
 FROM ${BASE_IMAGE} as builder
@@ -9,10 +9,12 @@ ARG POETRY_HOME=/opt/poetry
 ARG POETRY_VERSION=1.6.1
 
 # Required for building packages for arm64 arch
-RUN apt-get update && apt-get install -y --no-install-recommends python3-dev build-essential
+# RUN apt-get update && apt-get install -y --no-install-recommends python3-dev build-essential
 
-RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
+RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/python3 -m pip install --upgrade pip && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 ENV PATH="$PATH:${POETRY_HOME}/bin"
+RUN poetry config repositories.pypi https://pypi.tuna.tsinghua.edu.cn/simple
 
 # Activate virtual env
 ARG VENV_PATH
