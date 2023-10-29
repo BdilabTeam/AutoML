@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "huggingface_server"
+name = "image_classification_server"
 version = "0.0.1"
 description = "Model Server implementation for huggingface. "
 authors = ["treasures"]
@@ -9,17 +9,26 @@ packages = [
 ]
 
 [[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-priority = "default"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "supplemental"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"
 tserve = { path = "../tserve", develop = true }
 tensorflow = "~2.13.0"
-torch = "~2.0.1"
+torch = "~2.0.0"
 transformers = "~4.33.2"
-Pillow = "~10.0.0"
+pillow = "~10.0.0"
 
 [tool.poetry-version-plugin]
 source = "file"

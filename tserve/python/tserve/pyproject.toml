@@ -24,9 +24,18 @@ packages = [
 ]
 
 [[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
 name = "tsinghua"
 url = "https://pypi.tuna.tsinghua.edu.cn/simple"
-priority = "default"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "supplemental"
 
 [tool.poetry.dependencies]
 python = ">=3.8,<3.12"

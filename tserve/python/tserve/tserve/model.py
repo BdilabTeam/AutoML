@@ -13,36 +13,6 @@ import orjson
 logger = logging.getLogger(__name__)
 
 
-# class ModelResponse:
-#     def __init__(self, data: Dict):
-#         self.data = data
-
-
-# class DeploymentModelBase:
-
-#     def __init__(self, name: str):
-#         """
-#         A deployment model.
-        
-#         Parameters:
-#             name (`str`): 
-#                 The name of the model.
-#         """
-#         self.name = str
-#         self.ready = False
-        
-#     def load(self):
-#         """
-#         Load a model.
-#         """
-#         raise NotImplementedError
-    
-#     def infer(self, inputs: [List, Dict]):
-#         """
-#         Execute inference.
-#         """
-#         raise NotImplementedError
-
 PREDICTOR_URL_FORMAT = "{0}://{1}/v1/models/{2}:predict"
 PREDICTOR_V2_URL_FORMAT = "{0}://{1}/v2/models/{2}/infer"
 
