@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="80bd2841-5ba2-48fa-bf4e-caac9ac5c7bd" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProjectId" id="2Vpr37pbeIJ2W4OfC1nH7nv1sOm" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RequestMappingsPanelOrder0" value="0" />
+    <property name="RequestMappingsPanelOrder1" value="1" />
+    <property name="RequestMappingsPanelWidth0" value="75" />
+    <property name="RequestMappingsPanelWidth1" value="75" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/exception" />
+    <property name="nodejs_package_manager_path" value="npm" />
+    <property name="project.structure.last.edited" value="Modules" />
+    <property name="project.structure.proportion" value="0.0" />
+    <property name="project.structure.side.proportion" value="0.0" />
+    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+  </component>
+  <component name="ReactorSettings">
+    <option name="notificationShown" value="true" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/exception" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/bdilab/deployment/common/utils" />
+      <recent name="$PROJECT_DIR$/src/main/java/com/bdilab/deployment/common" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/resources" />
+    </key>
+    <key name="CopyClassDialog.RECENTS_KEY">
+      <recent name="com.bdilab.deployment.vo" />
+      <recent name="com.bdilab.deployment.common.response" />
+    </key>
+  </component>
+  <component name="RunManager" selected="Spring Boot.DeploymentApplication">
+    <configuration name="T.t" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="deployment" />
+      <option name="PACKAGE_NAME" value="" />
+      <option name="MAIN_CLASS_NAME" value="T" />
+      <option name="METHOD_NAME" value="t" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TestException.t" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="deployment" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.bdilab.automl.common.exception.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.bdilab.deployment.common.exception" />
+      <option name="MAIN_CLASS_NAME" value="com.bdilab.automl.common.exception.TestException" />
+      <option name="METHOD_NAME" value="t" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="DeploymentApplication" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot" temporary="true" nameIsGenerated="true">
+      <module name="deployment" />
+      <option name="SPRING_BOOT_MAIN_CLASS" value="com.bdilab.automl.DeploymentApplication" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Spring Boot.DeploymentApplication" />
+        <item itemvalue="JUnit.TestException.t" />
+        <item itemvalue="JUnit.T.t" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="80bd2841-5ba2-48fa-bf4e-caac9ac5c7bd" name="Changes" comment="" />
+      <created>1695543664081</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1695543664081</updated>
+      <workItem from="1695543664086" duration="16593000" />
+      <workItem from="1695567044840" duration="3103000" />
+      <workItem from="1695608108040" duration="5232000" />
+      <workItem from="1695741545070" duration="12000" />
+      <workItem from="1695742579919" duration="611000" />
+      <workItem from="1695813893725" duration="96000" />
+      <workItem from="1696582609708" duration="2040000" />
+      <workItem from="1696654178147" duration="287000" />
+      <workItem from="1698073026786" duration="1792000" />
+      <workItem from="1698076847447" duration="311000" />
+      <workItem from="1698156151944" duration="116000" />
+      <workItem from="1698507436687" duration="2077000" />
+      <workItem from="1698713670771" duration="7521000" />
+      <workItem from="1698732576084" duration="1863000" />
+      <workItem from="1698753828563" duration="3776000" />
+      <workItem from="1698759760188" duration="12963000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>
