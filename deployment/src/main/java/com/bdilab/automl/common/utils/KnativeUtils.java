@@ -8,15 +8,12 @@ import io.fabric8.knative.serving.v1.ServiceSpec;
 import io.fabric8.knative.serving.v1.ServiceSpecBuilder;
 import io.fabric8.kubernetes.api.model.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.lang.Nullable;
-import org.springframework.stereotype.Component;
+
 import java.util.*;
 
-@Component
-@DependsOn({"cloudNativeClientHelper"})
 @Slf4j
-public class KnativeHelper {
+public class KnativeUtils {
 
     public static final String KNATIVE_SERVING_API_VERSION = "serving.knative.dev/v1";
 
@@ -34,15 +31,9 @@ public class KnativeHelper {
         return String.format("%s.%s.example.com", ksvcName, NAMESPACE);
     }
 
-    private static Service createKsvc(Service kService) throws InternalServerErrorException {
-        Service service = CloudNativeClientHelper.knativeClient.services().resource(kService).create();
-        waitKsvcReady(kService.getMetadata().getNamespace(), kService.getMetadata().getName(), null, null);
-        return service;
-    }
-
     private static Boolean isKsvcReady(String namespace, String name) {
         // TODO 通过获取资源Status判断服务状态是否就绪
-        return CloudNativeClientHelper.knativeClient.services().inNamespace(namespace).withName(name).isReady();
+        return true;
     }
 
     private static void waitKsvcReady(String namespace, String ksvcName, @Nullable Integer timeoutSeconds, @Nullable Integer pollingInterval) throws InternalServerErrorException {

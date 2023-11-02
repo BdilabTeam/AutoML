@@ -23,7 +23,7 @@ import java.util.List;
 
 
 @Component
-@DependsOn("istioHelper")
+@DependsOn("istioUtils")
 @Slf4j
 @EnableScheduling
 public class CookieHelper {
@@ -44,7 +44,7 @@ public class CookieHelper {
     @Scheduled(cron = "0 0 0/1 * * ?")
     public void getCookie() {
         try {
-            String rootUrl = String.join("", "http://", serverHost, ":", IstioHelper.INGRESS_GATEWAY_PORT);
+            String rootUrl = String.join("", "http://", serverHost, ":", IstioUtils.INGRESS_GATEWAY_PORT);
             String firstUrl = getRedirectUrl(rootUrl);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

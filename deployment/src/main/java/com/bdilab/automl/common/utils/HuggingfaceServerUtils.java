@@ -1,6 +1,6 @@
 package com.bdilab.automl.common.utils;
 
-public class HuggingfaceServerUtils {
+public class HuggingFaceServerUtils {
     public static final String HUGGINGFACE_SERVER_IMAGE = "registry.cn-hangzhou.aliyuncs.com/treasures/huggingface-server:v0.0.1";
 
     public static final String HUGGINGFACE_SERVER_VOLUME_MOUNT_NAME = "model-dir";

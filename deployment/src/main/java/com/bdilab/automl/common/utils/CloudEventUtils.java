@@ -21,11 +21,11 @@ import java.util.HashMap;
 
 @Component
 @Slf4j
-public class HttpClientHelper {
-    private RestTemplate restTemplate;
+public class CloudEventUtils {
+    private static RestTemplate restTemplate;
 
     @Autowired
-    public HttpClientHelper(@Qualifier("restTemplate") RestTemplate restTemplate) {
+    public CloudEventUtils(@Qualifier("restTemplate") RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
     }
 
@@ -33,7 +33,7 @@ public class HttpClientHelper {
      * 发送结构化CloudEvent
      * 结构化CE，CE中的属性、数据均作为请求体中的部分。
      */
-    public String sendStructuredCloudEvent(CloudEvent event, String url, HttpMethod method, @Nullable String virtualHost, @Nullable String cookie) throws Exception {
+    public static String sendStructuredCloudEvent(CloudEvent event, String url, HttpMethod method, @Nullable String virtualHost, @Nullable String cookie) throws Exception {
         // 设置 HTTP 请求头
         HttpHeaders headers = new HttpHeaders();
         // 发送结构化CE，需要将请求头中的Content-Type设置为application/cloudevents+json，以表示此CloudEvent是结构化CE
@@ -63,7 +63,7 @@ public class HttpClientHelper {
      * 发送二进制CE
      * 二进制CE，CE中的属性作为请求头中的属性，CE中的数据作为请求体。
      */
-    public String sendBinaryCloudEvent(CloudEvent event, String url, HttpMethod method, @Nullable String virtualHost, @Nullable String cookie) {
+    public static String sendBinaryCloudEvent(CloudEvent event, String url, HttpMethod method, @Nullable String virtualHost, @Nullable String cookie) {
         // 设置 HTTP 请求头
         HttpHeaders headers= CloudEventHttpUtils.toHttp(event);
         if (null != virtualHost) {

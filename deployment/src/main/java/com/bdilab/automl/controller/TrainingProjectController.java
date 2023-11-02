@@ -1,7 +1,7 @@
 package com.bdilab.automl.controller;
 
 import com.bdilab.automl.common.response.HttpResponse;
-import com.bdilab.automl.common.utils.HttpResponseUtil;
+import com.bdilab.automl.common.utils.HttpResponseUtils;
 import com.bdilab.automl.service.impl.TrainingProjectServiceImpl;
 import com.bdilab.automl.vo.InferenceDataVO;
 import io.swagger.annotations.ApiImplicitParam;
@@ -23,7 +23,7 @@ public class TrainingProjectController {
     @ApiImplicitParam(name = "id", value = "训练项目ID", required = true, example = "1")
     public HttpResponse deploy(@PathVariable Integer id) {
         trainingProjectService.deployment(id);
-        return new HttpResponse(HttpResponseUtil.generateSuccessResponseData("部署成功"));
+        return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("部署成功"));
     }
 
     @DeleteMapping("/undeploy/{id}")
@@ -31,7 +31,7 @@ public class TrainingProjectController {
     @ApiImplicitParam(name = "id", value = "训练项目ID", required = true, example = "1")
     public HttpResponse undeploy(@PathVariable Integer id) {
         trainingProjectService.undeploy(id);
-        return new HttpResponse(HttpResponseUtil.generateSuccessResponseData("删除部署成功"));
+        return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("删除部署成功"));
     }
 
     @PostMapping("/infer")
