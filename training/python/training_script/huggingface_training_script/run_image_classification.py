@@ -35,6 +35,10 @@ from transformers.trainer_utils import get_last_checkpoint
 from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
 
+from huggingface_training_script.utils.storage_args import StorageArguments
+from huggingface_training_script.utils.minio_client_utils import MixinMinioClient, MinioException
+import shutil
+
 
 """ Fine-tuning a 🤗 Transformers model for image classification"""
 
@@ -154,13 +158,13 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
-    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments, StorageArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
-        model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
+        model_args, data_args, training_args, storage_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
-        model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+        model_args, data_args, training_args, storage_args = parser.parse_args_into_dataclasses()
 
     # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
     # information sent is the one passed as arguments along with your Python/PyTorch versions.
@@ -247,7 +251,7 @@ def main():
 
     # Load the accuracy metric from the datasets package
     # metric = evaluate.load("accuracy")
-    metric = evaluate.load(f"{Path().cwd().__str__()}/accuracy.py")
+    metric = evaluate.load(f"{Path().cwd().__str__()}/eval/accuracy.py")
 
     # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.
@@ -377,6 +381,36 @@ def main():
         trainer.push_to_hub(**kwargs)
     else:
         trainer.create_model_card(**kwargs)
+    
+    if storage_args.push_to_minio:
+        # 将训练输出的文件存档为zip
+        shutil.make_archive(
+            base_name=storage_args.archive_file_path_without_zip_extension, 
+            format="zip", 
+            root_dir=training_args.output_dir
+        )
+        # 创建minio client
+        minio_clent = MixinMinioClient(
+            minio_endpoint=storage_args.minio_endpoint,
+            access_key=storage_args.access_key,
+            secret_key=storage_args.secret_key
+        ).minio_client
+        # 使用minio client将存档上传至minio server
+        try:
+            logger.info(f"Start to upload archive to minio server")
+            minio_clent.fput_object(
+                bucket_name=storage_args.bucket_name,
+                object_name=storage_args.object_name,
+                file_path=storage_args.archive_file_path,
+                content_type="application/zip"
+            )
+            logger.info("Success to upload archive to minio server")
+        except MinioException as e:
+            logger.exception("Failed to push to minio server")
+        
+        if storage_args.clean_archive_cache:
+            # 清理本地模型文件
+            shutil.rmtree(storage_args.archive_path)
 
 
 if __name__ == "__main__":

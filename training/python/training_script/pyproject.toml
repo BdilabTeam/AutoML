@@ -35,6 +35,7 @@ Pillow = "~10.0.0"
 accelerate = "~0.21.0"
 evaluate = "~0.4.0"
 datasets = "~2.14.1"
+minio = "^7.1.17"
 
 [tool.poetry-version-plugin]
 source = "file"
