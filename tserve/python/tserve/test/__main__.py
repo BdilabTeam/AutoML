@@ -9,7 +9,7 @@ from .custom_model import CustomModel
 
 logger = logging.getLogger(__name__)
 DEFAULT_MODEL_NAME = "model"
-DEFAULT_LOCAL_MODEL_DIR = "/Users/treasures/Downloads"
+DEFAULT_LOCAL_MODEL_DIR = "C:\\Users\\86136\\Desktop\\test"
 
 parser = argparse.ArgumentParser(parents=[tserve.model_server.parser])
 parser.add_argument('--model_dir', required=False, default=DEFAULT_LOCAL_MODEL_DIR,

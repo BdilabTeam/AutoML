@@ -6,4 +6,3 @@ from .utils import utils
 from .exceptions import OpenApiException, ApiTypeError, ApiValueError, ApiKeyError, ApiException
 from .utils.utils import get_predict_input, get_predict_response
 from .errors import InferenceError, InvalidInput, inference_error_handler, invalid_input_handler
-

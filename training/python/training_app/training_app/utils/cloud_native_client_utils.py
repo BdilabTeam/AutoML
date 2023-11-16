@@ -1,6 +1,8 @@
 import os
 from dataclasses import dataclass, field
 from typing import Optional
+
+from kubeflow.katib import ApiClient
 from kubernetes import client, config
 from kubeflow import katib
 from kubeflow.training import TrainingClient

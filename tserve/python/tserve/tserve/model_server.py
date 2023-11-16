@@ -93,6 +93,9 @@ class ModelServer(object):
                 sig_list = [signal.SIGINT, signal.SIGTERM]
 
             for sig in sig_list:
+                # loop.add_reader(
+                #     sig, lambda s=sig: asyncio.create_task(self.stop(sig=s))
+                # )
                 loop.add_signal_handler(
                     sig, lambda s=sig: asyncio.create_task(self.stop(sig=s))
                 )

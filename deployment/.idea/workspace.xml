@@ -4,7 +4,36 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="80bd2841-5ba2-48fa-bf4e-caac9ac5c7bd" name="Changes" comment="" />
+    <list default="true" id="80bd2841-5ba2-48fa-bf4e-caac9ac5c7bd" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/utils/HuggingFaceServerUtils.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/utils/training_command.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/audio_classification/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/audio_classification/run_audio_classification.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/image_classification/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/image_pretraining/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/image_pretraining/run_mim.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/language_modeling/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/language_modeling/run_clm.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/multiple_choice/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/multiple_choice/run_swag.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/question_answering/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/question_answering/run_qa.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/config/RestTemplateConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/config/RestTemplateConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/crud.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/crud.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/models.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/models.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/schemas.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/schemas.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/training_controller.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/training_controller.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/training_operator_client.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/training_operator_client.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_app/training_app/utils/cloud_native_client_utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_app/training_app/utils/cloud_native_client_utils.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/run_image_classification.py" beforeDir="false" afterPath="$PROJECT_DIR$/../training/python/training_script/huggingface_training_script/image_classification/run_image_classification.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tserve/python/tserve/test/__main__.py" beforeDir="false" afterPath="$PROJECT_DIR$/../tserve/python/tserve/test/__main__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tserve/python/tserve/tserve/__init__.py" beforeDir="false" afterPath="$PROJECT_DIR$/../tserve/python/tserve/tserve/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../tserve/python/tserve/tserve/model_server.py" beforeDir="false" afterPath="$PROJECT_DIR$/../tserve/python/tserve/tserve/model_server.py" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -17,10 +46,14 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
   <component name="ProjectId" id="2Vpr37pbeIJ2W4OfC1nH7nv1sOm" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -33,12 +66,16 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/main/java/com/bdilab/automl/common/exception" />
+    <property name="go.format.on.save.advertiser.fired" value="true" />
+    <property name="go.formatter.settings.were.checked" value="true" />
+    <property name="go.import.settings.migrated" value="true" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Desktop/deployment/SmartChat" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.0" />
-    <property name="settings.editor.selected.configurable" value="MavenSettings" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+    <property name="vue.rearranger.settings.migration" value="true" />
   </component>
   <component name="ReactorSettings">
     <option name="notificationShown" value="true" />
@@ -126,6 +163,13 @@
       <workItem from="1698854253325" duration="1843000" />
       <workItem from="1698856165563" duration="16000" />
       <workItem from="1698904002045" duration="3012000" />
+      <workItem from="1699073478281" duration="3226000" />
+      <workItem from="1699200079620" duration="1414000" />
+      <workItem from="1699324005152" duration="22000" />
+      <workItem from="1699325213976" duration="2095000" />
+      <workItem from="1699353309658" duration="54000" />
+      <workItem from="1699411111714" duration="3993000" />
+      <workItem from="1699782915972" duration="27000" />
     </task>
     <servers />
   </component>

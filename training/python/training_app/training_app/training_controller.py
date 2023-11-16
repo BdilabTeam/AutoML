@@ -30,7 +30,7 @@ from pathlib import Path
 
 import schemas
 
-from .database import (
+from training_app.database import (
     SessionLocal,
     Base,
     # AsyncSessionLocal
@@ -39,7 +39,7 @@ from sqlalchemy.orm import Session
 import crud
 
 
-from .training_operator_client import (
+from training_operator_client import (
     TrainingOperatorClient
 )
 
@@ -48,7 +48,7 @@ import subprocess
 import json
 from dataclasses import asdict
 
-from .utils import (
+from utils import (
     logging
 )
 
@@ -84,7 +84,7 @@ def generate_training_project_data_path(training_project_id: int) -> str:
     return f"{Path().cwd().__str__()}/meta/training_project/{training_project_id}/data"
 
 
-@app.post("/projects", description="创建项目, 返回项目ID")
+@app.post("/projects/add", description="创建项目, 返回项目ID")
 def create_training_project(
     training_project: schemas.TrainingProjectCreate = Body(),
     db: Session = Depends(get_db)
@@ -110,12 +110,19 @@ def create_training_project(
         return JSONResponse(content=json.dumps(asdict(training_project)))
 
 
-@app.put("/projects", description="修改项目, 返回项目ID")
+@app.put("/project/update/{training_project_id}", description="修改项目, 返回后的项目")
 def update_training_project(
-    training_project: schemas.TrainingProjectCreate = Body(),
-    db: Session = Depends(get_db)
+    training_project: schemas.TrainingProjectUpdate = Body(),
+    db: Session = Depends(get_db),
+    training_project_id: int = Path()
 ) -> Any:
-    pass
+    try:
+        training_project_update = crud.update_training_project(db=db, training_project=training_project, training_project_id=training_project_id)
+        return JSONResponse(content=json.dumps(asdict(training_project_update)))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"修改训练项目元数据失败, 具体原因:{e.args}")
+
+
 
 
 @app.post("/projects/run/{training_project_id}", description="开启训练")
@@ -144,7 +151,8 @@ def start_training(
             model_path=model_name_or_path,
             data_path=data_name_or_path,
             output_path=generate_training_project_output_path(training_project_id=training_project.id),
-            image_full="treasures/training:latest",
+            # image_full="treasures/training:latest"
+            image_full="registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2"
         )
     except Exception as e:
         logger.exception(e)
@@ -223,5 +231,5 @@ def deploy_model(
     # 部署模型
 
 if __name__ == "__main__":
-    uvicorn.run("training_controller:app", host="127.0.0.1", port=8000, reload=True)
-    # uvicorn.run("training_controller:app", host="0.0.0.0", port=32081, reload=True)
+    # uvicorn.run("training_controller:app", host="127.0.0.1", port=8000, reload=True)
+    uvicorn.run("training_controller:app", host="0.0.0.0", port=32081, reload=True)
