@@ -37,8 +37,7 @@ class Model:
         Model is intended to be subclassed by various components within Treasures.
         
         Parameters:
-            name (`str`): 
-                The name of the model.
+            name (`str`): The name of the model.
         """
         self.name = name
         self.ready = False
@@ -57,7 +56,6 @@ class Model:
 
         Parameters:
             body (Dict|CloudEvent|InferRequest): Request payload body.
-            model_type (ModelType): Model type enum. Can be either predictor or explainer.
             headers (Dict): Request headers.
 
         Returns:
@@ -89,7 +87,7 @@ class Model:
         
         if self.enable_latency_logging is True:
             logger.info(f"requestId: {request_id}, preprocess_ms: {preprocess_ms}, "
-                              f"explain_ms: {explain_ms}, predict_ms: {predict_ms}, "
+                              f"predict_ms: {predict_ms}, "
                               f"postprocess_ms: {postprocess_ms}")
 
         return response

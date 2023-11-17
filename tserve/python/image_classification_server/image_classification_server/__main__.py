@@ -8,7 +8,7 @@ import tserve
 from tserve.errors import ModelMissingError
 
 DEFAULT_MODEL_NAME = "model"
-DEFAULT_LOCAL_MODEL_DIR = "/Users/treasures/Downloads/model"
+DEFAULT_LOCAL_MODEL_DIR = "/Users/treasures/Downloads/image_classification_training/model"
 
 parser = argparse.ArgumentParser(parents=[tserve.model_server.parser])
 parser.add_argument('--model_dir', required=False, default=DEFAULT_LOCAL_MODEL_DIR,

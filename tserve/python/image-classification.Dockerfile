@@ -11,9 +11,7 @@ ARG POETRY_VERSION=1.6.1
 # Required for building packages for arm64 arch
 # RUN apt-get update && apt-get install -y --no-install-recommends python3-dev build-essential
 
-RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-RUN pip config set global.timeout 1800
-RUN pip config set global.retries 10
+RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && pip config set global.timeout 1800 && pip config set global.retries 10
 RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/python3 -m pip install --upgrade pip && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 ENV PATH="$PATH:${POETRY_HOME}/bin"
 ENV POETRY_REQUESTS_TIMEOUT=3600

@@ -35,13 +35,17 @@ class ImageClassificationModel(Model):
             pretrained_model_name_or_path (`str`):
                 The storage path of a model.
         """
-        im_processor = AutoImageProcessor.from_pretrained(pretrained_model_name_or_path=self.pretrained_model_name_or_path)
-        model = AutoModelForImageClassification.from_pretrained(pretrained_model_name_or_path=self.pretrained_model_name_or_path)
+        # im_processor = AutoImageProcessor.from_pretrained(pretrained_model_name_or_path=self.pretrained_model_name_or_path)
+        # model = AutoModelForImageClassification.from_pretrained(pretrained_model_name_or_path=self.pretrained_model_name_or_path)
         self.pipeline = pipeline(
             task="image-classification", 
-            model=model, 
-            image_processor=im_processor, 
-            device_map="auto"
+            # model=model,
+            model=self.pretrained_model_name_or_path,
+            # image_processor=im_processor,
+            # image_processor=self.pretrained_model_name_or_path,
+            tokenizer=self.pretrained_model_name_or_path,
+            device_map="auto",
+            framework="pt"
         )
         self.ready = True
         return self.ready

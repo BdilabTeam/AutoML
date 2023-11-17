@@ -1,9 +1,15 @@
 from http import HTTPStatus
 from fastapi.responses import JSONResponse
+from fastapi import status
 import logging
 
 logger = logging.getLogger(__name__)
 
+
+class TServerError(Exception):
+    def __init__(self, msg: str, status_code: int = status.HTTP_400_BAD_REQUEST):
+        super().__init__(msg)
+        self.status_code = status_code
 
 class ModelMissingError(Exception):
     def __init__(self, path):

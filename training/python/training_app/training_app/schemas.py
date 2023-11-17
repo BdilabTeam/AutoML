@@ -27,7 +27,7 @@ class TrainingProjectBase(BaseModel):
     name: Optional[str] = Field(description="项目名称", max_length=30, examples=["project1"])
     task_type: Optional[str] = Field(description="任务类型")
     is_automatic: Optional[bool] = Field(default=False, description="是否开启自动选择模型")
-    model_name_or_path: Optional[Optional[str]] = Field(description="模型类型")
+    model_name_or_path: Optional[str] = Field(description="模型类型")
     
 
 class TrainingProjectCreate(TrainingProjectBase):
@@ -38,3 +38,4 @@ class TrainingProjectCreate(TrainingProjectBase):
 class TrainingProject(TrainingProjectBase):
     id: Optional[int] = Field(title="项目ID")
     data_name_or_path: Optional[str] = Field(default="", description="已上传的数据文件路径")
+    host: Optional[str] = Field(default="", description="knative-service host")

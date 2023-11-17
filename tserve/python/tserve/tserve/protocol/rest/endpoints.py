@@ -15,11 +15,8 @@ class Endpoints(object):
         self.dataplane = dataplane
     
     async def infer(self,
-                    raw_request: Request,
-                    raw_response: Response,
-                    model_name: str,
-                    request_body: Dict,
-                    model_version: Optional[str] = None):
+                    request: Request,
+                    model_name: str):
         """
         Infer handler.
 
@@ -37,12 +34,20 @@ class Endpoints(object):
 
         if not model_ready:
             raise ModelNotReady(model_name)
-
-        request_headers = dict(raw_request.headers)
+        
+        body = await request.body()
+        headers = dict(request.headers.items())
+        infer_request, req_attributes = self.dataplane.decode(body=body,
+                                                              headers=headers)
         response, response_headers = await self.dataplane.infer(model_name=model_name,
-                                                                request=request_body,
-                                                                headers=request_headers)
+                                                                  request=infer_request,
+                                                                  headers=headers)
+        response, response_headers = self.dataplane.encode(model_name=model_name,
+                                                           response=response,
+                                                           headers=headers, req_attributes=req_attributes)
 
+        if not isinstance(response, dict):
+            return Response(content=response, headers=response_headers)
         return response
         
     

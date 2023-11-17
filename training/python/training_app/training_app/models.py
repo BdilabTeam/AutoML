@@ -18,4 +18,5 @@ class TrainingProject(Base):
     is_automatic: Mapped[bool] = mapped_column(type_=Boolean())
     model_name_or_path: Mapped[Optional[str]] = mapped_column(type_=String(30), doc="训练所用到的模型文件路径")
     data_name_or_path: Mapped[Optional[str]] = mapped_column(init=False, type_=String(50), doc="训练所用到的数据文件路径")
+    host: Mapped[Optional[str]] = mapped_column(init=False, type_=String(255), doc="knative-service host")
     
