@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "image_classification_training_script"
+name = "huggingface_training_script"
 version = "0.0.1"
 description = "Triainig environment for huggingface model."
 authors = ["treasures"]
@@ -7,7 +7,7 @@ repository = "https://github.com/treasuresY/AutoML.git"
 readme = "README.md"
 license = "MIT"
 packages = [
-    { include = "image_classification_training_script" },
+    { include = "huggingface_training_script" },
 ]
 
 [[tool.poetry.source]]
@@ -35,7 +35,14 @@ Pillow = "~10.0.0"
 accelerate = "~0.21.0"
 evaluate = "~0.4.0"
 datasets = "~2.14.1"
-minio = "^7.1.17"
+
+# Storage dependencies. They can be opted into by apps.
+minio = { version = "^7.1.17", optional = true }
+
+[tool.poetry.extras]
+storage = [
+    "minio"
+]
 
 [tool.poetry-version-plugin]
 source = "file"

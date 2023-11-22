@@ -38,6 +38,7 @@ from transformers.utils.versions import require_version
 from huggingface_training_script.utils.storage_args import StorageArguments
 from huggingface_training_script.utils.minio_client_utils import MixinMinioClient, MinioException
 import shutil
+from huggingface_training_script.utils.storage import Storage
 
 
 """ Fine-tuning a 🤗 Transformers model for image classification"""
@@ -193,6 +194,53 @@ def main():
         + f"distributed training: {bool(training_args.local_rank != -1)}, 16-bits training: {training_args.fp16}"
     )
     logger.info(f"Training/evaluation parameters {training_args}")
+
+    if storage_args.pull_model_from_minio or storage_args.pull_data_from_minio or storage_args.push_to_minio:
+        # 创建minio client
+        minio_client = MixinMinioClient(
+            minio_endpoint=storage_args.minio_endpoint,
+            access_key=storage_args.access_key,
+            secret_key=storage_args.secret_key
+        ).minio_client
+        # Pull model or data from minio if pull_model_from_minio/pull_data_from_minio is true
+        if storage_args.pull_model_from_minio:
+            logger.info(f"Start to pull model archive from minio server")
+            Storage._pull_from_minio(
+                minio_client=minio_client, 
+                bucket_name=storage_args.model_bucket_name,
+                object_name=storage_args.model_object_name,
+                file_path=storage_args.model_storage_path,
+            )
+            # 方案2
+            # 判断是否有前缀'/', 有，则删除.
+            # if storage_args.object_name.startswith(os.sep):
+            #     storage_args.object_name = storage_args.object_name.lstrip(os.sep)
+            # uri = Path().joinpath("http://", storage_args.minio_endpoint, storage_args.bucket_name, storage_args.object_name)
+            # Storage.download(uri=uri, out_dir=os.path.dirname(storage_args.model_storage_path))
+            logger.info("Success to pull model archive from minio server")
+            # 解压缩zip文件
+            Storage._unpack_archive_file(
+                file_path=storage_args.model_storage_path,
+                mimetype="application/zip",
+            )
+            # 更新model_args.model_name_or_path
+            model_args.model_name_or_path = os.path.splitext(storage_args.model_storage_path)
+        if storage_args.pull_data_from_minio:
+            logger.info(f"Start to pull data archive from minio server")
+            Storage._pull_from_minio(
+                minio_client=minio_client,
+                bucket_name=storage_args.data_bucket_name,
+                object_name=storage_args.data_bucket_name,
+                file_path=storage_args.data_storage_path
+            )
+            logger.info("Success to pull data archive from minio server")
+            # 解压缩zip文件
+            Storage._unpack_archive_file(
+                file_path=storage_args.data_storage_path,
+                mimetype="application/zip",
+            )
+            # TODO 更新data_args.train_dir 和 data_args.validation_dir
+        
 
     # Detecting last checkpoint.
     last_checkpoint = None
@@ -389,24 +437,16 @@ def main():
             format="zip", 
             root_dir=training_args.output_dir
         )
-        # 创建minio client
-        minio_clent = MixinMinioClient(
-            minio_endpoint=storage_args.minio_endpoint,
-            access_key=storage_args.access_key,
-            secret_key=storage_args.secret_key
-        ).minio_client
         # 使用minio client将存档上传至minio server
-        try:
-            logger.info(f"Start to upload archive to minio server")
-            minio_clent.fput_object(
-                bucket_name=storage_args.bucket_name,
-                object_name=storage_args.object_name,
-                file_path=storage_args.archive_file_path,
-                content_type="application/zip"
-            )
-            logger.info("Success to upload archive to minio server")
-        except MinioException as e:
-            logger.exception("Failed to push to minio server")
+        logger.info(f"Start to upload archive to minio server")
+        Storage._push_to_minio(
+            minio_client=minio_client,
+            bucket_name=storage_args.bucket_name,
+            object_name=storage_args.object_name,
+            file_path=storage_args.archive_file_path,
+            content_type="application/zip"
+        )
+        logger.info("Success to upload archive to minio server")
         
         if storage_args.clean_archive_cache:
             # 清理本地模型文件

@@ -8,7 +8,7 @@ pip install --upgrade pip
 # 在虚拟环境中安装poetry
 pip install poetry
 # 通过poetry进行依赖包安装
-poetry install
+poetry install --extras storage
 ```
 # Start huggingface_training_script
 ```
@@ -40,11 +40,15 @@ python run_image_classification.py \
 ```
 
 ```bash
+# 增加pull_model_from_minio, training从minio中拉取模型进行训练
 # 增加push_to_minio选项-训练完成后, 训练文件上传至minio server
 python run_image_classification.py \
-    --train_dir /Users/treasures/Downloads/image_classification_training/data/train \
-    --model_name_or_path /Users/treasures/Downloads/image_classification_training/model \
-    --output_dir /Users/treasures/Downloads/output \
+    --pull_model_from_minio True \
+    --model_bucket_name automl \
+    --model_object_name /pretrained-models/image_classification.zip \
+    --model_storage_path /Users/treasures_y/Documents/test_minio/model/model.zip  \
+    --train_dir /Users/treasures_y/Documents/image_classification_training/data/train \
+    --output_dir /Users/treasures_y/Documents/test_minio/output \
     --overwrite_output_dir True \
     --remove_unused_columns False \
     --do_train \
@@ -66,7 +70,8 @@ python run_image_classification.py \
     --minio_endpoint 124.70.188.119:32090 \
     --access_key 42O7Ukrwo3lf9Cga3HZ9 \
     --secret_key ELN5mbp9kpzNPqeuM5iifpm8aLSqYlV57f7yVZqv \
-    --archive_path /Users/treasures/Downloads/archive \
-    --project_id 42 \
+    --archive_bucket_name automl \
+    --archive_object_name /44/model.zip \
+    --output_archive_dir /Users/treasures_y/Documents/test_minio/archive \
     --clean_archive_cache True
 ```

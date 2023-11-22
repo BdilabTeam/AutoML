@@ -24,9 +24,9 @@ RUN python3 -m venv ${VIRTUAL_ENV}
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY training_script/pyproject.toml training_script/poetry.lock training_script/
-RUN cd training_script && poetry install --no-root --no-interaction --no-cache
+RUN cd training_script && poetry install --no-root --no-interaction --no-cache --extras storage
 COPY training_script training_script
-RUN cd training_script && poetry install --no-interaction --no-cache
+RUN cd training_script && poetry install --no-interaction --no-cache --extras storage
 
 
 FROM ${BASE_IMAGE} as prod
