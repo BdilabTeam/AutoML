@@ -440,8 +440,8 @@ def main():
         logger.info(f"Start to upload archive to minio server")
         Storage._push_to_minio(
             minio_client=minio_client,
-            bucket_name=storage_args.bucket_name,
-            object_name=storage_args.object_name,
+            bucket_name=storage_args.archive_bucket_name,
+            object_name=storage_args.archive_object_name,
             file_path=storage_args.output_archive_path,
             content_type="application/zip"
         )
@@ -449,7 +449,7 @@ def main():
         
         if storage_args.clean_archive_cache:
             # 清理本地模型文件
-            shutil.rmtree(storage_args.archive_path)
+            shutil.rmtree(storage_args.output_archive_dir)
 
 
 if __name__ == "__main__":
