@@ -72,11 +72,12 @@ class TrainingOperatorClient():
 
     def create_training_job(
         self,
-        training_project_name: str, 
+        training_project_name: str,
+        training_project_task_type: str,
         model_path: str,
         data_path: str,
         output_path: str,
-        image_full: str = "treasures/training:latest",
+        image_full: str = "registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2",
         namespace: str = namespace,
         job_kind: Optional[str] = None,
     ):
@@ -84,6 +85,7 @@ class TrainingOperatorClient():
         tfjob = training_operator_utils._generate_training_operator(
             self=self,
             training_project_name=training_project_name,
+            training_project_task_type=training_project_task_type,
             image_full=image_full,
             model_path=model_path,
             data_path=data_path,

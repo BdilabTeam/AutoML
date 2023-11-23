@@ -33,7 +33,7 @@ command = {
     ],
     "image_classification" : [
             "python",
-            "run_image_classification.py",
+            "/training_script/image_classification_training_script/run_image_classification.py",
             "--model_name_or_path=/treasures/model",
             "--train_dir=/treasures/data",
             "--output_dir=/treasures/output/",
@@ -48,10 +48,11 @@ command = {
             "--logging_steps=10",
             "--evaluation_strategy=epoch",
             "--save_strategy=epoch",
-            "--load_best_model_at_end=True",
+            "--load_best_model_at_end=False",
             "--save_total_limit=3",
             "--seed=1337",
-            "--ignore_mismatched_sizes=True"
+            "--ignore_mismatched_sizes=True",
+            "--overwrite_output_dir=True"
         ],
     "image_pretraining" : [
             "python",

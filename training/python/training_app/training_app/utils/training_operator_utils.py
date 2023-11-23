@@ -21,18 +21,18 @@ from kubeflow.training import (
     V1ReplicaSpec
 )
 
-import training_command
+#import training_command
 from .training_command import command
 
 DEFAULT_NAMESPACE = "zauto"
 
 
-def _construct_v1_container(name: str, image: str):
+def _construct_v1_container(name: str, task_type: str, image: str):
     return V1Container(
         name=name,
         image=image,
         image_pull_policy="IfNotPresent",
-        command=command[name],
+        command=command[task_type.replace("-","_")],
         env=[
             V1EnvVar(name="TRANSFORMERS_OFFLINE", value="1"),
             V1EnvVar(name="HF_DATASETS_OFFLINE", value="1")
@@ -89,6 +89,7 @@ def _construct_kubeflow_v1_tfjob(meta_name: str, meta_namespace: str, worker: V1
 def _generate_training_operator(
         self,
         training_project_name: str,
+        training_project_task_type: str,
         image_full: str,
         model_path: str,
         data_path: str,
@@ -98,12 +99,13 @@ def _generate_training_operator(
         生成TrainingOperator自定义资源对象
         Args:
             training_project_name: 训练项目名称.
+            training_project_task_type: 训练项目的任务类型.
             image_full: 训练基础镜像.
             model_dir: 模型文件路径.
             data_dir: 数据文件路径.
             output_dir: 训练结果输出路径.
     """
-    container = _construct_v1_container(name=training_project_name, image=image_full)
+    container = _construct_v1_container(name=training_project_name, task_type=training_project_task_type, image=image_full)
     worker = _construct_v1_replica_spec(container=container, data_path=data_path, model_path=model_path,
                                         output_path=output_path)
     chief = _construct_v1_replica_spec(container=container, data_path=data_path, model_path=model_path,
