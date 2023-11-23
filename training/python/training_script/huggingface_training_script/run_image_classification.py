@@ -224,7 +224,7 @@ def main():
                 mimetype="application/zip",
             )
             # 更新model_args.model_name_or_path
-            model_args.model_name_or_path = os.path.splitext(storage_args.model_storage_path)
+            model_args.model_name_or_path, _ = os.path.splitext(storage_args.model_storage_path)
         if storage_args.pull_data_from_minio:
             logger.info(f"Start to pull data archive from minio server")
             Storage._pull_from_minio(
@@ -434,7 +434,7 @@ def main():
     if storage_args.push_to_minio:
         # 将训练输出的文件存档为zip
         shutil.make_archive(
-            base_name=storage_args.archive_file_path_without_zip_extension, 
+            base_name=storage_args.output_archive_path_without_zip_extension, 
             format="zip", 
             root_dir=training_args.output_dir
         )
@@ -444,7 +444,7 @@ def main():
             minio_client=minio_client,
             bucket_name=storage_args.bucket_name,
             object_name=storage_args.object_name,
-            file_path=storage_args.archive_file_path,
+            file_path=storage_args.output_archive_path,
             content_type="application/zip"
         )
         logger.info("Success to upload archive to minio server")
