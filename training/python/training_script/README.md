@@ -1,5 +1,5 @@
 # Huggingface model训练脚本
-# Env Prepare:
+## Env Prepare:
 ```bash
 # 激活虚拟环境
 conda activate xxx / source ${VIRTUAL_ENV_PATH}/bin/activate
@@ -10,12 +10,13 @@ pip install poetry
 # 通过poetry进行依赖包安装
 poetry install --extras storage
 ```
-# Start huggingface_training_script
+## Start huggingface_training_script
 ```
 cd training/python/training_script/huggingface_training_script
 ```
 
 ```bash
+# 训练数据、模型文件齐全
 python run_image_classification.py \
     --train_dir /Users/treasures/Downloads/image_classification_training/data/train \
     --model_name_or_path /Users/treasures/Downloads/image_classification_training/model \
@@ -40,13 +41,12 @@ python run_image_classification.py \
 ```
 
 ```bash
-# 增加pull_model_from_minio, training从minio中拉取模型进行训练
-# 增加push_to_minio选项-训练完成后, 训练文件上传至minio server
+# 从minio中拉取模型进行训练，并将训练完的模型文件上传至minio
 python run_image_classification.py \
     --pull_model_from_minio True \
     --model_bucket_name automl \
     --model_object_name /pretrained-models/image_classification.zip \
-    --model_storage_path /Users/treasures_y/Documents/test_minio/model/model.zip  \
+    --model_storage_path /Users/treasures_y/Documents/test_minio/model/image_classification.zip  \
     --train_dir /Users/treasures_y/Documents/image_classification_training/data/train \
     --output_dir /Users/treasures_y/Documents/test_minio/output \
     --overwrite_output_dir True \
@@ -77,6 +77,7 @@ python run_image_classification.py \
 ```
 
 ```bash
+# 服务器测试命令
 # 构建镜像命令
 docker build -t registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.3 -f /root/workspace/DCJ/automl/training/python/training_script.Dockerfile .
 
@@ -103,5 +104,4 @@ python run_image_classification.py \
     --seed 1337 \
     --ignore_mismatched_sizes True \
     --use_cpu True \
-
 ```

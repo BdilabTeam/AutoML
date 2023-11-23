@@ -7,7 +7,7 @@ spec:
   nodeName: node1
   containers:
     - name: yjx-test
-      image: registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2  # update
+      image: registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2 # update
       imagePullPolicy: IfNotPresent
       command:
         - "python"
@@ -50,10 +50,76 @@ spec:
   volumes:
     - name: data-dir
       hostPath:
-        path: /root/workspace/YJX/auto-ml/volume/data  # update
+        path: /root/workspace/YJX/auto-ml/volume/data # update
     - name: model-dir
       hostPath:
         path: /root/workspace/YJX/auto-ml/volume/model # update
     - name: output-dir
       hostPath:
-        path: /root/workspace/YJX/auto-ml/volume/output  # update
+        path: /root/workspace/YJX/auto-ml/volume/output # update
+
+---
+# Testing pull from or push to minio
+apiVersion: v1
+kind: Pod
+metadata:
+  name: training-yjx
+  namespace: zauto
+spec:
+  nodeName: master
+  containers:
+    - name: test
+      image: registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.3 # update
+      imagePullPolicy: IfNotPresent
+      securityContext:
+        runAsUser: 0
+        allowPrivilegeEscalation: false
+      command:
+        - "python"
+        - "/training_script/huggingface_training_script/run_image_classification.py"
+        - "--pull_model_from_minio=True"
+        - "--model_bucket_name=automl"
+        - "--model_object_name=/pretrained-models/image_classification.zip"
+        - "--model_storage_path=/training_script/huggingface_training_script/model/image_classification.zip"
+        - "--train_dir=/treasures/data"
+        - "--output_dir=/treasures/output"
+        - "--remove_unused_columns=False"
+        - "--do_train"
+        - "--do_eval"
+        - "--learning_rate=2e-5"
+        - "--num_train_epochs=1"
+        - "--per_device_train_batch_size=8"
+        - "--per_device_eval_batch_size=8"
+        - "--logging_strategy=steps"
+        - "--logging_steps=10"
+        - "--evaluation_strategy=epoch"
+        - "--save_strategy=epoch"
+        - "--load_best_model_at_end=False"
+        - "--seed=1337"
+        - "--ignore_mismatched_sizes=True"
+        - "--overwrite_output_dir=True"
+        - "--push_to_minio=True"
+        - "--minio_endpoint=124.70.188.119:32090"
+        - "--access_key=42O7Ukrwo3lf9Cga3HZ9"
+        - "--secret_key=ELN5mbp9kpzNPqeuM5iifpm8aLSqYlV57f7yVZqv"
+        - "--archive_bucket_name=automl"
+        - "--archive_object_name=/44/model.zip"
+        - "--output_archive_dir=/training_script/huggingface_training_script/archive"
+        - "--clean_archive_cache=True"
+      env:
+        - name: "TRANSFORMERS_OFFLINE"
+          value: "1"
+        - name: "HF_DATASETS_OFFLINE"
+          value: "1"
+      volumeMounts:
+        - name: data-dir
+          mountPath: /treasures/data
+        - name: output-dir
+          mountPath: /treasures/output
+  volumes:
+    - name: data-dir
+      hostPath:
+        path: /root/workspace/YJX/automl/volume/data # update
+    - name: output-dir
+      hostPath:
+        path: /root/workspace/YJX/automl/volume/output # update

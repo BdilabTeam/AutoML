@@ -3,7 +3,6 @@ import os
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
-from pathlib import Path
 
 import evaluate
 import numpy as np
@@ -299,7 +298,6 @@ def main():
 
     # Load the accuracy metric from the datasets package
     # metric = evaluate.load("accuracy")
-    # metric = evaluate.load(f"{Path().cwd().__str__()}/eval/accuracy.py")
     metric = evaluate.load(f"{os.path.dirname(os.path.abspath(__file__))}/eval/accuracy.py")
 
     # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a

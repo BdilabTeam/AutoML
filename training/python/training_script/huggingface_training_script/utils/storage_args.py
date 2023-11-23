@@ -46,12 +46,6 @@ class StorageArguments(object):
             "help": f"Name of the object stored in the {archive_bucket_name} bucke. This field will be generated automatically"
         }
     )
-    # project_id: int = field(
-    #     default=None,
-    #     metadata={
-    #         "help": "The ID of the training project"
-    #     }
-    # )
     output_archive_dir: str = field(
         default="/training_script/huggingface_training_script/output_archive",
         metadata={
@@ -135,11 +129,6 @@ class StorageArguments(object):
                         f"If you want to push the model file to minio, you must specify the key words: archive_object_name\
                             currently, the archive_object_name is {self.archive_object_name}"
                     )
-                # if not self.project_id:
-                #     raise ValueError(
-                #         f"If you enabled minio storage, you must specify the key words: project_id\
-                #             currently, the project_id is {self.project_id}"
-                #     )
                 # Check output_archive_dir validity
                 if os.path.exists(self.output_archive_dir):
                     shutil.rmtree(self.output_archive_dir)
@@ -175,8 +164,7 @@ class StorageArguments(object):
                 #         os.remove(self.model_storage_path)
                 #     elif os.path.isdir(self.model_storage_path):
                 #         os.rmdir(self.model_storage_path)
-                # else:
-                #     os.makedirs(self.model_storage_path)
+
             if self.pull_data_from_minio:
                 if not self.data_bucket_name:
                     raise ValueError(
@@ -195,13 +183,12 @@ class StorageArguments(object):
                     )
                 # Check data_storage_path validity
                 model_storage_dir = os.path.dirname(self.data_storage_path)
-                if os.path.exists(self.data_storage_path):
-                    shutil.rmtree(self.data_storage_path)
+                if os.path.exists(self.model_storage_dir):
+                    shutil.rmtree(self.model_storage_dir)
                 # if os.path.exists(self.data_storage_path):
                 #     if os.path.isfile(self.data_storage_path):
                 #         os.remove(self.data_storage_path)
                 #     elif os.path.isdir(self.data_storage_path):
                 #         os.rmdir(self.data_storage_path)
-                # else:
-                #     os.makedirs(self.data_storage_path)
+ 
                 

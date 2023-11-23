@@ -110,6 +110,7 @@ The file format is not valid.")
             )
         except Exception as e:
             logger.exception("Failed to pull model archive from minio")
+            raise Exception(e)
     
     @staticmethod
     def _push_to_minio(minio_client, bucket_name: str, object_name: str, file_path: str, content_type: str):
@@ -122,3 +123,4 @@ The file format is not valid.")
             )
         except Exception as e:
             logger.exception("Failed to push to minio server")
+            raise Exception(e)
