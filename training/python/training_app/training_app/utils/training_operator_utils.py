@@ -57,7 +57,7 @@ def _construct_v1_replica_spec(container: V1Container,
                 annotations={"sidecar.istio.io/inject": "false"}
             ),
             spec=V1PodSpec(
-                node_name="node1",
+                node_name="master",
                 containers=[container],
                 volumes=[
                     V1Volume(name="data-path", host_path=V1HostPathVolumeSource(path=data_path)),

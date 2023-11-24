@@ -77,7 +77,7 @@ class TrainingOperatorClient():
         model_path: str,
         data_path: str,
         output_path: str,
-        image_full: str = "registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2",
+        image_full: str = "registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.3",
         namespace: str = namespace,
         job_kind: Optional[str] = None,
     ):

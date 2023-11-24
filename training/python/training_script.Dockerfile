@@ -14,7 +14,7 @@ ARG POETRY_VERSION=1.6.1
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && pip config set global.timeout 1800 && pip config set global.retries 10
 RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/python3 -m pip install --upgrade pip && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 ENV PATH="$PATH:${POETRY_HOME}/bin"
-ENV POETRY_REQUESTS_TIMEOUT=3600
+ENV POETRY_REQUESTS_TIMEOUT=360
 ENV POETRY_RETRIES=10
 
 # Activate virtual env

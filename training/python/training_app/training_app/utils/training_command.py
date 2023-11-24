@@ -33,7 +33,7 @@ command = {
     ],
     "image_classification" : [
             "python",
-            "/training_script/image_classification_training_script/run_image_classification.py",
+            "/training_script/huggingface_training_script/run_image_classification.py",
             "--model_name_or_path=/treasures/model",
             "--train_dir=/treasures/data",
             "--output_dir=/treasures/output/",

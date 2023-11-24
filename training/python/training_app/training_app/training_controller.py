@@ -189,7 +189,7 @@ def start_training(
             data_path=data_name_or_path,
             output_path=generate_training_project_output_path(training_project_id=training_project.id),
             # image_full="treasures/training:latest"
-            image_full="registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2"
+            image_full="registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.3"
         )
     except Exception as e:
         logger.exception(e)
