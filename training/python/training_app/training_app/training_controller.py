@@ -83,6 +83,8 @@ def generate_training_project_output_path(training_project_id: int) -> str:
 def generate_training_project_data_path(training_project_id: int) -> str:
     return f"{Path().cwd().__str__()}/public/training_project_meta/{training_project_id}/data"
 
+def generate_training_project_model_path(training_project_id: int) -> str:
+    return f"{Path().cwd().__str__()}/public/training_project_meta/{training_project_id}/model"
 
 # def generate_training_project_base_path(training_project_id: int) -> str:
 #    return f"{Path().cwd().__str__()}/meta/training_project/{training_project_id}"
@@ -119,6 +121,10 @@ def create_training_project(
         traininig_project_output_path = Path(
             generate_training_project_output_path(training_project_id=training_project.id))
         traininig_project_output_path.mkdir(exist_ok=True)
+
+        #创建模型存储路径
+        traininig_project_model_path = Path(generate_training_project_model_path(training_project_id=training_project.id))
+        traininig_project_model_path.mkdir(exist_ok=True)
         return JSONResponse(content=json.dumps(asdict(training_project)))
 
 
@@ -147,7 +153,7 @@ def update_training_project(
         training_project = crud.get_training_project(db=db, training_project_id=training_project_id)
         return JSONResponse(content=json.dumps(asdict(training_project)))
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"修改训练项目元数据失败, 具体原因:{e.args}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"获取训练项目元数据失败, 具体原因:{e.args}")
 
 @app.delete("/project/delete/{training_project_id}", description="删除项目")
 def delete_training_project(

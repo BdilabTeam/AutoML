@@ -41,6 +41,7 @@ def _construct_v1_container(name: str, task_type: str, image: str):
             V1VolumeMount(name="data-path", mount_path="/treasures/data"),
             V1VolumeMount(name="model-path", mount_path="/treasures/model"),
             V1VolumeMount(name="output-path", mount_path="/treasures/output"),
+            V1VolumeMount(name="script-path", mount_path="/training_script/huggingface_training_script")
         ]
     )
 
@@ -62,7 +63,12 @@ def _construct_v1_replica_spec(container: V1Container,
                 volumes=[
                     V1Volume(name="data-path", host_path=V1HostPathVolumeSource(path=data_path)),
                     V1Volume(name="model-path", host_path=V1HostPathVolumeSource(path=model_path)),
-                    V1Volume(name="output-path", host_path=V1HostPathVolumeSource(path=output_path))
+                    # 因为在node1上运行的training框架，训练的镜像在master上所以输出目录有更改，仅测试用
+                    V1Volume(name="output-path", host_path=V1HostPathVolumeSource(path="/root/workspace/YJX/Env/yjx/app/public/training_project_meta/56/output")),
+                    # V1Volume(name="output-path", host_path=V1HostPathVolumeSource(path=output_path)),
+
+                    #挂载训练脚本路径
+                    V1Volume(name="script-path", host_path=V1HostPathVolumeSource(path="/root/workspace/YJX/Env/yjx/app/script"))
                 ]
             )
         )
