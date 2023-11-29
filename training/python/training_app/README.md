@@ -41,7 +41,10 @@ python training_controller.py
 
 ### 3.开启训练
 
-传一个id直接跑
+跑之前要把training_operator_utils.py文件的67行改成对应要训练的项目id
+![image-20231129110027499](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129110027499.png)
+
+然后传一个id直接跑
 
 ![image-20231129105425897](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129105425897.png)
 
