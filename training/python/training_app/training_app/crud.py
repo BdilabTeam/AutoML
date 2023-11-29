@@ -16,7 +16,7 @@ def create_training_project(db: Session, training_project: schemas.TrainingProje
 def get_training_project(db: Session, training_project_id: int) -> models.TrainingProject:
     return db.query(models.TrainingProject).filter(models.TrainingProject.id == training_project_id).one()
 
-def update_training_project(db: Session, training_project: schemas.TrainingProjectUpdate, db_training_project_update: models.TrainingProject) -> models.TrainingProject:
+def update_training_project(db: Session, training_project: schemas.TrainingProjectCreate, db_training_project_update: models.TrainingProject) -> models.TrainingProject:
     # db_training_project_update = get_training_project(db, training_project_id)
     if db_training_project_update:
         db_training_project_update.name = training_project.name

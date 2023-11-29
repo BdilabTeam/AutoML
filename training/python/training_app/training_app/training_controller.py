@@ -125,13 +125,19 @@ def create_training_project(
         #创建模型存储路径
         traininig_project_model_path = Path(generate_training_project_model_path(training_project_id=training_project.id))
         traininig_project_model_path.mkdir(exist_ok=True)
+
+        # 创建数据存储路径
+        traininig_project_data_path = Path(
+            generate_training_project_data_path(training_project_id=training_project.id))
+        traininig_project_data_path.mkdir(exist_ok=True)
+
         return JSONResponse(content=json.dumps(asdict(training_project)))
 
 
 @app.put("/project/update/{training_project_id}", description="修改项目, 返回后的项目")
 def update_training_project(
         training_project_id: int = Path(),
-        training_project: schemas.TrainingProjectUpdate = Body(),
+        training_project: schemas.TrainingProjectCreate = Body(),
         db: Session = Depends(get_db)
 ) -> Any:
     try:
