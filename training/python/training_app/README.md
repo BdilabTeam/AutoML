@@ -28,27 +28,26 @@ python training_controller.py
 传递4个参数：name,task_type,is_automatic(false),model_name_or_path,data_name_or_path.
 其实后两个参数应该是自动生成的不用传，因为训练测试的镜像在master上而node1上运行的这个fastapi项目路径和master有些不一样（app_new），所以手动传
 
-![image-20231129105209361](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129105209361.png)
+![1701228071505.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_aecda127f86da.png)
 
 
 
 ### 2.修改项目
 
 不说了，后续考虑有的项目模型和数据已经传上去了还能改吗？
-![image-20231129105334854](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129105334854.png)
+
+![1701228071505.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_01c997e741d94.png)
 
 
 
 ### 3.开启训练
 
 跑之前要把training_operator_utils.py文件的67行改成对应要训练的项目id
-![image-20231129110027499](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129110027499.png)
+![1701228071505.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_2bc2ed7d3ca48.png)
 
 然后传一个id直接跑
 
-![image-20231129105425897](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231129105425897.png)
-
-
+![1701228071505.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_7742235045576.png)
 
 ### 4.删除项目
 
@@ -62,7 +61,7 @@ python training_controller.py
 
 ## 是一个fastapi框架的项目，用来管理训练项目，开启训练并保存输出。
 
-![image-20231128232509317](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231128232509317.png)
+![1701228071505.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_614d92c281584.png)
 
 
 ### training_controller 接口类
@@ -79,7 +78,7 @@ python training_controller.py
 
 ### utils包
 
-![image-20231128233630711](C:\Users\86136\AppData\Roaming\Typora\typora-user-images\image-20231128233630711.png)
+![1701228071506.png](https://pic.ziyuan.wang/2023/11/29/sdasdasd_fd8f3f94e0469.png)
 
 
 
