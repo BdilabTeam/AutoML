@@ -11,7 +11,8 @@ pip install poetry
 poetry install --extras storage
 ```
 ## Start huggingface_training_script
-```
+### Plan 1
+```bash
 cd training/python/training_script/huggingface_training_script
 ```
 
@@ -76,32 +77,8 @@ python run_image_classification.py \
     --clean_archive_cache True
 ```
 
+### Plan 2
 ```bash
-# 服务器测试命令
-# 构建镜像命令
-docker build -t registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.3 -f /root/workspace/DCJ/automl/training/python/training_script.Dockerfile .
-
-docker run -it -d -v /root/workspace/YJX/auto-ml/volume/model:/treasures/model -v /root/workspace/YJX/auto-ml/volume/data:/treasures/data -v /root/workspace/YJX/auto-ml/volume/output:/treasures/output --name training-script registry.cn-hangzhou.aliyuncs.com/treasures/training-script-env:v0.0.2 /bin/bash
-
-python run_image_classification.py \
-    --train_dir /treasures/data/train \
-    --model_name_or_path /treasures/model \
-    --output_dir /treasures/output \
-    --overwrite_output_dir True \
-    --remove_unused_columns False \
-    --do_train \
-    --do_eval \
-    --learning_rate 2e-5 \
-    --num_train_epochs 1 \
-    --per_device_train_batch_size 8 \
-    --per_device_eval_batch_size 8 \
-    --logging_strategy steps \
-    --logging_steps 10 \
-    --evaluation_strategy epoch \
-    --save_strategy epoch \
-    --load_best_model_at_end True \
-    --save_total_limit 1 \
-    --seed 1337 \
-    --ignore_mismatched_sizes True \
-    --use_cpu True \
+sh huggingface_training_script/image_classification/run.sh
 ```
+

@@ -19,9 +19,3 @@ MANIFEST
 
 # DS_Store (MacOS)
 .DS_Store
-
-# 模型文件
-/src/models/**
-
-# 训练相关数据
-/src/training/training/public/training_project_meta/**

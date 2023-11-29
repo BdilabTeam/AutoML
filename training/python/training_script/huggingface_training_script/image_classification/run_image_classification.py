@@ -298,7 +298,8 @@ def main():
 
     # Load the accuracy metric from the datasets package
     # metric = evaluate.load("accuracy")
-    metric = evaluate.load(f"{os.path.dirname(os.path.abspath(__file__))}/eval/accuracy.py")
+    # metric = evaluate.load(f"{os.path.dirname(os.path.abspath(__file__))}/evaluate_metric/accuracy/accuracy.py")
+    metric = evaluate.load(f"{os.path.pardir}/evaluate_metric/accuracy/accuracy.py")
 
     # Define our compute_metrics function. It takes an `EvalPrediction` object (a namedtuple with a
     # predictions and label_ids field) and has to return a dictionary string to float.
