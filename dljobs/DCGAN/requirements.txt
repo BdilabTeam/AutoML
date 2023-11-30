@@ -1,0 +1,4 @@
+pynvml==11.0.0
+tensorflow_datasets==4.4.0
+PyYAML==6.0
+tqdm

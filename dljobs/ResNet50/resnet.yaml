@@ -1,0 +1,29 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  namespace: dljobs
+  name: resnet
+spec:
+  runPolicy:
+    cleanPodPolicy: None
+  tfReplicaSpecs:
+    Worker:
+      replicas: 2
+      restartPolicy: Never
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              command: ["python", "ResNet50.py"]
+              args: ["--batch_size", "16", "--learning_rate", "0.0001", "--epochs", "100", "--workload_name", "resnet", "--data_dir", "/train"]
+              image: master:8081/dljobs/resnet:v1.0
+              volumeMounts:
+                - mountPath: /train
+                  name: training
+              resources:
+                limits:
+                  aliyun.com/gpu-mem: 5
+          volumes:
+            - name: training
+              persistentVolumeClaim:
+                claimName: test-pvc
