@@ -1,3 +1,0 @@
-pynvml==11.0.0
-tensorflow_text==2.6.0
-PyYAML==6.0
