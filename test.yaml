@@ -1,0 +1,46 @@
+{
+  "apiVersion": "metrics.k8s.io/v1beta1",
+  "items": [ {
+    "containers": [ {
+      "name": "container-0",
+      "usage": {
+        "cpu": "374598n",
+        "cpu_accumulated": "127739654828n",
+        "memory": "1540Ki",
+        "memory_rss": "284Ki",
+        "memory_usage": "1804Ki"
+      }
+    } ],
+    "metadata": {
+      "creationTimestamp": "2023-03-28T11:24:34Z",
+      "name": "cci-deployment-20233231-6c8d7f74f7-2t6k5",
+      "namespace": "cci-namespace-13238101",
+      "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/cci-namespace-13238101/pods/cci-deployment-20233231-6c8d7f74f7-2t6k5"
+    },
+    "timestamp": "2023-03-28T11:24:19Z",
+    "window": "30s"
+  }, {
+    "containers": [ {
+      "name": "container-0",
+      "usage": {
+        "cpu": "0",
+        "cpu_accumulated": "75422933n",
+        "memory": "6236Ki",
+        "memory_rss": "1644Ki",
+        "memory_usage": "12308Ki"
+      }
+    } ],
+    "metadata": {
+      "creationTimestamp": "2023-03-28T11:24:34Z",
+      "name": "cci-deployment-687-1678883958925-599b74469b-7bmqh",
+      "namespace": "cci-namespace-13238101",
+      "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/cci-namespace-13238101/pods/cci-deployment-687-1678883958925-599b74469b-7bmqh"
+    },
+    "timestamp": "2023-03-28T11:24:15Z",
+    "window": "30s"
+  } ],
+  "kind": "PodMetricsList",
+  "metadata": {
+    "selfLink": "/apis/metrics.k8s.io/v1beta1/namespaces/cci-namespace-13238101/pods"
+  }
+}
