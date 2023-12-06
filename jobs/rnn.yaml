@@ -1,0 +1,29 @@
+apiVersion: kubeflow.org/v1
+kind: TFJob
+metadata:
+  namespace: dljobs
+  name: rnn
+spec:
+  runPolicy:
+    cleanPodPolicy: None
+  tfReplicaSpecs:
+    Worker:
+      replicas: 2
+      restartPolicy: Never
+      template:
+        spec:
+          containers:
+            - name: tensorflow
+              command: ["python", "RNN.py"]
+              args: ["--batch_size", "16", "--learning_rate", "0.0001", "--epochs", "100", "--workload_name", "rnn", "--data_dir", "/train"]
+              image: 10.170.23.190:8081/dljob/rnn:v1.0
+              volumeMounts:
+                - mountPath: /train
+                  name: training
+              resources:
+                limits:
+                  aliyun.com/gpu-mem: 1
+          volumes:
+            - name: training
+              persistentVolumeClaim:
+                claimName: test-pvc
