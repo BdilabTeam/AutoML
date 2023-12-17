@@ -1,0 +1,53 @@
+[tool.poetry]
+name = "automl"
+version = "0.0.1"
+description = "AutoML project"
+authors = ["automl-team"]
+readme = "README.md"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+uvicorn = { version = "^0.19.0", extras = ["standard"] }
+fastapi = "^0.95.0"
+orjson = "^3.8.0"
+python-multipart = "^0.0.6"
+numpy = "1.23.3"
+pandas = "2.0.1"
+scikit-learn = "1.2.2"
+tensorflow = "^2.13.1"
+autokeras = "^1.1.0"
+
+[tool.poetry-version-plugin]
+source = "file"
+file_path = "../VERSION"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

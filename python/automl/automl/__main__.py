@@ -1,0 +1,16 @@
+from .settings import Settings
+from .server import AutoMLServer
+from .utils.logging import get_logger
+import asyncio
+
+logger = get_logger()
+async def main():
+    settings = Settings()
+    logger.info(f"The parameters of the AutoML-Server: \n{settings.__str__()}")
+    
+    server = AutoMLServer(settings)
+    await server.start()
+    logger.info(f"AutoML-Server start successfully")
+
+if __name__=="__main__":
+    asyncio.run(main())
