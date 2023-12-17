@@ -1,5 +1,5 @@
 import sys
-sys.path.append("/Users/treasures/Desktop/AutoML/python/automl")
+sys.path.append("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl")
 from automl import AutoModelWithAK, AutoConfig
 
 if __name__=="__main__":
@@ -7,7 +7,7 @@ if __name__=="__main__":
     DenseNetForStructredDataClassification = AutoModelWithAK.from_class_name(densenet_config.model_class_name)
     auto_model = DenseNetForStructredDataClassification(densenet_config)
     output = auto_model(
-        inputs="/Users/treasures/Desktop/AutoML/python/automl/automl/datasets/train.csv", 
+        inputs="/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl/automl/datasets/train.csv", 
         output_metrics=True, 
         output_best_hyperparameters=True,
         output_search_space_summary=True,

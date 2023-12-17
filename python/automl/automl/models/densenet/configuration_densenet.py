@@ -9,7 +9,7 @@ class DenseNetConfig():
         # Hyperparameter tuning config
         # AutoModel参数
         project_name: str = "auto_model",
-        max_trials: int = 1,
+        max_trials: int = 5,
         directory: Optional[str] = None,
         objective: str = "val_accuracy",
         tuner: str = "greedy",
@@ -17,7 +17,7 @@ class DenseNetConfig():
         seed: Optional[int] = None,
         max_model_size: Optional[int] = None,
         # fit()参数配置
-        epochs: int = 2,
+        epochs: int = 200,
         validation_split: float = 0.2,
         is_early_stop: Optional[bool] = True,
         # TODO 添加搜索空间参数
