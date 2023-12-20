@@ -6,7 +6,7 @@ from .configuration_auto import CONFIG_MAPPING_NAMES, model_type_to_module_name
 
 MODEL_FOR_STRUCTURED_DATA_CLASSIFICATION_MAPPING_NAMES = OrderedDict(
     [
-        ("densenet", "AKDenseNetForStructredDataClassification"),
+        ("densenet", "AKDenseNetForStructruedData"),
         # ("densenet", "AKDenseNetForStructredDataRegression")
     ]
 )
@@ -43,7 +43,7 @@ class AutoModelWithAK():
         """
         Examples:
         ```python
-        >>> feature_extractor = AutoModelWithAK.from_class_name("AKDenseNetForStructredDataClassification")
+        >>> feature_extractor = AutoModelWithAK.from_class_name("AKDenseNetForStructruedData")
         ```
         """
         return _auto_model_class_from_name(class_name=class_name)

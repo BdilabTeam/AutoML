@@ -1,13 +1,18 @@
 import sys
-sys.path.append("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl")
-from automl import AutoFeatureExtractor, AutoConfig
+sys.path.append("/Users/treasures_y/Documents/code/HG/AutoML/python/automl/automl")
+from automl import AutoFeatureExtractor, AutoConfig, AutoModelWithAK
 
 if __name__ == "__main__":
     densenet_config = AutoConfig.from_model_type("densenet")
+    
+    Trainer = AutoModelWithAK.from_class_name(densenet_config.model_class_name)
+    trainer = Trainer(densenet_config)
+    
     Extractor = AutoFeatureExtractor.from_class_name("DenseNetFeatureExtractor")
-    extractor = Extractor(densenet_config)
+    extractor = Extractor(config=densenet_config)
     output = extractor(
-        inputs="/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl/automl/datasets/train.csv",
-        output_best_feature_index=True,
+        inputs="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/automl/datasets/train.csv",
+        trainer=trainer, 
+        return_summary_dict=True
     )
     print(f"{'*'*15}_Best Feature Index:\n{output.best_feature_index}")

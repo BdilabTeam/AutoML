@@ -1,20 +1,26 @@
 import math
 import random
 import warnings
-from typing import Any, Union, Optional
+import copy
+from typing import Any, Union, Optional, Callable
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
-from .modeling_ak_densenet import AKDenseNetForStructredDataOutput, AKDenseNetForStructredDataClassification
+from .modeling_ak_densenet import AKStructruedDataModelOutput, AKDenseNetForStructruedData
 from .configuration_densenet import DenseNetConfig
 from ..auto import AutoModelWithAK
 
 @dataclass
-class GAFeatureExtractorForDenseNetOutput:
+class DenseNetFeatureExtractorOutput:
     final_data: np.ndarray = None
     best_feature_index = None
-    trainer_history: AKDenseNetForStructredDataOutput = None
+    trainer_history: AKStructruedDataModelOutput = None
+@dataclass
+class GAFeatureExtractorOutput:
+    final_data: np.ndarray = None
+    best_feature_index = None
+    trainer_history: AKStructruedDataModelOutput = None
 
 class GAFeatureExtractor():
     def __init__(
@@ -66,16 +72,11 @@ class GAFeatureExtractor():
         self.best_feature_index = []
         self.length = 10 * config.feature_num
         
-        self.trainer_history = None
-        self.project_name = config.project_name
-    
     def __call__(
         self, 
         inputs: Union[np.ndarray, pd.DataFrame, str],
-        # trainer: callable = None,
-        output_final_data: Optional[bool] = None,
-        output_best_feature_index: Optional[bool] = None,
-        output_trainer_history: Optional[bool] =None,
+        trainer: Callable = None,
+        return_summary_dict: Optional[bool] = None,
         **kwargs: Any
     ) -> Any:
         if inputs is not None:
@@ -93,24 +94,20 @@ class GAFeatureExtractor():
             else:
                 raise ValueError("`inputs` must be np.ndarray, pd.DataFrame, or str")
         else:
-            raise ValueError("You have to specify `input_ids`")
+            raise ValueError("You have to specify `inputs`")
         
-        # if not trainer:
-        #     raise ValueError("You have to specify the trainer[callable]")
-        # result_data, result_index = self.extract(x_train, y_train, trainer=trainer)
+        if not trainer:
+             raise ValueError("You have to specify the trainer which belongs to Callable")
+        self.trainer = trainer
         result_data, result_index = self.extract(x_train, y_train)
         
-        # 输出        
-        output = GAFeatureExtractorForDenseNetOutput()
-        if output_final_data:
-            output.final_data = result_data
-        if output_best_feature_index:
-            output.best_feature_index = result_index
-        if output_trainer_history:
-            output.trainer_history = self.trainer_history
-        return output
+        if not return_summary_dict:
+            return None
+        return GAFeatureExtractorOutput(
+            final_data=result_data,
+            best_feature_index=result_index
+        )
         
-    # def extract(self, X, y, trainer: callable):
     def extract(self, X, y):
         """
         fit the array data
@@ -138,11 +135,11 @@ class GAFeatureExtractor():
                 inputs = pd.DataFrame(np.concatenate((_features, _y.reshape(-1, 1)), axis=1))
                 
                 # TODO why do i need to instantiate every time? 
-                Trainer = AutoModelWithAK.from_class_name(self.config.model_class_name)
-                trainer = Trainer(self.config)
-                
-                self.trainer_history = trainer(inputs=inputs, output_metrics=True)
-                acc = self.trainer_history.metrics["val_accuracy"]
+                # Trainer = AutoModelWithAK.from_class_name(self.config.model_class_name)
+                # trainer = Trainer(self.config)
+                trainer = copy.deepcopy(self.trainer)
+                trainer_summary = trainer(inputs=inputs, return_summary_dict=True)
+                acc = trainer_summary.metrics["val_accuracy"]
                 
                 _fitness = self.fitness(population[i], acc, self.svm_weight, self.feature_weight, C=self.C)
                 fitness_list.append(_fitness)
@@ -279,23 +276,17 @@ class DenseNetFeatureExtractor():
         config: DenseNetConfig
     ):
         self.extractor = GAFeatureExtractor(config=config)
-        # self.trainer = AKDenseNetForStructredDataClassification(config=config)
 
     def __call__(
         self, 
         inputs: Union[np.ndarray, pd.DataFrame, str],
-        # trainer: callable = None,
-        output_final_data: Optional[bool] = None,
-        output_best_feature_index: Optional[bool] = None,
-        output_trainer_history: Optional[bool] =None,
+        trainer: Callable = None,
+        return_summary_dict: Optional[bool] = None,
         **kwargs: Any
     ) -> Any:
         output = self.extractor(
             inputs=inputs,
-            # trainer=self.trainer if trainer is None else trainer,
-            output_final_data=output_final_data,
-            output_best_feature_index=output_best_feature_index,
-            output_trainer_history=output_trainer_history,
-            kwargs=kwargs
+            trainer=trainer,
+            return_summary_dict=return_summary_dict
         )
         return output
