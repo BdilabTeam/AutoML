@@ -2,7 +2,7 @@ import math
 import random
 import warnings
 import copy
-from typing import Any, Union, Optional, Callable
+from typing import Any, Union, Optional, Callable, List
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
@@ -13,13 +13,13 @@ from ..auto import AutoModelWithAK
 
 @dataclass
 class DenseNetFeatureExtractorOutput:
-    final_data: np.ndarray = None
-    best_feature_index = None
+    final_data: Union[np.ndarray, List] = None
+    best_feature_index: Union[np.ndarray, List]= None
     trainer_history: AKStructruedDataModelOutput = None
 @dataclass
 class GAFeatureExtractorOutput:
-    final_data: np.ndarray = None
-    best_feature_index = None
+    final_data: Union[np.ndarray, List] = None
+    best_feature_index: Union[np.ndarray, List] = None
     trainer_history: AKStructruedDataModelOutput = None
 
 class GAFeatureExtractor():

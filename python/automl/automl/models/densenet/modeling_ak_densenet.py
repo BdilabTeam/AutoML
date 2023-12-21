@@ -17,18 +17,18 @@ from .configuration_densenet import DenseNetConfig
 @dataclass 
 class AKStructruedDataModelOutput():
     metrics: Dict[str, Any] = None
-    search_space_summary = None
-    results_summary = None
-    best_hyperparameters = None
-    model_summary = None
+    search_space_summary: Dict[str, Any] = None
+    best_hyperparameters: Dict[str, Any] = None
+    results_summary: Any = None
+    model_summary: Any = None
 
 @dataclass 
 class AKBaseModelOutput():
     metrics: Dict[str, Any] = None
-    search_space_summary = None
-    results_summary = None
-    best_hyperparameters = None
-    model_summary = None
+    search_space_summary: Dict[str, Any] = None
+    best_hyperparameters: Dict[str, Any] = None
+    results_summary: Any = None
+    model_summary: Any = None
     
 class AKDenseNetMainAutoModel():
     def __init__(
@@ -38,14 +38,14 @@ class AKDenseNetMainAutoModel():
     ):
         num_layers_search_space = hp.Choice("num_layers", values=config.num_layers_search_space, default=2)
         num_units_search_space = hp.Choice("num_units", values=config.num_units_search_space, default=32)
-        dropout_space_search_space = hp.Choice("dropout", values=config.dropout_space_search_spac, default=0.0)
+        dropout_space_search_space = hp.Choice("dropout", values=config.dropout_space_search_space, default=0.0)
         if config.use_auto_feature_extract:
             num_layers_search_space = num_layers_search_space.default
             num_units_search_space = num_units_search_space.default
             dropout_space_search_space = dropout_space_search_space.default
 
         structured_data_input = ak.StructuredDataInput()
-        structured_data_input = ak.CategoricalToNumerical()(structured_data_input)
+        structured_data_output = ak.CategoricalToNumerical()(structured_data_input)
         structured_data_output = ak.DenseBlock(
             num_layers=num_layers_search_space,
             num_units=num_units_search_space,
@@ -55,11 +55,12 @@ class AKDenseNetMainAutoModel():
         classification_output = ak.ClassificationHead(
             multi_label=config.multi_label
         )(structured_data_output)
-        regression_output = ak.RegressionHead()(structured_data_output)
+        # regression_output = ak.RegressionHead()(structured_data_output)
 
         self.auto_model = ak.AutoModel(
-            inputs=[structured_data_input], 
-            outputs=[classification_output, regression_output], 
+            inputs=structured_data_input, 
+            # outputs=[classification_output, regression_output], 
+            outputs=[classification_output], 
             overwrite=config.overwrite, 
             max_trials=config.max_trials
         )

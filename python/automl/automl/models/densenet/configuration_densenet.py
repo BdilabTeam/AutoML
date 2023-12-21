@@ -1,5 +1,4 @@
 from typing import Optional, Union, List
-
 import numpy as np
 
 class DenseNetConfig():
@@ -18,7 +17,7 @@ class DenseNetConfig():
         max_model_size: Optional[int] = None,
         # AutoModel.fit() config
         batch_size: int = 32,
-        epochs: int = 200,
+        epochs: int = 2,
         validation_split: float = 0.2,
         is_early_stop: Optional[bool] = True,
         # DenseBlock config
@@ -56,7 +55,7 @@ class DenseNetConfig():
         self.validation_split = validation_split
         self.is_early_stop = is_early_stop
         # AutoFeatureExtractor
-        self.use_auto_feature_extract=use_auto_feature_extract,
+        self.use_auto_feature_extract=use_auto_feature_extract
         self.feature_num = feature_num
         self.svm_weight = svm_weight
         self.feature_weight = feature_weight

@@ -1,9 +1,10 @@
 import sys
-sys.path.append("/Users/treasures_y/Documents/code/HG/AutoML/python/automl/automl")
+sys.path.append("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl")
 from automl import AutoFeatureExtractor, AutoConfig, AutoModelWithAK
 
 if __name__ == "__main__":
     densenet_config = AutoConfig.from_model_type("densenet")
+    densenet_config.use_auto_feature_extract = True
     
     Trainer = AutoModelWithAK.from_class_name(densenet_config.model_class_name)
     trainer = Trainer(densenet_config)
@@ -11,7 +12,7 @@ if __name__ == "__main__":
     Extractor = AutoFeatureExtractor.from_class_name("DenseNetFeatureExtractor")
     extractor = Extractor(config=densenet_config)
     output = extractor(
-        inputs="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/automl/datasets/train.csv",
+        inputs="/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl/automl/datasets/train.csv",
         trainer=trainer, 
         return_summary_dict=True
     )
