@@ -135,3 +135,40 @@ class Settings(BaseSettings):
         default="",
         description=f"Set the ASGI root_path for applications submounted below a given URL path."
     )
+    # MySql配置
+    mysql_enabled: bool = Field(
+        default=True,
+        description=f"Enable MySql."
+    )
+    drivername_mysql: str = Field(
+        default="mysql+mysqldb",
+        description=f"Database driver name."
+    )
+    host_mysql: str = Field(
+        default="124.70.188.119",
+        description=f"Database host."
+    )
+    port_mysql: int = Field(
+        default=3307,
+        description=f"Database port."
+    )
+    username_mysql: str = Field(
+        default="root",
+        description=f"Database username."
+    )
+    password_mysql: str = Field(
+        default="bdilab@1308",
+        description=f"Database password."
+    )
+    database_mysql: str = Field(
+        default="automl",
+        description=f"Database name."
+    )
+    query_mysql: dict = Field(
+        default={"charset": "utf8mb4"},
+        description=f"Database query."
+    )
+    async_enabled: bool = Field(
+        default=False,
+        description=f"Enable async mode."
+    )

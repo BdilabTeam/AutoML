@@ -9,6 +9,7 @@ from .handlers import DataPlane
 from .rest import RESTServer
 from .utils.logging import get_logger
 
+from .databases.mysql import MySQLServer
 #HANDLED_SIGNALS = [signal.SIGINT, signal.SIGTERM, signal.SIGQUIT]
 
 logger = get_logger()
@@ -29,9 +30,15 @@ class AutoMLServer:
         self._rest_server = RESTServer(
             self._settings, self._data_plane
         )
+        if self._settings.mysql_enabled:
+            self._mysql_server = MySQLServer(self._settings)
 
     async def start(self):
         servers = [self._rest_server.start()]
+        
+        if self._settings.mysql_enabled:
+            servers.append(self._mysql_server.start())
+            
         servers_task = asyncio.gather(*servers)
         await servers_task
 
@@ -46,3 +53,7 @@ class AutoMLServer:
     async def stop(self, sig: Optional[int] = None):
         if self._rest_server:
             await self._rest_server.stop(sig)
+            
+        if self._settings.mysql_enabled:
+            logger.info("Stopping the mysql server")
+            await self._mysql_server.stop()
