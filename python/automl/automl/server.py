@@ -1,6 +1,5 @@
 import asyncio
 import signal
-import logging
 
 from typing import Optional, List
 

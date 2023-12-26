@@ -7,9 +7,8 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
-from .modeling_ak_densenet import AKStructruedDataModelOutput, AKDenseNetForStructruedData
+from .modeling_ak_densenet import AKStructruedDataModelOutput
 from .configuration_densenet import DenseNetConfig
-from ..auto import AutoModelWithAK
 
 @dataclass
 class DenseNetFeatureExtractorOutput:

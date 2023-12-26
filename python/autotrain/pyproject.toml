@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "autotrain"
+version = "0.0.1"
+description = "AutoTrain project"
+authors = ["automl-team"]
+readme = "README.md"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+packages = [
+    { include = "autotrain" },
+]
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
+priority = "default"
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.12"
+orjson = "^3.8.0"
+numpy = "1.23.3"
+pandas = "2.0.1"
+scikit-learn = "1.2.2"
+tensorflow = "^2.12.0"
+autokeras = "^1.1.0"
+
+# Storage dependencies. They can be opted into by apps.
+minio = { version = "^7.1.17", optional = true }
+
+[tool.poetry.extras]
+storage = [
+    "minio"
+]
+
+[tool.poetry-version-plugin]
+source = "file"
+file_path = "../VERSION"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

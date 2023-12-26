@@ -1,6 +1,6 @@
 import sys
-sys.path.append("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/automl")
-from automl import AutoModelWithAK, AutoConfig
+sys.path.append("/Users/treasures/AllProjects/Projects/Git/Bdilab/AutoML/python/autotrain")
+from autotrain import AutoModelWithAK, AutoConfig
 
 if __name__=="__main__":
     densenet_config = AutoConfig.from_model_type("densenet")

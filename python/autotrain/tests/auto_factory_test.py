@@ -1,6 +1,6 @@
 import sys
-sys.path.append("/Users/treasures/Desktop/AutoML/python/automl")
-from automl.models.auto.modeling_auto import MODEL_FOR_STRUCTURED_DATA_CLASSIFICATION_MAPPING
+sys.path.append("/Users/treasures/Desktop/AutoML/python/autotrain")
+from autotrain.models.auto.modeling_auto import MODEL_FOR_STRUCTURED_DATA_CLASSIFICATION_MAPPING
 from automl import AutoConfig
 
 

@@ -5,7 +5,7 @@ class DenseNetConfig():
     model_type = "densenet"
     def __init__(
         self,
-        task_type: str = "regression",
+        task_type: str = "structured_data_regression",
         # AutoModel config
         project_name: str = "auto_model",
         max_trials: int = 5,
@@ -27,9 +27,8 @@ class DenseNetConfig():
         dropout_space_search_space: List = [0.0, 0.25, 0.5],
         # ClassificationHead config
         multi_label: bool = False,
-        
         # AutoFeatureExtractor config
-        use_auto_feature_extract: bool = False,
+        do_auto_feature_extract: bool = False,
         feature_num: int = 2, 
         svm_weight: float = 1.0, 
         feature_weight: float = 0, 
@@ -37,9 +36,12 @@ class DenseNetConfig():
         keep_prob: float = 0.8, 
         mutate_prob: float = 0.1, 
         iters: int = 1,
+        # 
         model_class_name = "AKDenseNetForStructruedData",
+        feature_extractor_class_name = "DenseNetFeatureExtractor",
         **kwargs
     ) -> None:
+        self.task_type = task_type
         # AutoModel
         self.project_name = project_name
         self.max_trials = max_trials
@@ -55,7 +57,7 @@ class DenseNetConfig():
         self.validation_split = validation_split
         self.is_early_stop = is_early_stop
         # AutoFeatureExtractor
-        self.use_auto_feature_extract=use_auto_feature_extract
+        self.do_auto_feature_extract=do_auto_feature_extract
         self.feature_num = feature_num
         self.svm_weight = svm_weight
         self.feature_weight = feature_weight
@@ -63,7 +65,9 @@ class DenseNetConfig():
         self.keep_prob = keep_prob
         self.mutate_prob = mutate_prob
         self.iters = iters
+        #
         self.model_class_name = model_class_name
+        self.feature_extractor_class_name = feature_extractor_class_name
         # DenseBlock
         self.num_layers_search_space = num_layers_search_space
         self.num_units_search_space = num_units_search_space

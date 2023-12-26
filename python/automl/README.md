@@ -1,4 +1,4 @@
-# AutoML
+# AutoML is a module for Web applications
 
 # Env Prepare:
 ```bash

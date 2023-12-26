@@ -39,7 +39,7 @@ class AKDenseNetMainAutoModel():
         num_layers_search_space = hp.Choice("num_layers", values=config.num_layers_search_space, default=2)
         num_units_search_space = hp.Choice("num_units", values=config.num_units_search_space, default=32)
         dropout_space_search_space = hp.Choice("dropout", values=config.dropout_space_search_space, default=0.0)
-        if config.use_auto_feature_extract:
+        if config.do_auto_feature_extract:
             num_layers_search_space = num_layers_search_space.default
             num_units_search_space = num_units_search_space.default
             dropout_space_search_space = dropout_space_search_space.default
@@ -52,15 +52,19 @@ class AKDenseNetMainAutoModel():
             use_batchnorm=config.use_batchnorm,
             dropout=dropout_space_search_space,
         )(structured_data_input)
-        classification_output = ak.ClassificationHead(
-            multi_label=config.multi_label
-        )(structured_data_output)
-        # regression_output = ak.RegressionHead()(structured_data_output)
-
+        if config.task_type == "structured_data_classification":
+            classification_output = ak.ClassificationHead(
+                multi_label=config.multi_label
+            )(structured_data_output)
+        elif config.task_type == "structured_data_regression":
+            regression_output = ak.RegressionHead()(structured_data_output)
+        else:
+            raise ValueError("`task_type` must be `structured_data_classification` or `structured_data_regression`")
+        
         self.auto_model = ak.AutoModel(
             inputs=structured_data_input, 
             # outputs=[classification_output, regression_output], 
-            outputs=[classification_output], 
+            outputs=classification_output if config.task_type == "structured_data_classification" else regression_output, 
             overwrite=config.overwrite, 
             max_trials=config.max_trials
         )

@@ -62,12 +62,3 @@ class AutoFeatureExtractor:
         ```
         """
         return _feature_extractor_class_from_name(class_name=class_name)
-    
-    @classmethod
-    def from_model_type(cls, model_type: str, *args, **kwargs):
-        if model_type in FEATURE_EXTRACTOR_MAPPING:
-            config_class = FEATURE_EXTRACTOR_MAPPING[model_type]
-            return config_class(*args, **kwargs)
-        raise ValueError(
-            f"Unrecognized model identifier: {model_type}. Should contain one of {', '.join(FEATURE_EXTRACTOR_MAPPING.keys())}"
-        )

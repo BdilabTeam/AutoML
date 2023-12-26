@@ -4,14 +4,14 @@ import json
 import importlib
 import inspect
 
-from typing import Any, Dict, List, Optional, Type, Union, no_type_check, TYPE_CHECKING
+from typing import Type, no_type_check
 from pydantic import PyObject, Extra, Field, BaseSettings as _BaseSettings
 from contextlib import contextmanager
 
 from .version import __version__
 
 ENV_FILE_SETTINGS = ".env"
-ENV_PREFIX_SETTINGS = "DGSERVER_"
+ENV_PREFIX_SETTINGS = "AUTOML_SERVER_"
 
 DEFAULT_PARALLEL_WORKERS = 1
 
