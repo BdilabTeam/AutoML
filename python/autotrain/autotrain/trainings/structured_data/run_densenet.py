@@ -1,4 +1,5 @@
 import ast
+import sys
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
@@ -11,16 +12,16 @@ from autotrain.models.auto import AutoConfig, AutoFeatureExtractor, AutoModelWit
 
 @dataclass
 class ModelArguments:
-    num_layers_search_space: Union[List[int], str] = field(
-        default=[1, 2, 3],
+    num_layers_search_space: str = field(
+        default=None,
         metadata={
-            "help": "Layer search space of densenet model"
+            "help": "Layer search space of densenet model. A list represented by a string"
         }
     )
-    num_units_search_space: Union[List[int], str] = field(
-        default=[16, 32, 64, 128, 256, 512, 1024],
+    num_units_search_space: str = field(
+        default=None,
         metadata={
-            "help": "Unit search space of densenet model"
+            "help": "Unit search space of densenet model. A list represented by a string"
         }
     )
     use_batchnorm: bool = field(
@@ -29,10 +30,10 @@ class ModelArguments:
             "help": "Whether to use batch regularization"
         }
     )
-    dropout_space_search_space: Union[List[int], str] = field(
-        default=[0.0, 0.25, 0.5],
+    dropout_space_search_space: str = field(
+        default=None,
         metadata={
-            "help": "Unit search space of densenet model"
+            "help": "Unit search space of densenet model. A list represented by a string"
         }
     )
     multi_label: bool = field(
@@ -88,8 +89,12 @@ class FeatureExtractionArguments():
     )
 
 def main():
+        
     parser = AutoArgumentParser((TrainingArguments, ModelArguments, FeatureExtractionArguments))
-    train_args, model_args, feature_extraction_args = parser.parse_args_into_dataclasses()
+    if len(sys.argv) == 3 and sys.argv[1] == "args_dict":
+        train_args, model_args, feature_extraction_args = parser.parse_dict(args=sys.argv[2])
+    else:
+        train_args, model_args, feature_extraction_args = parser.parse_args_into_dataclasses()
         
     # TODO Strict inspection
     if train_args.task_type not in SUPPORTED_TASK_TYPE:
