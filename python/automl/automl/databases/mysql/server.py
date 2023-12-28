@@ -36,8 +36,7 @@ class MySQLServer:
         )
         return DATABASE_CONFIG
     
-    async def start(self):
-        # TODO 哪一步可以await?
+    def start(self):
         pymysql.install_as_MySQLdb()
         database_config = self._get_config()
         database_url = URL(**database_config)
@@ -52,8 +51,7 @@ class MySQLServer:
             self._engine = create_engine(database_url, echo=True)
             self._SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self._engine)
     
-    async def stop(self):
-        # TODO 哪一步可以await?
+    def stop(self):
         self._SessionLocal.close()
         self._engine.dispose()
     

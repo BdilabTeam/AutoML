@@ -10,3 +10,8 @@ class ExampleError(AutoMLServerError):
         super().__init__(
             f"ExampleError", status.HTTP_400_BAD_REQUEST
         )
+
+class MySQLServerNotExistError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code

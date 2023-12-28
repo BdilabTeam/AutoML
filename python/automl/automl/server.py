@@ -8,7 +8,7 @@ from .handlers import DataPlane
 from .rest import RESTServer
 from .utils.logging import get_logger
 
-from .databases.mysql import MySQLServer
+
 #HANDLED_SIGNALS = [signal.SIGINT, signal.SIGTERM, signal.SIGQUIT]
 
 logger = get_logger()
@@ -18,7 +18,7 @@ class AutoMLServer:
         self._settings = settings
         # 此处在windows系统下会出现错误, linux系统正常
         # self._add_signal_handlers()
-
+            
         self._data_plane = DataPlane(
             settings=self._settings
         )
@@ -27,16 +27,12 @@ class AutoMLServer:
 
     def _create_servers(self):
         self._rest_server = RESTServer(
-            self._settings, self._data_plane
+            self._settings, 
+            self._data_plane
         )
-        if self._settings.mysql_enabled:
-            self._mysql_server = MySQLServer(self._settings)
 
     async def start(self):
         servers = [self._rest_server.start()]
-        
-        if self._settings.mysql_enabled:
-            servers.append(self._mysql_server.start())
             
         servers_task = asyncio.gather(*servers)
         await servers_task

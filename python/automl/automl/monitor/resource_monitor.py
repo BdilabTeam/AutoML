@@ -2,8 +2,8 @@ import asyncio
 import json
 import os.path
 
-from monitoring import GPUMonitor
-from scheduler_utils import get_gpu_index
+from .monitoring import GPUMonitor
+from .scheduler_utils import get_gpu_index
 
 
 class ResourceMonitor:
