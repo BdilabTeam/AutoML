@@ -19,7 +19,7 @@ class DataPlane(object):
     def get_sql_session(self):
         """Provide database session
         """
-        if not self._mysql_server:
+        if not hasattr(self, '_mysql_server'):
             raise MySQLServerNotExistError("No available MySQL database server")
         
         session_generator = self._mysql_server.get_session_generator()
