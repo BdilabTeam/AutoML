@@ -11,14 +11,12 @@ class ResourceMonitor:
         with open(os.path.join(host_info_dir, host_info_file), "r", encoding="utf-8") as f:
             host_config = json.load(f)
             host_info = host_config["host_info"]
-
         self._host_info = dict()
         for item in host_info:
             host_ip = item.pop('host_ip')
             # 将剩余的键值对添加到新字典中
             self._host_info[host_ip] = item
 
-        # print(self._host_info)
         self.gpu_monitor = GPUMonitor(self._host_info)
 
     async def start(self):

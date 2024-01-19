@@ -23,6 +23,7 @@ class GPUMonitor:
             self.connectons.append(conn)
 
         self.prod = Group.from_connections(self.connectons)
+        print(self.prod)
         return 0
 
     def total_gpu_memory_set(self):
