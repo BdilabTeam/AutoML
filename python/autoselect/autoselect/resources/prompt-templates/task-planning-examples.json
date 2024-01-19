@@ -1,0 +1,42 @@
+[
+    {
+        "example_input": "Give you some pictures e1.jpg, e2.png, e3.jpg, help me count the number of sheep?",
+        "example_output": "[{{\"task\": \"image-to-text\", \"id\": 0, \"dep\": [-1], \"args\": {{\"image\": \"e1.jpg\" }}}}, {{\"task\": \"object-detection\", \"id\": 1, \"dep\": [-1], \"args\": {{\"image\": \"e1.jpg\" }}}}, {{\"task\": \"visual-question-answering\", \"id\": 2, \"dep\": [1], \"args\": {{\"image\": \"<GENERATED>-1\", \"text\": \"How many sheep in the picture\"}}}}, {{\"task\": \"image-to-text\", \"id\": 3, \"dep\": [-1], \"args\": {{\"image\": \"e2.png\" }}}}, {{\"task\": \"object-detection\", \"id\": 4, \"dep\": [-1], \"args\": {{\"image\": \"e2.png\" }}}}, {{\"task\": \"visual-question-answering\", \"id\": 5, \"dep\": [4], \"args\": {{\"image\": \"<GENERATED>-4\", \"text\": \"How many sheep in the picture\"}}}}, {{\"task\": \"image-to-text\", \"id\": 6, \"dep\": [-1], \"args\": {{\"image\": \"e3.jpg\" }}}},  {{\"task\": \"object-detection\", \"id\": 7, \"dep\": [-1], \"args\": {{\"image\": \"e3.jpg\" }}}}, {{\"task\": \"visual-question-answering\", \"id\": 8, \"dep\": [7], \"args\": {{\"image\": \"<GENERATED>-7\", \"text\": \"How many sheep in the picture\"}}}}]"
+    },
+    {
+        "example_input":"Look at /e.jpg, can you tell me how many objects in the picture? Give me a picture similar to this one.",
+        "example_output":"[{{\"task\": \"image-to-text\", \"id\": 0, \"dep\": [-1], \"args\": {{\"image\": \"/e.jpg\" }}}}, {{\"task\": \"object-detection\", \"id\": 1, \"dep\": [-1], \"args\": {{\"image\": \"/e.jpg\" }}}}, {{\"task\": \"visual-question-answering\", \"id\": 2, \"dep\": [1], \"args\": {{\"image\": \"<GENERATED>-1\", \"text\": \"how many objects in the picture?\" }}}}, {{\"task\": \"text-to-image\", \"id\": 3, \"dep\": [0], \"args\": {{\"text\": \"<GENERATED-0>\" }}}}, {{\"task\": \"image-to-image\", \"id\": 4, \"dep\": [-1], \"args\": {{\"image\": \"/e.jpg\" }}}}]"
+    },
+    {
+        "example_input":"given a document /images/e.jpeg, answer me what is the student amount? And describe the image with your voice",
+        "example_output":"{{\"task\": \"document-question-answering\", \"id\": 0, \"dep\": [-1], \"args\": {{\"image\": \"/images/e.jpeg\", \"text\": \"what is the student amount?\" }}}}, {{\"task\": \"visual-question-answering\", \"id\": 1, \"dep\": [-1], \"args\": {{\"image\": \"/images/e.jpeg\", \"text\": \"what is the student amount?\" }}}}, {{\"task\": \"image-to-text\", \"id\": 2, \"dep\": [-1], \"args\": {{\"image\": \"/images/e.jpg\" }}}}, {{\"task\": \"text-to-speech\", \"id\": 3, \"dep\": [2], \"args\": {{\"text\": \"<GENERATED>-2\" }}}}]"
+    },
+    {
+        "example_input": "Given an image /example.jpg, generate a new image where instead of reading a book, the girl is using her phone",
+        "example_output": "[{{\"task\": \"image-to-image\", \"id\": 0, \"dep\": [-1], \"args\": {{\"image\": \"/example.jpg\", \"text\": \"instead of reading a book, the girl is using her phone\"}}}}]"
+    },
+    {
+        "example_input": "please show me an image of (based on the text) 'a boy is running' and dub it",
+        "example_output": "[{{\"task\": \"text-to-image\", \"id\": 0, \\\"dep\\\": [-1], \"args\": {{\"text\": \"a boy is running\" }}}}, {{\"task\": \"text-to-speech\", \"id\": 1, \"dep\": [-1], \"args\": {{\"text\": \"a boy is running\" }}}}]"
+    },
+    {
+        "example_input": "please show me a joke and an image of cat",
+        "example_output": "[{{\"task\": \"conversational\", \"id\": 0, \"dep\": [-1], \"args\": {{\"text\": \"please show me a joke of cat\" }}}}, {{\"task\": \"text-to-image\", \"id\": 1, \"dep\": [-1], \"args\": {{\"text\": \"a photo of cat\" }}}}]"
+    },
+    {
+        "example_input": "Please tell me how similar the two following sentences are: I like to surf. Surfing is my passion.",
+        "example_output": "[{{\"task\": \"sentence-similarity\", \"id\": 0, \"dep\": [-1], \"args\": {{\"text1\": \"I like to surf.\", \"text2\": \"Surfing is my passion.\"}}}}]"
+    },
+    {
+        "example_input": "Please tell me if the following sentence is positive or negative: Surfing is the best!",
+        "example_output": "[{{\"task\": \"text-classification\", \"id\": 0, \"dep\": [-1], \"args\": {{\"text\": \"Surfing is the best!\"}}}}]"
+    },
+    {
+        "example_input": "Classify the image found at /images/de78.png.",
+        "example_output": "[{{\"task\": \"image-classification\", \"id\": 0, \"dep\": [-1], \"args\": {{\"image\": \"/images/de78.png\"}}}}]"
+    },
+    {
+        "example_input": "Paris is the capital of France. Berlin is the capital of Germany. Based on the previous facts, answer the following question: What is the capital of France?",
+        "example_output": "[{{\"task\": \"question-answering\", \"id\": 0, \"dep\": [-1], \"args\": {{\"question\": \"What is the capital of France?\", \"context\": \"Paris is the capital of France. Berlin is the capital of Germany.\"}}}}]"
+    }
+]

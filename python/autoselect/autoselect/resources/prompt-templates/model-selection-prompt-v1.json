@@ -1,0 +1,10 @@
+{
+  "_type": "prompt",
+  "input_variables": [
+    "user_input",
+    "model_nums",
+    "models",
+    "task"
+  ],
+  "template": "Model Selection Stage: Given the user request and the parsed tasks, the AI assistant helps the user to select {model_nums} suitable models from a list of models to have trainning on a dataset. The assistant should focus more on the description of the model and find the models that have the most potential to solve requests and tasks. The user input also need to be considered, especially their requirements for model runtime and other requirements for the model, as well as some characteristics of the dataset they discuss. \n<im_start>user\n{user_input}<im_end>\n<im_start>assistant\n{task}<im_end>\n<im_start>user\nPlease choose {model_nums} suitable models from {models} for the task:{task}.\n\n The AI assistant can parse user input to several models sorted by suitability in a strict JSON format: [{{\"id\": \"id\", \"reason\": \"your detail reasons for the choice \"}}]. Your reasons for each models should differ.<im_end>\n<im_start>assistant\n"
+}
