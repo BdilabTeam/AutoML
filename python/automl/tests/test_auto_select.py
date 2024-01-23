@@ -34,7 +34,7 @@ class TestModelSelection:
         )
         output_fixing_llm = LLMFactory.get_output_fixing_llm(llm_settings=output_fixing_llm_settings)
         
-        model = model_selection.select_model(
+        models = model_selection.select_model(
             user_input="I want a image classification model",
             task="image-classification",
             model_selection_llm=model_selection_llm,
@@ -42,5 +42,5 @@ class TestModelSelection:
             top_k=5,
             description_length=200
         )
-        assert model.id is not None
-        assert model.reason is not None
+        assert models[0].id is not None
+        assert models[0].reason is not None
