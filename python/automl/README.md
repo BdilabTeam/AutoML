@@ -21,6 +21,18 @@ python -m automl
 # 等待服务启动完成，进入swagger页面：http://localhost:8000/docs
 ```
 
+# Test Spec
+```bash
+# 执行'pytest'命令，运行所有测试脚本
+pytest
+
+# 运行'某个'测试脚本
+pytest {script_name}
+
+# '-s'参数，输出print日志
+pytest -s {script_name}
+```
+
 # Project Structure Spec
 ```bash
 .
