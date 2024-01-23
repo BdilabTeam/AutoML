@@ -78,32 +78,3 @@ class TestModelSelection:
         )
         assert model.id is not None
         assert model.reason is not None
-
-
-if __name__=="__main__":
-    model_selection_settings = ModelSelectionSettings(
-            prompt_template_file_path=PROMPT_TEMPLATE_FILE_PATH,
-            model_metadata_file_path=MODEL_METADATA_FILE_PATH
-    )
-    model_selection = ModelSelection(settings=model_selection_settings)
-    model_selection_llm_settings = ModelSelectionLLMSettings(
-        env_file_path=ENV_FILE_PATH,
-        temperature=0.5
-    )
-    model_selection_llm = LLMFactory.get_model_selection_llm(llm_settings=model_selection_llm_settings)
-    
-    output_fixing_llm_settings = OutputFixingLLMSettings(
-        env_file_path=ENV_FILE_PATH,
-        temperature=0
-    )
-    output_fixing_llm = LLMFactory.get_output_fixing_llm(llm_settings=output_fixing_llm_settings)
-    
-    model = model_selection.select_model(
-        user_input="I want a image classification model",
-        task="image-classification",
-        model_selection_llm=model_selection_llm,
-        output_fixing_llm=output_fixing_llm,
-        top_k=5,
-        description_length=200
-    )
-    print(f"model id: {model.id}, reason: {model.reason}")

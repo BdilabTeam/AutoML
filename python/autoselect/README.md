@@ -11,3 +11,15 @@ pip install poetry
 # 通过poetry进行依赖包安装
 poetry install
 ```
+
+# Test Spec
+```bash
+# 执行'pytest'命令，运行所有测试脚本
+pytest
+
+# 运行'某个'测试脚本
+pytest {script_name}
+
+# '-s'参数，输出print日志
+pytest -s {script_name}
+```
