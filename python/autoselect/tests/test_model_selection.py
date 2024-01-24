@@ -1,12 +1,12 @@
 import pytest
-
+import os
 from autoselect.selection import LLMFactory, LLMSettings, ModelSelectionLLMSettings, OutputFixingLLMSettings
 from autoselect.selection import ModelSelection
 from autoselect.selection.settings import ModelSelectionSettings
 
-ENV_FILE_PATH = "/Users/treasures_y/Documents/code/HG/AutoML/python/autoselect/autoselect/.env"
-PROMPT_TEMPLATE_FILE_PATH = "/Users/treasures_y/Documents/code/HG/AutoML/python/autoselect/autoselect/resources/prompt-templates/model-selection-prompt-v2.json"
-MODEL_METADATA_FILE_PATH = "/Users/treasures_y/Documents/code/HG/AutoML/python/autoselect/autoselect/resources/huggingface-models-metadata.jsonl"
+ENV_FILE_PATH = os.path.join(os.pardir, 'automl', 'autoselect', '.env')
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(os.pardir, 'automl', 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.join(os.pardir, 'automl', 'autoselect', 'resources', 'huggingface-models-metadata.jsonl')
 
 class TestLLMFactory:
     @pytest.fixture(scope="class")
