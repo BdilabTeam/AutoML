@@ -1,6 +1,4 @@
-import pytest
-
-from autotrain.models.auto.modeling_auto import MODEL_FOR_STRUCTURED_DATA_CLASSIFICATION_MAPPING
+from autotrain.trainers.auto.trainer_auto import MODEL_FOR_STRUCTURED_DATA_CLASSIFICATION_MAPPING
 from automl import AutoConfig
 
 class TestAutoFactory:

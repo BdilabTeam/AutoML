@@ -3,12 +3,9 @@ import sys
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
 
-# from ..utils import TrainingArguments, AutoArgumentParser
-# from ...models.utils import SUPPORTED_TASK_TYPE, SUPPORTED_MODEL_TYPE
-# from ...models.auto import AutoConfig, AutoFeatureExtractor, AutoModelWithAK
 from autotrain.trainings.utils import TrainingArguments, AutoArgumentParser
-from autotrain.models.utils import SUPPORTED_MODEL_TYPE, SUPPORTED_TASK_TYPE
-from autotrain.models.auto import AutoConfig, AutoFeatureExtractor, AutoModelWithAK
+from autotrain.trainers.utils import SUPPORTED_MODEL_TYPE, SUPPORTED_TASK_TYPE
+from autotrain.trainers.auto import AutoConfig, AutoFeatureExtractor, AutoTrainer
 
 @dataclass
 class ModelArguments:
@@ -89,7 +86,6 @@ class FeatureExtractionArguments():
     )
 
 def main():
-        
     parser = AutoArgumentParser((TrainingArguments, ModelArguments, FeatureExtractionArguments))
     if len(sys.argv) == 3 and sys.argv[1] == "args_dict":
         train_args, model_args, feature_extraction_args = parser.parse_dict(args=sys.argv[2])
@@ -153,7 +149,7 @@ def main():
             raise ValueError("The 'dropout_space_search_space' must be a list")
         config.dropout_space_search_space = model_args.dropout_space_search_space
     
-    Trainer = AutoModelWithAK.from_class_name(config.model_class_name)
+    Trainer = AutoTrainer.from_class_name(config.model_class_name)
     trainer = Trainer(config=config)
     
     if train_args.do_auto_feature_extract:

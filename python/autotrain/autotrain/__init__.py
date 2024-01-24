@@ -1,9 +1,9 @@
 from .version import __version__
-from .models import AutoFeatureExtractor, AutoModelWithAK, AutoConfig
+from .trainers import AutoFeatureExtractor, AutoTrainer, AutoConfig
 
 __all__ = [
     '__version__',
     'AutoFeatureExtractor',
-    'AutoModelWithAK',
+    'AutoTrainer',
     'AutoConfig'
 ]

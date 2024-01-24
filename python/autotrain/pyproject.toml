@@ -41,7 +41,7 @@ orjson = "^3.8.0"
 numpy = "1.23.3"
 pandas = "2.0.1"
 scikit-learn = "1.2.2"
-tensorflow = "^2.12.0"
+tensorflow = "^2.13.1"
 autokeras = "^1.1.0"
 
 # Storage dependencies. They can be opted into by apps.

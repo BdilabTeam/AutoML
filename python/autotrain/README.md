@@ -27,4 +27,7 @@ pytest {script_name}
 
 # '-s'参数，输出print日志
 pytest -s {script_name}
+
+# 执行指定py文件中的指定测试函数
+pytest -k "{test_func"" {test_file.py}
 ```
