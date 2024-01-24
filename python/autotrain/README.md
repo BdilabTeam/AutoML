@@ -12,7 +12,6 @@ pip install poetry
 poetry install
 
 # Tips
-```txt
 当通过'poetry install'命令安装依赖时报错: tensorflow-io-gcs-filesystem无法找到合适版本, 尝试通过以下步骤搭建环境:
 1. pyproject.toml中删除tensorflow = "^2.13.1"和autokeras = "^1.1.0"
 2. 通过pip安装上述两个库
