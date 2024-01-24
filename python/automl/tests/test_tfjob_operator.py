@@ -1,7 +1,7 @@
 from automl.operators import KubeConfigSettings, TFJobSettings, TFJobOrchestrator
 import pytest
 
-KUBE_CONFIG_FILE="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/automl/utils/config"
+KUBE_CONFIG_FILE=""
 
 class TestOperator:
     @pytest.fixture
