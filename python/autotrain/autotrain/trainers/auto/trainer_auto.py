@@ -4,7 +4,8 @@ from collections import OrderedDict
 
 from .auto_factory import _LazyAutoMapping
 from .configuration_auto import CONFIG_MAPPING_NAMES, model_type_to_module_name, AutoConfig
-from ..utils.trainer_utils import BaseTrainer
+from ...utils.trainer_utils import BaseTrainer
+from ...utils.configuration_utils import BaseTrainerConfig
 
 
 MODEL_FOR_TRAINER_MAPPING_NAMES = OrderedDict(
@@ -120,7 +121,7 @@ class _LazyTrainerMapping(OrderedDict):
 TRAINER_MAPPING = _LazyTrainerMapping(TRAINER_MAPPING_NAMES)
 
 
-class AutoTrainer():
+class AutoTrainer:
     def __init__(self, *args, **kwargs):
         raise EnvironmentError(
             f"{self.__class__.__name__} is designed to be instantiated "
@@ -136,6 +137,22 @@ class AutoTrainer():
         ```
         """
         return _auto_model_class_from_name(class_name=class_name)
+
+    @classmethod
+    def from_config(cls, config: BaseTrainerConfig, **kwargs) -> Type[BaseTrainer]:
+        """Instantiate one of the trainer classes of the library from the config object.
+        Examples:
+        ```python
+        >>> config = AutoConfig.from_repository(trainer_id=trainer_id)
+        >>> trainer = AutoTrainer.from_config(config)
+        ```
+        """
+        if isinstance(config, BaseTrainerConfig) and config.trainer_class_name:
+            trainer_class = cls.for_trainer_class(config.trainer_class_name)
+            return trainer_class(config, **kwargs)
+        raise ValueError(
+            f"Unrecognized config identifier: ({config})."
+        )
     
     @classmethod
     def from_repository(cls, trainer_id: str, **kwargs) -> BaseTrainer:

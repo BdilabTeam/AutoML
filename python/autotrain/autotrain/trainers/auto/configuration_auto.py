@@ -1,7 +1,7 @@
 import importlib
 from collections import OrderedDict
 
-from ..utils.configuration_utils import BaseTrainerConfig
+from ...utils.configuration_utils import BaseTrainerConfig
 
 
 CONFIG_MAPPING_NAMES = OrderedDict(

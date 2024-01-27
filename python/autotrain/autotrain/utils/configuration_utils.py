@@ -1,5 +1,3 @@
-from dataclasses import dataclass
-
 class BaseTrainerConfig(object):
     model_type: str = ""
     def __init__(self, **kwargs) -> None:
@@ -8,12 +6,3 @@ class BaseTrainerConfig(object):
     
     def to_dict(self):
         raise NotImplementedError
-
-class BaseDataPipelineConfig(object):
-    pass
-
-class BaseModelPipelineConfig(object):
-    pass
-
-class BaseTrainPipelineConfig(object):
-    pass

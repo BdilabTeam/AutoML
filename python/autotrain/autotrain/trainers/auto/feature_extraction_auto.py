@@ -3,12 +3,13 @@ from collections import OrderedDict
 
 from .auto_factory import _LazyAutoMapping
 from .configuration_auto import model_type_to_module_name, CONFIG_MAPPING_NAMES
-from ..utils.feature_extraction_utils import FeatureExtractionMixin
+from ...utils.feature_extraction_utils import BaseFeatureExtractor
+from ...utils.configuration_utils import BaseTrainerConfig
 
 
 FEATURE_EXTRACTOR_MAPPING_NAMES = OrderedDict(
     [
-        ("densenet", "DenseNetFeatureExtractor")
+        ("densenet", "GAForDenseNetFeatureExtractor")
     ]
 )
 
@@ -46,11 +47,6 @@ class AutoFeatureExtractor:
             "using the `AutoFeatureExtractor.from_registry(model_name_or_path)` method. or"
             "using the `AutoFeatureExtractor.for_trainer_class(class_name)` method."
         )
-
-    @classmethod
-    def from_registry(cls, model_name_or_path, **kwargs):
-        config_dict, _ = FeatureExtractionMixin.get_feature_extractor_dict(model_name_or_path, **kwargs)
-        pass
     
     @classmethod
     def for_feature_extractor_class(cls, class_name: str):
@@ -61,3 +57,19 @@ class AutoFeatureExtractor:
         ```
         """
         return _feature_extractor_class_from_name(class_name=class_name)
+    
+    @classmethod
+    def from_config(cls, config: BaseTrainerConfig, **kwargs) -> BaseFeatureExtractor:
+        """Instantiate one of the feature-extractor classes of the library from the config object.
+        Examples:
+        ```python
+        >>> config = AutoConfig.from_repository(trainer_id=trainer_id)
+        >>> feature_extractor = AutoFeatureExtractor.from_config(config)
+        ```
+        """
+        if isinstance(config, BaseTrainerConfig) and config.dp_feature_extractor_class_name:
+            feature_extractor_class = cls.for_feature_extractor_class(config.dp_feature_extractor_class_name)
+            return feature_extractor_class(config, **kwargs)
+        raise ValueError(
+            f"Unrecognized config identifier: ({config})."
+        )

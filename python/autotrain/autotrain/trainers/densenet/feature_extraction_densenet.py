@@ -2,27 +2,28 @@ import math
 import random
 import warnings
 import copy
-from typing import Any, Union, Optional, Callable, List
+from typing import Any, Union, Callable, List
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
 from .trainer_ak_densenet import AKStructruedDataClassificationTrainerOutput
 from .configuration_densenet import DenseNetTrainerConfig
+from ...utils.feature_extraction_utils import BaseFeatureExtractor, BaseFeatureExtractorOutput
 
 @dataclass
-class DenseNetFeatureExtractorOutput:
+class GADenseNetFeatureExtractorOutput(BaseFeatureExtractorOutput):
     final_data: Union[np.ndarray, List] = None
     best_feature_index: Union[np.ndarray, List]= None
     trainer_history: AKStructruedDataClassificationTrainerOutput = None
     
 @dataclass
-class GAFeatureExtractorOutput:
+class GABaseFeatureExtractorOutput(BaseFeatureExtractorOutput):
     final_data: Union[np.ndarray, List] = None
     best_feature_index: Union[np.ndarray, List] = None
     trainer_history: AKStructruedDataClassificationTrainerOutput = None
 
-class GAFeatureExtractor():
+class GAFeatureExtractor:
     def __init__(
         self, 
         config: DenseNetTrainerConfig
@@ -55,7 +56,7 @@ class GAFeatureExtractor():
         :param topF: select feature when its count is more than topF
         """
         self.config = config
-        
+        # TODO inspect
         self.feature_num = config.dp_feature_num
         self.size = 10 * config.dp_feature_num
         self.svm_weight = config.dp_svm_weight
@@ -100,7 +101,7 @@ class GAFeatureExtractor():
         self.trainer = trainer
         result_data, result_index = self.extract(x_train, y_train)
         
-        return GAFeatureExtractorOutput(
+        return GABaseFeatureExtractorOutput(
             final_data=result_data,
             best_feature_index=result_index
         )
@@ -267,19 +268,19 @@ class GAFeatureExtractor():
 
             yield _features, y
 
-class DenseNetFeatureExtractor():
+class GAForDenseNetFeatureExtractor(BaseFeatureExtractor):
     def __init__(
         self, 
         config: DenseNetTrainerConfig
     ):
         self.extractor = GAFeatureExtractor(config=config)
 
-    def __call__(
+    def extract(
         self, 
         inputs: Union[np.ndarray, pd.DataFrame, str],
         trainer: Callable = None,
         **kwargs: Any
-    ) -> Any:
+    ) -> GADenseNetFeatureExtractorOutput:
         output = self.extractor(
             inputs=inputs,
             trainer=trainer,

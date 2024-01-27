@@ -12,8 +12,8 @@ from keras_tuner.engine import hyperparameters as hp
 from dataclasses import dataclass
 
 from .configuration_densenet import DenseNetTrainerConfig
-from ..utils import TaskType
-from ..utils.trainer_utils import BaseTrainerOutput, BaseTrainer
+from ...utils import TaskType
+from ...utils.trainer_utils import BaseTrainerOutput, BaseTrainer
 
 
 @dataclass 

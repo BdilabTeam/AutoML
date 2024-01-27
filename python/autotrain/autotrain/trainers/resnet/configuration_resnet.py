@@ -1,11 +1,7 @@
 from typing import List, Optional, Tuple
 
-from ..utils import TaskType
-from ..utils.configuration_utils import (
-    BaseTrainerConfig,
-    BaseDataPipelineConfig,
-    BaseModelPipelineConfig,
-    BaseTrainPipelineConfig
+from ...utils.configuration_utils import (
+    BaseTrainerConfig
 )
 
 
@@ -18,7 +14,7 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         # Data Pipeline
         dp_batch_size: Optional[int] = None,
         dp_color_mode: Optional[str] = None,
-        dp_image_size: Optional[Tuple] = None,
+        dp_image_size: Optional[Tuple[float, float]] = None,
         dp_interpolation: Optional[str] = None,
         dp_shuffle: Optional[bool] = None,
         dp_seed: Optional[int] = None,
@@ -26,9 +22,9 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         dp_subset: Optional[str] = None,
         # Model Pipeline
         # Normalization
-        mp_enable_normalization: bool = False,
+        mp_enable_normalization: bool = True,
         # ImageAugmentation
-        mp_enable_image_augmentation: bool = False,
+        mp_enable_image_augmentation: bool = True,
         mp_translation_factor: Optional[List[float]] = None,
         mp_vertical_flip: Optional[bool] = None,
         mp_horizontal_flip: Optional[bool] = None,
@@ -52,7 +48,7 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         tp_batch_size: int = 32,
         tp_epochs: Optional[int] = None,
         tp_validation_split: float = 0.2,
-        tp_is_early_stop: Optional[bool] = True,
+        tp_is_early_stop: bool = True,
     ):
         super().__init__(task_type=task_type, trainer_class_name=trainer_class_name,)
         # Data Pipeline

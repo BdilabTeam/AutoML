@@ -10,8 +10,8 @@ from keras_tuner.engine import hyperparameters as hp
 import tensorflow as tf
 
 from .configuration_resnet import ResNetTrainerConfig
-from ..utils import TaskType
-from ..utils.trainer_utils import BaseTrainerOutput, BaseTrainer
+from ...utils import TaskType
+from ...utils.trainer_utils import BaseTrainerOutput, BaseTrainer
 
 
 @dataclass 

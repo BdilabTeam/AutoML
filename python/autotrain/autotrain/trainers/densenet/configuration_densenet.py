@@ -1,8 +1,7 @@
 from typing import Optional, Union, List
 import numpy as np
 
-from ..utils import TaskType
-from ..utils.configuration_utils import BaseTrainerConfig
+from ...utils.configuration_utils import BaseTrainerConfig
 
 class DenseNetTrainerConfig(BaseTrainerConfig):
     model_type = "densenet"
@@ -13,7 +12,7 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         # Data pipeline
         # AutoFeatureExtractor
         dp_enable_auto_feature_extract: bool = False,
-        dp_feature_extractor_class_name = "DenseNetFeatureExtractor",
+        dp_feature_extractor_class_name = "GAForDenseNetFeatureExtractor",
         dp_feature_num: int = 2, 
         dp_svm_weight: float = 1.0, 
         dp_feature_weight: float = 0, 

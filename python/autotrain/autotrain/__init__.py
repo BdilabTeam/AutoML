@@ -1,6 +1,6 @@
 from .version import __version__
 from .trainers import AutoFeatureExtractor, AutoTrainer, AutoConfig
-from .trainers.utils import TaskType, ModelType
+from .utils import TaskType, ModelType
 
 __all__ = [
     '__version__',
@@ -8,5 +8,5 @@ __all__ = [
     'AutoTrainer',
     'AutoConfig',
     'TaskType',
-    'ModelType'
+    'ModelType',
 ]
