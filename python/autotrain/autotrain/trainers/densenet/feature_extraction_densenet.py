@@ -8,13 +8,14 @@ import pandas as pd
 from dataclasses import dataclass
 
 from .trainer_ak_densenet import AKStructruedDataClassificationTrainerOutput
-from .configuration_densenet import DenseNetConfig
+from .configuration_densenet import DenseNetTrainerConfig
 
 @dataclass
 class DenseNetFeatureExtractorOutput:
     final_data: Union[np.ndarray, List] = None
     best_feature_index: Union[np.ndarray, List]= None
     trainer_history: AKStructruedDataClassificationTrainerOutput = None
+    
 @dataclass
 class GAFeatureExtractorOutput:
     final_data: Union[np.ndarray, List] = None
@@ -24,7 +25,7 @@ class GAFeatureExtractorOutput:
 class GAFeatureExtractor():
     def __init__(
         self, 
-        config: DenseNetConfig
+        config: DenseNetTrainerConfig
     ):
         """
         This is the implementation of Genetic Algorithm, for more information please refer
@@ -55,27 +56,26 @@ class GAFeatureExtractor():
         """
         self.config = config
         
-        self.feature_num = config.feature_num
-        self.size = 10 * config.feature_num
-        self.svm_weight = config.svm_weight
-        self.feature_weight = config.feature_weight
-        self.C = config.C
-        self.keep_prob = config.keep_prob
-        self.cross_prob = 1 - config.keep_prob
-        self.mutate_prob = config.mutate_prob
-        self.iters = config.iters
-        self.topK = 2 * config.feature_num
-        self.topF = 0.8 * config.feature_num
+        self.feature_num = config.dp_feature_num
+        self.size = 10 * config.dp_feature_num
+        self.svm_weight = config.dp_svm_weight
+        self.feature_weight = config.dp_feature_weight
+        self.C = config.dp_C
+        self.keep_prob = config.dp_keep_prob
+        self.cross_prob = 1 - config.dp_keep_prob
+        self.mutate_prob = config.dp_mutate_prob
+        self.iters = config.dp_iters
+        self.topK = 2 * config.dp_feature_num
+        self.topF = 0.8 * config.dp_feature_num
 
         self.average_fitness = []
         self.best_feature_index = []
-        self.length = 10 * config.feature_num
+        self.length = 10 * config.dp_feature_num
         
     def __call__(
         self, 
         inputs: Union[np.ndarray, pd.DataFrame, str],
         trainer: Callable = None,
-        return_summary_dict: Optional[bool] = None,
         **kwargs: Any
     ) -> Any:
         if inputs is not None:
@@ -100,8 +100,6 @@ class GAFeatureExtractor():
         self.trainer = trainer
         result_data, result_index = self.extract(x_train, y_train)
         
-        if not return_summary_dict:
-            return None
         return GAFeatureExtractorOutput(
             final_data=result_data,
             best_feature_index=result_index
@@ -134,10 +132,10 @@ class GAFeatureExtractor():
                 inputs = pd.DataFrame(np.concatenate((_features, _y.reshape(-1, 1)), axis=1))
                 
                 # TODO why do i need to instantiate every time? 
-                # Trainer = AutoTrainer.from_class_name(self.config.model_class_name)
+                # Trainer = AutoTrainer.for_trainer_class(self.config.model_class_name)
                 # trainer = Trainer(self.config)
                 trainer = copy.deepcopy(self.trainer)
-                trainer_summary = trainer(inputs=inputs, return_summary_dict=True)
+                trainer_summary = trainer.train(inputs=inputs, return_summary_dict=True)
                 acc = trainer_summary.metrics["val_accuracy"]
                 
                 _fitness = self.fitness(population[i], acc, self.svm_weight, self.feature_weight, C=self.C)
@@ -272,7 +270,7 @@ class GAFeatureExtractor():
 class DenseNetFeatureExtractor():
     def __init__(
         self, 
-        config: DenseNetConfig
+        config: DenseNetTrainerConfig
     ):
         self.extractor = GAFeatureExtractor(config=config)
 
@@ -280,12 +278,10 @@ class DenseNetFeatureExtractor():
         self, 
         inputs: Union[np.ndarray, pd.DataFrame, str],
         trainer: Callable = None,
-        return_summary_dict: Optional[bool] = None,
         **kwargs: Any
     ) -> Any:
         output = self.extractor(
             inputs=inputs,
             trainer=trainer,
-            return_summary_dict=return_summary_dict
         )
         return output

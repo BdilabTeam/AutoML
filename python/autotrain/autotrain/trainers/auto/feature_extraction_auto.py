@@ -19,7 +19,7 @@ def _feature_extractor_class_from_name(class_name: str):
         if class_name in extractors:
             module_name = model_type_to_module_name(module_type)
 
-            module = importlib.import_module(f".{module_name}", "automl.trainers")
+            module = importlib.import_module(f".{module_name}", "autotrain.trainers")
             try:
                 return getattr(module, class_name)
             except AttributeError:
@@ -44,7 +44,7 @@ class AutoFeatureExtractor:
         raise EnvironmentError(
             "AutoFeatureExtractor is designed to be instantiated "
             "using the `AutoFeatureExtractor.from_registry(model_name_or_path)` method. or"
-            "using the `AutoFeatureExtractor.from_class_name(class_name)` method."
+            "using the `AutoFeatureExtractor.for_trainer_class(class_name)` method."
         )
 
     @classmethod
@@ -53,11 +53,11 @@ class AutoFeatureExtractor:
         pass
     
     @classmethod
-    def from_class_name(cls, class_name: str):
-        """
+    def for_feature_extractor_class(cls, class_name: str):
+        """Get one of the 'Feature Exreactor' classes of the library from class name.
         Examples:
         ```python
-        >>> feature_extractor = AutoFeatureExtractor.from_class_name("DenseNetFeatureExtractor")
+        >>> feature_extractor = AutoFeatureExtractor.for_feature_extractor_class("DenseNetFeatureExtractor")
         ```
         """
         return _feature_extractor_class_from_name(class_name=class_name)

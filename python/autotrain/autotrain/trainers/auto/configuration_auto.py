@@ -1,20 +1,16 @@
-from collections import OrderedDict
 import importlib
+from collections import OrderedDict
+
+from ..utils.configuration_utils import BaseTrainerConfig
+
 
 CONFIG_MAPPING_NAMES = OrderedDict(
     [
         # Add configs here
-        ("densenet", "DenseNetConfig"),
-        ("resnet", "ResNetConfig")
+        ("densenet", "DenseNetTrainerConfig"),
+        ("resnet", "ResNetTrainerConfig")
     ]
 )
-
-# MODEL_NAME_MAPPING = OrderedDict(
-#     [
-#         # Add full (and cased) model names here
-#         ("densenet", "DenseNet")
-#     ]
-# )
 
 SPECIAL_MODEL_TYPE_TO_MODULE_NAME = OrderedDict(
     [
@@ -29,6 +25,16 @@ def model_type_to_module_name(key):
         return SPECIAL_MODEL_TYPE_TO_MODULE_NAME[key]
 
     key = key.replace("-", "_")
+    return key
+
+def trainer_id_to_model_type(key: str):
+    """Get 'model_type' from a 'task/model' key."""
+    key = key.split('/')[1]
+    return key
+
+def trainer_id_to_task_type(key: str):
+    """Get 'task_type' from a 'task/model' key."""
+    key = key.split('/')[0]
     return key
 
 class _LazyConfigMapping(OrderedDict):
@@ -79,18 +85,45 @@ class _LazyConfigMapping(OrderedDict):
 
 CONFIG_MAPPING = _LazyConfigMapping(CONFIG_MAPPING_NAMES)
 
-class AutoConfig():
+class AutoConfig:
+    r"""
+    This is a generic configuration class that will be instantiated as one of the configuration classes of the library
+    when created with the [`~AutoConfig.from_pretrained`] class method.
+
+    This class cannot be instantiated directly using `__init__()` (throws an error).
+    """
     def __init__(self):
         raise EnvironmentError(
             "AutoConfig is designed to be instantiated "
-            "using the `AutoConfig.from_class_name(class_name)` method."
+            "using the `AutoConfig.for_trainer_class(class_name)` method."
         )
     
     @classmethod
-    def from_model_type(cls, model_type: str, *args, **kwargs):
+    def for_config(cls, model_type: str, **kwargs) -> BaseTrainerConfig:
+        """Instantiate one of the configuration classes of the library from model type.
+        Examples:
+        ```python
+        >>> config = AutoConfig.for_config("densenet")
+        ```
+        """
         if model_type in CONFIG_MAPPING:
             config_class = CONFIG_MAPPING[model_type]
-            return config_class(*args, **kwargs)
+            return config_class(**kwargs)
         raise ValueError(
             f"Unrecognized model identifier: {model_type}. Should contain one of {', '.join(CONFIG_MAPPING.keys())}"
         )
+    
+    @classmethod
+    def from_repository(cls, trainer_id, **kwargs):
+        """Instantiate one of the configuration classes of the library from 'trainer_id' property of the config object.
+
+        Examples:
+        ```python
+        >>> config = AutoConfig.from_repository("structured-data-classification/densenet")
+        ```
+        """
+        from .trainer_auto import trainer_id_to_trainer_class_name
+        model_type = trainer_id_to_model_type(trainer_id)
+        kwargs["task_type"] = trainer_id_to_task_type(trainer_id)
+        kwargs["trainer_class_name"] = trainer_id_to_trainer_class_name(trainer_id)
+        return cls.for_config(model_type, **kwargs)

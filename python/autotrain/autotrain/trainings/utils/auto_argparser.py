@@ -246,7 +246,7 @@ class AutoArgumentParser(ArgumentParser):
             elif look_for_args_file and len(sys.argv):
                 args_files.append(Path(sys.argv[0]).with_suffix(".args"))
 
-            # args files specified via command line flag should overwrite default args files so we add them last
+            # args files specified via command line flag should tp_overwrite default args files so we add them last
             if args_file_flag:
                 # Create special parser just to extract the args_file_flag values
                 args_file_parser = ArgumentParser()
@@ -265,7 +265,7 @@ class AutoArgumentParser(ArgumentParser):
                     file_args += args_file.read_text().split()
 
             # in case of duplicate arguments the last one has precedence
-            # args specified via the command line should overwrite args from files, so we add them last
+            # args specified via the command line should tp_overwrite args from files, so we add them last
             args = file_args + args if args is not None else file_args + sys.argv[1:]
         namespace, remaining_args = self.parse_known_args(args=args)
         outputs = []

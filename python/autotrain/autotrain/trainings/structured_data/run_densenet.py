@@ -9,13 +9,13 @@ from autotrain.trainers.auto import AutoConfig, AutoFeatureExtractor, AutoTraine
 
 @dataclass
 class ModelArguments:
-    num_layers_search_space: str = field(
+    num_layers: str = field(
         default=None,
         metadata={
             "help": "Layer search space of densenet model. A list represented by a string"
         }
     )
-    num_units_search_space: str = field(
+    num_units: str = field(
         default=None,
         metadata={
             "help": "Unit search space of densenet model. A list represented by a string"
@@ -27,7 +27,7 @@ class ModelArguments:
             "help": "Whether to use batch regularization"
         }
     )
-    dropout_space_search_space: str = field(
+    dropout: str = field(
         default=None,
         metadata={
             "help": "Unit search space of densenet model. A list represented by a string"
@@ -102,22 +102,22 @@ def main():
     else:
         inputs = train_args.train_dir
         
-    config = AutoConfig.from_model_type(model_type=train_args.model_type)
+    config = AutoConfig.for_config(model_type=train_args.model_type)
     config.task_type = train_args.task_type
     
     # AutoModel config
     if train_args.output_dir:
         config.directory = train_args.output_dir
-    if train_args.overwrite:
-        config.overwrite = train_args.overwrite
-    if train_args.project_name:
-        config.project_name = train_args.project_name
-    if train_args.max_trials:
-        config.max_trials = train_args.max_trials
-    if train_args.objective:
-        config.objective = train_args.objective
-    if train_args.tuner:
-        config.tuner = train_args.tuner
+    if train_args.tp_overwrite:
+        config.tp_overwrite = train_args.tp_overwrite
+    if train_args.tp_project_name:
+        config.tp_project_name = train_args.tp_project_name
+    if train_args.tp_max_trials:
+        config.tp_max_trials = train_args.tp_max_trials
+    if train_args.tp_objective:
+        config.tp_objective = train_args.tp_objective
+    if train_args.tp_tuner:
+        config.tp_tuner = train_args.tp_tuner
     if train_args.batch_size:
         config.batch_size = train_args.batch_size
     if train_args.epochs:
@@ -128,36 +128,36 @@ def main():
         config.is_early_stop = train_args.is_early_stop
     
     # Hyperparameters
-    if model_args.num_layers_search_space:
-        if isinstance(model_args.num_layers_search_space, str):
-            model_args.num_layers_search_space = ast.literal_eval(model_args.num_layers_search_space)   
-        if not isinstance(model_args.num_layers_search_space, list):
-            raise ValueError("The 'num_layers_search_space' must be a list")
-        config.num_layers_search_space = model_args.num_layers_search_space
-    if model_args.num_units_search_space:
-        if isinstance(model_args.num_units_search_space, str):
-            model_args.num_units_search_space = ast.literal_eval(model_args.num_units_search_space)   
-        if not isinstance(model_args.num_units_search_space, list):
-            raise ValueError("The 'num_units_search_space' must be a list")
-        config.num_units_search_space = model_args.num_units_search_space
+    if model_args.num_layers:
+        if isinstance(model_args.num_layers, str):
+            model_args.num_layers = ast.literal_eval(model_args.num_layers)   
+        if not isinstance(model_args.num_layers, list):
+            raise ValueError("The 'num_layers' must be a list")
+        config.num_layers = model_args.num_layers
+    if model_args.num_units:
+        if isinstance(model_args.num_units, str):
+            model_args.num_units = ast.literal_eval(model_args.num_units)   
+        if not isinstance(model_args.num_units, list):
+            raise ValueError("The 'num_units' must be a list")
+        config.num_units = model_args.num_units
     if model_args.use_batchnorm:
         config.use_batchnorm = model_args.use_batchnorm
-    if model_args.dropout_space_search_space:
-        if isinstance(model_args.dropout_space_search_space, str):
-            model_args.dropout_space_search_space = ast.literal_eval(model_args.dropout_space_search_space)   
-        if not isinstance(model_args.dropout_space_search_space, list):
-            raise ValueError("The 'dropout_space_search_space' must be a list")
-        config.dropout_space_search_space = model_args.dropout_space_search_space
+    if model_args.dropout:
+        if isinstance(model_args.dropout, str):
+            model_args.dropout = ast.literal_eval(model_args.dropout)   
+        if not isinstance(model_args.dropout, list):
+            raise ValueError("The 'dropout' must be a list")
+        config.dropout = model_args.dropout
     
-    Trainer = AutoTrainer.from_class_name(config.model_class_name)
+    Trainer = AutoTrainer.for_trainer_class(config.model_class_name)
     trainer = Trainer(config=config)
     
-    if train_args.do_auto_feature_extract:
+    if train_args.dp_enable_auto_feature_extract:
         # feature_extractor config
         if feature_extraction_args.iters:
             config.iters = feature_extraction_args.iters
         # TODO 用户可以设置哪些参数？
-        FeatureExtractor = AutoFeatureExtractor.from_class_name(config.feature_extractor_class_name)
+        FeatureExtractor = AutoFeatureExtractor.for_trainer_class(config.feature_extractor_class_name)
         extractor = FeatureExtractor(config=config)
         output = extractor(
             inputs=inputs,
@@ -174,11 +174,6 @@ def main():
         print(f"{'*'*15}_Metrics:\n{output.metrics}")
         print(f"{'*'*15}_Best Hyperparameters:\n{output.best_hyperparameters}")
         print(f"{'*'*15}_Search Space Summary:\n{output.search_space_summary}")
-        print(f"{'*'*15}_Train Results Summary:\n{output.results_summary}")
-        print(f"{'*'*15}_Model Summary:\n{output.model_summary}")
     
-        
-        
-
 if __name__ == "__main__":
     main()

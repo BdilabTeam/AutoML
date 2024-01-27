@@ -3,4 +3,4 @@ from .trainer_ak_densenet import (
     AKDenseNetForStructruedDataRegressionTrainer
 )
 from .feature_extraction_densenet import DenseNetFeatureExtractor
-from .configuration_densenet import DenseNetConfig
+from .configuration_densenet import DenseNetTrainerConfig

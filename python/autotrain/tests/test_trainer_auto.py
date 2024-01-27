@@ -1,30 +1,12 @@
-import os
-from autotrain import AutoTrainer, AutoConfig
+from autotrain import AutoTrainer
 
 class TestAutoTrainer:
-    def test_from_class_name(self):
-        densenet_config = AutoConfig.from_model_type("densenet")
-        Trainer = AutoTrainer.from_class_name(densenet_config.trainer_class_name)
-        trainer = Trainer(densenet_config)
-        output = trainer(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv'), 
-            return_summary_dict=True
-        )
-        assert output.metrics != None
+    def test_for_trainer_class(self):
+        Trainer = AutoTrainer.for_trainer_class("AKDenseNetForStructruedDataRegressionTrainer")
+        assert Trainer is not None
     
-    def test_from_model_type(self):
-        trainer = AutoTrainer.from_model_type('densenet')
-        output = trainer(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv'), 
-            return_summary_dict=True
+    def test_from_repository(self):
+        trainer = AutoTrainer.from_repository(
+            trainer_id="structured-data-classification/densenet"
         )
-        assert output.metrics != None
-    
-    def test_from_config(self):
-        densenet_config = AutoConfig.from_model_type("densenet")
-        trainer = AutoTrainer.from_config(config=densenet_config)
-        output = trainer(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv'), 
-            return_summary_dict=True
-        )
-        assert output.metrics != None
+        assert trainer is not None

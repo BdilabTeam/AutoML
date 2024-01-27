@@ -32,35 +32,35 @@ class TrainingArguments(object):
         }
     )
     
-    overwrite: Optional[bool] = field(
+    tp_overwrite: Optional[bool] = field(
         default=False,
         metadata={
             "help": "Whether or not to override the output_dir."
         }
     )
     
-    project_name: Optional[str] = field(
+    tp_project_name: Optional[str] = field(
         default="auto_model",
         metadata={
             "help": "The name of the training project."
         }
     )
     
-    max_trials: Optional[int] = field(
+    tp_max_trials: Optional[int] = field(
         default=5,
         metadata={
             "help": "Maximum number of trials."
         }
     )
     
-    objective: Optional[str] = field(
+    tp_objective: Optional[str] = field(
         default="val_loss",
         metadata={
             "help": "The goal of the hyperparameter tuning reference."
         }
     )
     
-    tuner: Optional[str] = field(
+    tp_tuner: Optional[str] = field(
         default="greedy",
         metadata={
             "help": "Hyperparameter tuning algorithm used in training."

@@ -11,20 +11,20 @@ python run_densenet.py \
     --model_type "densenet" \
     --train_dir "/root/workspace/YJX/auto-ml/automl/python/autotrain/autotrain/datasets/train.csv" \
     --output_dir "/root/workspace/YJX/auto-ml/automl/python/autotrain/tests/output" \
-    --overwrite "True" \
-    --project_name "test" \
-    --max_trials 2 \
-    --objective "val_loss" \
-    --tuner "greedy" \
+    --tp_overwrite "True" \
+    --tp_project_name "test" \
+    --tp_max_trials 2 \
+    --tp_objective "val_loss" \
+    --tp_tuner "greedy" \
     --batch_size 32 \
     --epochs 5 \
     --validation_split 0.3 \
     --is_early_stop True \
     --do_auto_feature_extract True \
     --do_auto_hyperparameter_tuning True \
-    --num_layers_search_space "[1, 2, 3]" \
-    --num_units_search_space "[16, 32, 64, 128, 256, 512, 1024]" \
+    --num_layers "[1, 2, 3]" \
+    --num_units "[16, 32, 64, 128, 256, 512, 1024]" \
     --use_batchnorm True \
-    --dropout_space_search_space "[0.0, 0.25, 0.5]" \
+    --dropout "[0.0, 0.25, 0.5]" \
     --iters 1
     

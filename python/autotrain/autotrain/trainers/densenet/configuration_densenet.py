@@ -2,85 +2,83 @@ from typing import Optional, Union, List
 import numpy as np
 
 from ..utils import TaskType
+from ..utils.configuration_utils import BaseTrainerConfig
 
-class DenseNetConfig():
+class DenseNetTrainerConfig(BaseTrainerConfig):
     model_type = "densenet"
     def __init__(
         self,
-        task_type: str = "structured_data_regression",
-        # AutoModel config
-        project_name: str = "auto_model",
-        max_trials: int = 1,
-        objective: str = "val_loss",
-        tuner: str = "greedy",
-        overwrite: bool = True,
-        directory: Optional[str] = None,
-        seed: Optional[int] = None,
-        max_model_size: Optional[int] = None,
-        # AutoModel.fit() config
-        batch_size: int = 32,
-        validation_split: float = 0.2,
-        epochs: Optional[int] = None,
-        is_early_stop: Optional[bool] = True,
-        enable_categorical_to_numerical: Optional[bool] = True,
-        # DenseBlock config
-        num_layers: Optional[List[int]] = None,
-        num_units: Optional[List[int]] = None,
-        use_batchnorm: Optional[bool] = True,
-        dropout: Optional[List[float]] = None,
+        task_type: str,
+        trainer_class_name: str,
+        # Data pipeline
+        # AutoFeatureExtractor
+        dp_enable_auto_feature_extract: bool = False,
+        dp_feature_extractor_class_name = "DenseNetFeatureExtractor",
+        dp_feature_num: int = 2, 
+        dp_svm_weight: float = 1.0, 
+        dp_feature_weight: float = 0, 
+        dp_C: Union[float, np.ndarray] = 1.0, 
+        dp_keep_prob: float = 0.8, 
+        dp_mutate_prob: float = 0.1, 
+        dp_iters: int = 1,
+        # Model pipeline
+        mp_enable_categorical_to_numerical: Optional[bool] = True,
+        # DenseBlock
+        mp_num_layers: Optional[List[int]] = None,
+        mp_num_units: Optional[List[int]] = None,
+        mp_use_batchnorm: Optional[bool] = True,
+        mp_dropout: Optional[List[float]] = None,
         # ClassificationHead config
-        multi_label: bool = False,
-        # AutoFeatureExtractor config
-        do_auto_feature_extract: bool = False,
-        feature_num: int = 2, 
-        svm_weight: float = 1.0, 
-        feature_weight: float = 0, 
-        C: Union[float, np.ndarray] = 1.0, 
-        keep_prob: float = 0.8, 
-        mutate_prob: float = 0.1, 
-        iters: int = 1,
-        feature_extractor_class_name = "DenseNetFeatureExtractor",
+        mp_multi_label: bool = False,
+        # Train pipeline
+        # AutoModel
+        tp_project_name: str = "auto_model",
+        tp_max_trials: int = 1,
+        tp_objective: str = "val_loss",
+        tp_tuner: str = "greedy",
+        tp_overwrite: bool = True,
+        tp_directory: Optional[str] = None,
+        tp_seed: Optional[int] = None,
+        tp_max_model_size: Optional[int] = None,
+        # AutoModel.fit()
+        tp_batch_size: int = 32,
+        tp_validation_split: float = 0.2,
+        tp_epochs: Optional[int] = None,
+        tp_is_early_stop: Optional[bool] = True,
         **kwargs
     ) -> None:
-        self.task_type = task_type
-        # AutoModel
-        self.project_name = project_name
-        self.max_trials = max_trials
-        self.directory = directory
-        self.objective = objective
-        self.tuner = tuner
-        self.overwrite = overwrite
-        self.seed = seed
-        self.max_model_size = max_model_size
-        
-        self.enable_categorical_to_numerical = enable_categorical_to_numerical
-        # DenseBlock
-        self.num_layers = num_layers
-        self.num_units = num_units
-        self.use_batchnorm = use_batchnorm
-        self.dropout = dropout
-        # ClassificationHead config
-        self.multi_label=multi_label
-        # AutoModel.fit()
-        self.batch_size=batch_size
-        self.epochs = epochs
-        self.validation_split = validation_split
-        self.is_early_stop = is_early_stop
+        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name)
         # AutoFeatureExtractor
-        self.do_auto_feature_extract=do_auto_feature_extract
-        self.feature_num = feature_num
-        self.svm_weight = svm_weight
-        self.feature_weight = feature_weight
-        self.C = C
-        self.keep_prob = keep_prob
-        self.mutate_prob = mutate_prob
-        self.iters = iters
-        self.feature_extractor_class_name = feature_extractor_class_name
-        #TODO 修改映射方法
-        if task_type == TaskType.STRUCTURED_DATA_CLASSIFICATION.value:
-            self.trainer_class_name = "AKDenseNetForStructruedDataClassificationTrainer"
-        elif task_type ==TaskType.STRUCTURED_DATA_REGRESSION.value:
-            self.trainer_class_name = "AKDenseNetForStructruedDataRegressionTrainer"
-        else:
-            raise ValueError(f"The model type '{DenseNetConfig.model_type}' does not support the task type '{task_type}'")
-        
+        self.dp_enable_auto_feature_extract=dp_enable_auto_feature_extract
+        self.dp_feature_num = dp_feature_num
+        self.dp_svm_weight = dp_svm_weight
+        self.dp_feature_weight = dp_feature_weight
+        self.dp_C = dp_C
+        self.dp_keep_prob = dp_keep_prob
+        self.dp_mutate_prob = dp_mutate_prob
+        self.dp_iters = dp_iters
+        self.dp_feature_extractor_class_name = dp_feature_extractor_class_name
+
+        self.mp_enable_categorical_to_numerical = mp_enable_categorical_to_numerical
+        # DenseBlock
+        self.mp_num_layers = mp_num_layers
+        self.mp_num_units = mp_num_units
+        self.mp_use_batchnorm = mp_use_batchnorm
+        self.mp_dropout = mp_dropout
+        # ClassificationHead config
+        self.mp_multi_label=mp_multi_label
+
+        # AutoModel
+        self.tp_project_name = tp_project_name
+        self.tp_max_trials = tp_max_trials
+        self.tp_directory = tp_directory
+        self.tp_objective = tp_objective
+        self.tp_tuner = tp_tuner
+        self.tp_overwrite = tp_overwrite
+        self.tp_seed = tp_seed
+        self.tp_max_model_size = tp_max_model_size
+        # AutoModel.fit()
+        self.tp_batch_size=tp_batch_size
+        self.tp_epochs = tp_epochs
+        self.tp_validation_split = tp_validation_split
+        self.tp_is_early_stop = tp_is_early_stop
