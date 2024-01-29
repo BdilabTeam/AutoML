@@ -1,4 +1,4 @@
-from automl.operators import KubeConfigSettings, TFJobSettings, TFJobOrchestrator
+from alserver.operators import KubeConfigSettings, TFJobSettings, TFJobOrchestrator
 import pytest
 
 KUBE_CONFIG_FILE=""

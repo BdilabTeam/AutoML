@@ -1,4 +1,4 @@
-# AutoTrain is the core module of AutoML
+# 'autotrain' is the core module of 'automl'
 
 # Env Prepare:
 ```bash
@@ -9,7 +9,7 @@ pip install --upgrade pip
 # 在虚拟环境中安装poetry
 pip install poetry
 # 通过poetry进行依赖包安装
-poetry install
+poetry install --with test
 
 # Tips
 当通过'poetry install'命令安装依赖时报错: tensorflow-io-gcs-filesystem无法找到合适版本, 尝试通过以下步骤搭建环境:
@@ -18,13 +18,6 @@ poetry install
     * pip install tensorflow==2.13.1
     * pip install autokeras==1.1.0
 3. 执行: poetry install, 此步骤是为了将'项目代码'安装为package, 解决绝对导入错误问题。
-```
-
-```
-
-# Start Spec:
-```bash
-cd /AutoML/python/autotrain
 ```
 
 # Test Spec

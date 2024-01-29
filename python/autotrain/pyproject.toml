@@ -41,18 +41,19 @@ orjson = "^3.8.0"
 numpy = "1.23.3"
 pandas = "2.0.1"
 scikit-learn = "1.2.2"
-tensorflow = "^2.13.1"
+tensorflow = "^2.10.1"
 autokeras = "^1.1.0"
-pytest = "^7.4.4"
 pyyaml = "^6.0.1"
 
-# Storage dependencies. They can be opted into by apps.
-minio = { version = "^7.1.17", optional = true }
+[tool.poetry.group.storage]
+optional = true
+[tool.poetry.group.storage.dependencies]
+minio = "^7.1.17"
 
-[tool.poetry.extras]
-storage = [
-    "minio"
-]
+[tool.poetry.group.test]
+optional = true
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.4"
 
 [tool.poetry-version-plugin]
 source = "file"

@@ -30,9 +30,13 @@ tiktoken = "~0.5.1"
 pydub = "~0.25.1"
 diffusers = "~0.21.4"
 langchain = "^0.1.1"
-pytest = "^7.4.4"
 python-dotenv = "^1.0.0"
 langchain-openai = "^0.0.2.post1"
+
+[tool.poetry.group.test]
+optional = true
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.4"
 
 [tool.poetry-version-plugin]
 source = "file"

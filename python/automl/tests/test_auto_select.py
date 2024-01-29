@@ -1,5 +1,5 @@
 import os
-from automl.autoselect import (
+from autoselect import (
     LLMFactory, 
     ModelSelectionLLMSettings,
     OutputFixingLLMSettings,
