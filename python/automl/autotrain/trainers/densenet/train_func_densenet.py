@@ -4,7 +4,12 @@ def train_densenet(trainer_args: dict):
     from autotrain.utils.logging import get_logger
 
     logger = get_logger(__name__)
-    trainer_id = os.path.join(trainer_args.task_type, trainer_args.model_type)
+    
+    task_type = trainer_args.pop('task_type', None)
+    model_type = trainer_args.pop('model_type', None)
+    inputs = trainer_args.pop('inputs', None)
+    
+    trainer_id = os.path.join(task_type, model_type)
     config = AutoConfig.from_repository(trainer_id=trainer_id)
 
     for key, value in trainer_args.items():
@@ -18,7 +23,7 @@ def train_densenet(trainer_args: dict):
         # TODO 用户可以设置哪些参数？
         feature_extractor = AutoFeatureExtractor.from_config(config)
         feature_extract_output = feature_extractor.extract(
-            inputs=trainer_args.inputs,
+            inputs=inputs,
             trainer=trainer, 
         )
         
@@ -26,7 +31,7 @@ def train_densenet(trainer_args: dict):
         print(f"{'*'*15}_Best Feature Index:\n{feature_extract_output.best_feature_index}")
     
     logger.info(f"{'-'*5} Start training {'-'*5}")
-    trainer_output = trainer.train(inputs=trainer_args.inputs)
+    trainer_output = trainer.train(inputs=inputs)
         
     logger.info(f"{'-'*5} Training history {'-'*5}")
     print(f"{'*'*15}_Metrics:\n{trainer_output.metrics}")

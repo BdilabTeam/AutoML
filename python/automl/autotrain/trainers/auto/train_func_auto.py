@@ -1,5 +1,6 @@
 import importlib
 from collections import OrderedDict
+from typing import Callable
 from .configuration_auto import model_type_to_module_name
 
 TRAIN_FUNC_MAPPING_NAMES = OrderedDict(
@@ -71,7 +72,8 @@ class AutoTrainFunc:
             "using the `AutoFeatureExtractor.for_trainer_class()` method."
         )
     
-    def from_model_type(self, model_type: str):
+    @classmethod
+    def from_model_type(cls, model_type: str) -> Callable:
         """Get one of the train func of the library from model type.
         Examples:
         ```python

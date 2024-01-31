@@ -22,13 +22,13 @@ packages = [
 ]
 
 [[tool.poetry.source]]
-name = "aliyun"
-url = "http://mirrors.aliyun.com/pypi/simple/"
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 priority = "default"
 
 [[tool.poetry.source]]
-name = "tsinghua"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
@@ -36,14 +36,14 @@ name = "pypi"
 priority = "supplemental"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.9,<3.12"
 orjson = "^3.8.0"
 numpy = "1.23.3"
 pandas = "2.0.1"
 scikit-learn = "1.2.2"
-tensorflow = "^2.10.1"
-autokeras = "^1.1.0"
 pyyaml = "^6.0.1"
+tensorflow = { version = "~2.10.1", source = "tsinghua", platform = "linux" }
+autokeras = { version = "^1.1.0", source = "tsinghua", platform = "linux" }
 
 [tool.poetry.group.storage]
 optional = true

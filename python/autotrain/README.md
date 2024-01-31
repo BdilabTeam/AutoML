@@ -9,15 +9,7 @@ pip install --upgrade pip
 # 在虚拟环境中安装poetry
 pip install poetry
 # 通过poetry进行依赖包安装
-poetry install --with test
-
-# Tips
-当通过'poetry install'命令安装依赖时报错: tensorflow-io-gcs-filesystem无法找到合适版本, 尝试通过以下步骤搭建环境:
-1. pyproject.toml中删除tensorflow = "^2.13.1"和autokeras = "^1.1.0"
-2. 通过pip安装上述两个库
-    * pip install tensorflow==2.13.1
-    * pip install autokeras==1.1.0
-3. 执行: poetry install, 此步骤是为了将'项目代码'安装为package, 解决绝对导入错误问题。
+poetry install --with test --no-root --no-cache
 ```
 
 # Test Spec

@@ -1,1 +1,1 @@
-from .auto import AutoTrainer, AutoFeatureExtractor, AutoConfig
+from .auto import AutoTrainer, AutoFeatureExtractor, AutoConfig, AutoTrainFunc
