@@ -91,10 +91,10 @@ class OutputFixingLLMSettings(LLMSettings):
 
 class ModelSelectionSettings(BaseSettings):
     prompt_template_file_path: str = Field(
-        default="python/autoselect/autoselect/resources/prompt-templates/model-selection-prompt-v2.json",
+        default="/autoselect/resources/prompt-templates/model-selection-prompt-v2.json",
         description="Model selection prompts template file path"
     )
     model_metadata_file_path: str = Field(
-        default="python/autoselect/autoselect/resources/huggingface-models-metadata.jsonl",
+        default="/autoselect/resources/huggingface-models-metadata.jsonl",
         description="Model metadata file path"
     )
