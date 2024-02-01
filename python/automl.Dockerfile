@@ -24,9 +24,9 @@ RUN python3 -m venv ${VIRTUAL_ENV}
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY automl/pyproject.toml automl/poetry.lock automl/
-RUN cd automl && poetry install --no-root --no-interaction --no-cache
+RUN cd automl && poetry install --no-root --no-interaction --no-cache --with autoselect, autoschedule, storage --without autotrain, test
 COPY automl automl
-RUN cd automl && poetry install --no-interaction --no-cache
+RUN cd automl && poetry install --no-interaction --no-cache --all-extras --with autoselect, autoschedule, storage --without autotrain, test
 
 
 FROM ${BASE_IMAGE} as prod

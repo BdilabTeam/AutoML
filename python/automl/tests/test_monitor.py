@@ -1,5 +1,5 @@
 import os
-from automl.monitor import ResourceMonitor
+from autoschedule.monitor import ResourceMonitor
 import pytest
 
 class Monitor:

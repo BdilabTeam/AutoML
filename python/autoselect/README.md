@@ -1,4 +1,4 @@
-# AutoSelect is the core module of AutoML
+# 'autoselect' is the core module of 'automl'
 
 # Env Prepare:
 ```bash
@@ -9,7 +9,7 @@ pip install --upgrade pip
 # 在虚拟环境中安装poetry
 pip install poetry
 # 通过poetry进行依赖包安装
-poetry install
+poetry install --with test --no-root --no-cache
 ```
 
 # Test Spec

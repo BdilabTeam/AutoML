@@ -22,13 +22,13 @@ packages = [
 ]
 
 [[tool.poetry.source]]
-name = "aliyun"
-url = "http://mirrors.aliyun.com/pypi/simple/"
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
 priority = "default"
 
 [[tool.poetry.source]]
-name = "tsinghua"
-url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
 priority = "primary"
 
 [[tool.poetry.source]]
@@ -36,23 +36,24 @@ name = "pypi"
 priority = "supplemental"
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.12"
+python = ">=3.9,<3.12"
 orjson = "^3.8.0"
 numpy = "1.23.3"
 pandas = "2.0.1"
 scikit-learn = "1.2.2"
-tensorflow = "^2.13.1"
-autokeras = "^1.1.0"
-pytest = "^7.4.4"
 pyyaml = "^6.0.1"
+tensorflow = { version = "~2.10.1", source = "tsinghua", platform = "linux" }
+autokeras = { version = "^1.1.0", source = "tsinghua", platform = "linux" }
 
-# Storage dependencies. They can be opted into by apps.
-minio = { version = "^7.1.17", optional = true }
+[tool.poetry.group.storage]
+optional = true
+[tool.poetry.group.storage.dependencies]
+minio = "^7.1.17"
 
-[tool.poetry.extras]
-storage = [
-    "minio"
-]
+[tool.poetry.group.test]
+optional = true
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.4"
 
 [tool.poetry-version-plugin]
 source = "file"

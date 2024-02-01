@@ -1,12 +1,10 @@
-from automl.databases.mysql import MySQLServer
-from automl.databases.mysql.models import TrainingProject
-from automl.settings import Settings
-from automl.utils.logging import get_logger
+from alserver.databases.mysql import MySQLServer
+from alserver.databases.mysql.models import TrainingProject
+from alserver.settings import Settings
 
 from sqlalchemy.orm.session import Session
 import pytest
 
-logger = get_logger(__name__)
 
 class TestMysqlServer:
     @pytest.fixture

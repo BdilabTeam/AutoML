@@ -1,5 +1,5 @@
 # 项目介绍
-### AutoML is a module for Web applications
+### AutoML
 ### AutoTrain is the core module of AutoML
 ### AutoSelect is the core module of AutoML
 
