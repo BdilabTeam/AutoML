@@ -17,13 +17,13 @@ class LLMFactory():
         )
     
     @classmethod
-    def from_openai(cls, llm_settings = LLMSettings()):
+    def from_openai(cls, llm_settings: LLMSettings = LLMSettings()):
         """Get the model selection llm"""
         values = dict()
         openai_params = dict()
         if llm_settings.env_file_path:
-            if not load_dotenv(llm_settings.env_file_path):
-                raise RuntimeError(f"Failed to load environment variable file")
+            if not load_dotenv(llm_settings.env_file_path, verbose=True):
+                raise EnvironmentError(f"Failed to load environment variable file")
         else:
             if not llm_settings.openai_api_key:
                 raise ValueError(f"Did not find the 'api_key', you must set one.")
@@ -38,9 +38,9 @@ class LLMFactory():
         return ChatOpenAI(**openai_params)
     
     @classmethod
-    def get_model_selection_llm(cls, llm_settings: Optional[ModelSelectionLLMSettings] = ModelSelectionLLMSettings()):
+    def get_model_selection_llm(cls, llm_settings: ModelSelectionLLMSettings = ModelSelectionLLMSettings()):
         return cls.from_openai(llm_settings=llm_settings)
     
     @classmethod
-    def get_output_fixing_llm(cls, llm_settings: Optional[OutputFixingLLMSettings] = OutputFixingLLMSettings()):
+    def get_output_fixing_llm(cls, llm_settings: OutputFixingLLMSettings = OutputFixingLLMSettings()):
         return cls.from_openai(llm_settings=llm_settings)
