@@ -38,7 +38,7 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         # AutoModel
         tp_project_name: str = "auto_model",
         tp_max_trials: int = 1,
-        tp_output_directory: Optional[str] = None,
+        tp_directory: Optional[str] = None,
         tp_objective: str = "val_loss",
         tp_tuner: str = "greedy",
         tp_overwrite: bool = False,
@@ -76,7 +76,7 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         # AutoModel
         self.tp_project_name = tp_project_name
         self.tp_max_trials = tp_max_trials
-        self.tp_output_directory = tp_output_directory
+        self.tp_directory = tp_directory
         self.tp_objective = tp_objective
         self.tp_tuner = tp_tuner
         self.tp_overwrite = tp_overwrite
