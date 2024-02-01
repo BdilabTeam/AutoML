@@ -30,3 +30,13 @@ class Endpoints(object):
         return JSONResponse(
         content="{'test': 'ok'}"
     )
+
+    def create_training_job(self):
+        self._data_plane.create_training_job(
+            
+        )
+        
+    async def get_monitor_info(self) -> JSONResponse:
+        return JSONResponse(
+        content="{'test': 'ok'}"
+    )

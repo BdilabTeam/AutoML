@@ -5,13 +5,27 @@ class AutoMLServerError(Exception):
         super().__init__(msg)
         self.status_code = status_code
 
-class ExampleError(AutoMLServerError):
-    def __init__(self):
-        super().__init__(
-            f"ExampleError", status.HTTP_400_BAD_REQUEST
-        )
-
 class MySQLServerNotExistError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class SelectModelError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class DeleteJobError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class CreateJobError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class GetJobInfoError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code

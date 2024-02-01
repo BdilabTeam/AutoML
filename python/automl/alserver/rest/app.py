@@ -48,9 +48,19 @@ def create_app(
     
     routes = [
         APIRoute(
-            "/v1/training-project",
+            "/v1/training/training-project",
             endpoints.create_training_project,
             methods=['POST']
+        ),
+        APIRoute(
+            "/v1/training/trainig-job",
+            endpoints.,
+            methods=['POST']
+        ),
+        APIRoute(
+            "/v1/monitoring/info",
+            endpoints.get_monitor_info,
+            methods=['GET']
         ),
     ]
     
