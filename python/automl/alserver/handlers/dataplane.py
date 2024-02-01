@@ -8,11 +8,15 @@ from ..errors import (
     SelectModelError, 
     DeleteJobError,
     CreateJobError,
-    GetJobInfoError
+    GetJobInfoError,
+    GetModelConfigError
 )
 from ..operators import TrainingClient
 
-
+EXCLUDE_ATTRIBUTES = [
+    'model_type', 'task_type', 'trainer_class_name',
+    'tp_project_name', 'tp_overwrite',  'tp_directory'
+]
 class DataPlane:
     """
     Internal implementation of handlers, used by REST servers.
@@ -29,37 +33,25 @@ class DataPlane:
             
         if settings.model_selection_enabled:
             from autoselect import (
-                LLMFactory, ModelSelection, 
-                ModelSelectionSettings, ModelSelectionLLMSettings
+                ModelSelection, ModelSelectionSettings
             )
             
             model_selection_settings = ModelSelectionSettings(
                 prompt_template_file_path=settings.prompt_template_file_path,
                 model_metadata_file_path=settings.model_metadata_file_path
             )
-            model_selection = ModelSelection(settings=model_selection_settings)
+            self._model_selection_service = ModelSelection(settings=model_selection_settings)
             
-            model_selection_llm_settings = ModelSelectionLLMSettings(
-                env_file_path=settings.env_file_path,
-                temperature=0.5
-            )
-            model_selection_llm = LLMFactory.get_model_selection_llm(llm_settings=model_selection_llm_settings)
-            
-            self.aselect = partial(
-                model_selection.aselect_model,
-                model_selection_llm=model_selection_llm,
-                description_length=100
-            )
         
         if settings.monitor_enabled:
             from autoschedule import ResourceMonitor
             import threading
             
-            self._resource_monitor_client = ResourceMonitor(
+            self._resource_monitor_service = ResourceMonitor(
                 host_info_file_path=self._settings.host_info_file_path
             )
             # 守护线程
-            threading.Thread(target=self._resource_monitor_client.start(), daemon=True).start()
+            threading.Thread(target=self._resource_monitor_service.start(), daemon=True).start()
             
         self._settings = settings
     
@@ -83,22 +75,55 @@ class DataPlane:
         train_func = AutoTrainFunc.from_model_type(model_type)
         return train_func
     
-    async def select_models(
+    async def aselect_models(
         self, 
         user_input: str, 
         task: str, 
         model_nums: int = 1
     ):
+        from autoselect import LLMFactory, ModelSelectionLLMSettings, OutputFixingLLMSettings
+        
+        model_selection_llm_settings = ModelSelectionLLMSettings(
+            env_file_path=self._settings.env_file_path,
+            temperature=0
+        )
+        model_selection_llm = LLMFactory.get_model_selection_llm(llm_settings=model_selection_llm_settings)
+        
+        output_fixing_llm_settings = OutputFixingLLMSettings(
+            env_file_path=self._settings.env_file_path,
+            temperature=0
+        )
+        output_fixing_llm = LLMFactory.get_output_fixing_llm(output_fixing_llm_settings)
+        
         try:
-            models = await self.aselect(
+            models = await self._model_selection_service.aselect_model(
                 user_input=user_input,
                 task=task,
                 top_k=model_nums * 2,
-                model_nums=model_nums
+                model_nums=model_nums,
+                model_selection_llm=model_selection_llm,
+                output_fixing_llm=output_fixing_llm,
+                description_length=100
             )
+            return models
         except Exception as e:
             raise SelectModelError(f"Failed to select the candidate model, for a specific reason: {e}")
-        return models
+    
+    def get_training_params_dict(self, trainer_id: str):
+        """Get the configuration parameters of the trainer"""
+        from autotrain import AutoConfig
+        try:
+            config = AutoConfig.from_repository(trainer_id=str.lower(trainer_id))
+        except Exception as e:
+            raise GetModelConfigError(f"Failed to get the trainer '{str.lower(trainer_id)}' congiuration, for a specific reason: {e}")
+        
+        config_dict = config.__dict__
+        training_params_dict = {}
+        for key, value in config_dict.items():
+            if key in EXCLUDE_ATTRIBUTES:
+                continue
+            training_params_dict[key] = value
+        return training_params_dict
     
     def create_training_job(
         self, 
@@ -167,4 +192,4 @@ class DataPlane:
         )
     
     def get_gpu_and_host(self, threshold):
-        return self._resource_monitor_client.get_gpu_and_host(threshold=threshold)
+        return self._resource_monitor_service.get_gpu_and_host(threshold=threshold)

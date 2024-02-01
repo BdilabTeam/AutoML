@@ -43,8 +43,8 @@ class TestDataplane:
     def test_delete_training_job(self, dataplane: DataPlane):
         dataplane.delete_training_job(JOB_NAME)
     
-    async def test_select_models(self, dataplane: DataPlane):
-        models_info = await dataplane.select_models(
+    async def test_aselect_models(self, dataplane: DataPlane):
+        models_info = await dataplane.aselect_models(
             user_input='I want a structured data classification model',
             task=TASK_TYPE,
             model_nums=1

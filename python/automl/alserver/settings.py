@@ -1,6 +1,5 @@
 import sys
 import os
-import json
 import importlib
 import inspect
 
@@ -18,11 +17,11 @@ DEFAULT_PARALLEL_WORKERS = 1
 DEFAULT_ENVIRONMENTS_DIR = os.path.join(os.getcwd(), ".envs")
 
 
-ENV_FILE_PATH = os.path.join(os.pardir, 'autoselect', '.env')
-PROMPT_TEMPLATE_FILE_PATH = os.path.join(os.pardir, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
-MODEL_METADATA_FILE_PATH = os.path.join(os.pardir, 'autoselect', 'resources', 'huggingface-models-metadata.jsonl')
+ENV_FILE_PATH = os.path.abspath('autoselect/.env')
+PROMPT_TEMPLATE_FILE_PATH = os.path.abspath('autoselect/resources/prompt-templates/model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.abspath('autoselect/resources/automl-models-metadata.jsonl')
 
-HOST_INFO_FILE_PATH = os.path.join(os.pardir, 'autoschedule', 'monitor', 'host_info.json')
+HOST_INFO_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoschedule', 'host_info.json'))
 
 @contextmanager
 def _extra_sys_path(extra_path: str):

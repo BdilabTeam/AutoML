@@ -6,8 +6,7 @@ class Monitor:
     @pytest.fixture
     def resource_monitor():
         rm = ResourceMonitor(
-            host_info_dir=os.path.dirname(os.path.abspath(__file__)),
-            host_info_file=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'test_host_info.json')
+            host_info_file_path=os.path.abspath(os.path.join(os.pardir, 'autoselect', 'host_info.json'))
         )
         return rm
     

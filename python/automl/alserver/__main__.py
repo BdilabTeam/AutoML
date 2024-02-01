@@ -5,7 +5,11 @@ import asyncio
 
 logger = get_logger()
 async def main():
-    settings = Settings()
+    settings = Settings(
+        kubernetes_enabled=True,
+        model_selection_enabled=True,
+        http_port=32081
+    )
     logger.info(f"The parameters of the AutoML-Server: \n{settings.__str__()}")
     
     server = AutoMLServer(settings)
