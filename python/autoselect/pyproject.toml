@@ -37,6 +37,7 @@ langchain-openai = "^0.0.2.post1"
 optional = true
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.4"
+pytest-asyncio = "^0.23.4"
 
 [tool.poetry-version-plugin]
 source = "file"

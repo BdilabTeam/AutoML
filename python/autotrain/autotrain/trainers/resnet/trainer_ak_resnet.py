@@ -87,8 +87,8 @@ class AKResNetMainTrainer:
         auto_model_params["objective"] = config.tp_objective
         auto_model_params["tuner"] = config.tp_tuner
         auto_model_params["overwrite"] = config.tp_overwrite
-        if config.tp_output_directory:
-            auto_model_params["directory"] = config.tp_output_directory
+        if config.tp_directory:
+            auto_model_params["directory"] = config.tp_directory
         if config.tp_seed:
             auto_model_params["seed"] = config.tp_seed
         if config.tp_max_model_size:

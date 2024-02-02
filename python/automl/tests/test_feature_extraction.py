@@ -13,7 +13,7 @@ class TestFeatureExtraction:
         
         extractor = AutoFeatureExtractor.from_config(densenet_config)
         output = extractor.extract(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv'),
+            inputs=os.path.abspath(os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv')),
             trainer=trainer, 
         )
         print(f"{'*'*15}_Best Feature Index:\n{output.best_feature_index}")

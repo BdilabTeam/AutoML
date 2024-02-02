@@ -8,7 +8,9 @@ from kubernetes import client, config, watch
 from kubeflow.training import models
 from kubeflow.training.api_client import ApiClient
 from kubeflow.training.constants import constants
-from kubeflow.training.utils import utils
+# from kubeflow.training.utils import utils
+
+from . import utils
 
 logging.basicConfig(format="%(message)s")
 logging.getLogger().setLevel(logging.INFO)

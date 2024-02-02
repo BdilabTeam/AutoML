@@ -1,3 +1,4 @@
+import os
 import inspect
 from typing import no_type_check, Optional, Union
 from pydantic import Field, BaseSettings as _BaseSettings
@@ -61,7 +62,7 @@ class LLMSettings(BaseSettings):
         description="Base URL path for API requests, leave blank if not using a proxy or service emulator."
     )
     env_file_path: str = Field(
-        default=None,
+        default=os.path.join(os.pardir, '.env'),
         description="Path to 'environment variables' file"
     )
 
@@ -91,10 +92,10 @@ class OutputFixingLLMSettings(LLMSettings):
 
 class ModelSelectionSettings(BaseSettings):
     prompt_template_file_path: str = Field(
-        default="python/autoselect/autoselect/resources/prompt-templates/model-selection-prompt-v2.json",
+        default=os.path.join(os.pardir, 'resources/prompt-templates/model-selection-prompt-v2.json'),
         description="Model selection prompts template file path"
     )
     model_metadata_file_path: str = Field(
-        default="python/autoselect/autoselect/resources/huggingface-models-metadata.jsonl",
+        default=os.path.join(os.pardir, 'resources/huggingface-models-metadata.jsonl'),
         description="Model metadata file path"
     )

@@ -1,11 +1,10 @@
 import sys
 import os
-import json
 import importlib
 import inspect
 
 from typing import Type, no_type_check
-from pydantic import PyObject, Extra, Field, BaseSettings as _BaseSettings
+from pydantic import Field, BaseSettings as _BaseSettings
 from contextlib import contextmanager
 
 from .version import __version__
@@ -17,6 +16,12 @@ DEFAULT_PARALLEL_WORKERS = 1
 
 DEFAULT_ENVIRONMENTS_DIR = os.path.join(os.getcwd(), ".envs")
 
+
+ENV_FILE_PATH = os.path.abspath('autoselect/.env')
+PROMPT_TEMPLATE_FILE_PATH = os.path.abspath('autoselect/resources/prompt-templates/model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.abspath('autoselect/resources/automl-models-metadata.jsonl')
+
+HOST_INFO_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoschedule', 'host_info.json'))
 
 @contextmanager
 def _extra_sys_path(extra_path: str):
@@ -112,7 +117,7 @@ class Settings(BaseSettings):
     )
 
     server_name: str = Field(
-        default="dg-server",
+        default="automl-server",
         description=f"Name of the server."
     )
 
@@ -137,7 +142,7 @@ class Settings(BaseSettings):
     )
     # MySql配置
     mysql_enabled: bool = Field(
-        default=True,
+        default=False,
         description=f"Enable MySql."
     )
     drivername_mysql: str = Field(
@@ -181,11 +186,38 @@ class Settings(BaseSettings):
         default="~/.kube/config",
         description="Path to the kube-config file."
     )
-    context: str = Field(
-        default=None,
-        description="The active context. Defaults to current_context from the kube-config."
+    # TFJob
+    base_image: str = Field(
+        default='autotrain:0.0.1',
+        description=''
     )
-    # client_configuration = Field(
-    #     default=None,
-    #     description="Client configuration for cluster authentication"
-    # )
+    namespcae: str = Field(
+        default='zauto',
+        description=''
+    )
+    # Model selection
+    model_selection_enabled: bool = Field(
+        default=False,
+        description='Launch the model selection module'
+    )
+    prompt_template_file_path: str = Field(
+        default=PROMPT_TEMPLATE_FILE_PATH,
+        description="Model selection prompts template file path"
+    )
+    model_metadata_file_path: str = Field(
+        default=MODEL_METADATA_FILE_PATH,
+        description="Model metadata file path"
+    )
+    env_file_path: str = Field(
+        default=ENV_FILE_PATH,
+        description="Path to 'environment variables' file"
+    )
+    # Monitor
+    monitor_enabled: bool = Field(
+        default=False,
+        description="Start the monitoring service"
+    )
+    host_info_file_path: str = Field(
+        default=HOST_INFO_FILE_PATH,
+        description="Host info file path"
+    )

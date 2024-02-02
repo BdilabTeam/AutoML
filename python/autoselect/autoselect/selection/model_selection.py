@@ -1,13 +1,13 @@
 import json
 import ast
-from typing import List
+from typing import List, Optional
 from collections import defaultdict
 from pathlib import Path
 
 from langchain.chains import LLMChain
 from langchain.prompts import load_prompt
+from langchain.output_parsers import PydanticOutputParser, OutputFixingParser
 from langchain.llms.base import BaseLLM
-from langchain.output_parsers import OutputFixingParser, PydanticOutputParser
 from pydantic import BaseModel, Field
 
 from ..utils.logging import get_logger
@@ -76,12 +76,12 @@ class ModelSelection():
         task: str,
         model_nums: int,
         model_selection_llm: BaseLLM,
-        output_fixing_llm: BaseLLM,
+        output_fixing_llm: Optional[BaseLLM] = None,
         top_k: int = 10,
         description_length: int = 300
     ) -> List[Model]:
         
-        logger.info(f"Starting model selection for task: {task.task}")
+        logger.info(f"Starting model selection for task: {task}")
         top_k_models = _get_top_k_models(task, top_k, description_length, model_metadata_file_path=self._model_metadata_file_path)
         
         prompt_template = load_prompt(self._prompt_template_file_path)
@@ -94,36 +94,35 @@ class ModelSelection():
         )
         logger.info(f"Model selection raw output: {output}")
         
-        if not isinstance(output, list) and isinstance(output, str):
-            try:
-                output = list(ast.literal_eval(output))
-            except:
-                raise ValueError(f"LLM-output must be in 'List' form")
-
         # Method 1: Using the 'OutputFixingParser' and the 'PydanticOutputParser'
-        # parser = PydanticOutputParser(pydantic_object=Model)
-        # fixing_parser = OutputFixingParser.from_llm(
-        #     llm=output_fixing_llm, 
-        #     parser=parser, 
-        # )
-        # model = fixing_parser.parse(output)
-        
-        # Method 2: BaseModel.parse_obj(obj)
-        models = []
-        for item in output:
-            model = Model.parse_obj(item)
-            models.append(model)
+        if output_fixing_llm:
+            parser = PydanticOutputParser(pydantic_object=Model)
+            fixing_parser = OutputFixingParser.from_llm(
+                llm=output_fixing_llm, 
+                parser=parser, 
+            )
+            model = fixing_parser.parse(output)
+            models = [model]
+        else:
+            # Method 2: BaseModel.parse_obj(obj)
+            output = ast.literal_eval(output)
+            if not isinstance(output, list):
+                raise ValueError("Expect the llm output to be list")
+            models = []
+            for item in output:
+                model = Model.parse_obj(item)
+                models.append(model)
         
         logger.info(f"Output after parsing llm content: {models}")
         return models
 
-    
+
     def select_model(
         self,
         user_input: str,
         task: str,
         model_selection_llm : BaseLLM,
-        output_fixing_llm: BaseLLM,
+        output_fixing_llm: Optional[BaseLLM] = None,
         model_nums: int = 1,
         top_k: int = 10,
         description_length: int = 300
@@ -141,24 +140,24 @@ class ModelSelection():
         )
         logger.info(f"Model selection raw output: {output}")
 
-        if not isinstance(output, list) and isinstance(output, str):
-            try:
-                output = list(ast.literal_eval(output))
-            except:
-                raise ValueError(f"LLM-output must be in 'List' form")
-
         # Method 1: Using the 'OutputFixingParser' and the 'PydanticOutputParser'
-        # parser = PydanticOutputParser(pydantic_object=Model)
-        # fixing_parser = OutputFixingParser.from_llm(
-        #     llm=output_fixing_llm, 
-        #     parser=parser, 
-        # )
-        # model = fixing_parser.parse(output)
-        
-        models = []
-        for item in output:
-            model = Model.parse_obj(item)
-            models.append(model)
-        
+        if output_fixing_llm:
+            parser = PydanticOutputParser(pydantic_object=Model)
+            fixing_parser = OutputFixingParser.from_llm(
+                llm=output_fixing_llm, 
+                parser=parser, 
+            )
+            model = fixing_parser.parse(output)
+            models = [model]
+        else:
+            # Method 2: BaseModel.parse_obj(obj)
+            output = ast.literal_eval(output)
+            if not isinstance(output, list):
+                raise ValueError("Expect the llm output to be list")
+            models = []
+            for item in output:
+                model = Model.parse_obj(item)
+                models.append(model)
+            
         logger.info(f"Output after parsing llm content: {models}")
         return models

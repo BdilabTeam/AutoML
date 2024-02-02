@@ -17,12 +17,12 @@ class LLMFactory():
         )
     
     @classmethod
-    def from_openai(cls, llm_settings = LLMSettings()):
+    def from_openai(cls, llm_settings: LLMSettings = LLMSettings()):
         """Get the model selection llm"""
         values = dict()
         openai_params = dict()
         if llm_settings.env_file_path:
-            if not load_dotenv(llm_settings.env_file_path):
+            if not load_dotenv(llm_settings.env_file_path, verbose=True):
                 raise EnvironmentError(f"Failed to load environment variable file")
         else:
             if not llm_settings.openai_api_key:
