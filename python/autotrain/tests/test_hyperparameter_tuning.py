@@ -1,5 +1,7 @@
 import os
-from autotrain import AutoTrainer, AutoConfig, TaskType, ModelType
+from autotrain import AutoTrainer, AutoConfig
+
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
 
 class TestHyperparameterTuning:
     
@@ -9,7 +11,7 @@ class TestHyperparameterTuning:
             tp_epochs=1
         )
         output = trainer.train(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv')
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'train.csv')
         )
         print(f"{'*'*15}_Metrics:\n{output.metrics}")
         print(f"{'*'*15}_Best Hyperparameters:\n{output.best_hyperparameters}")
@@ -23,7 +25,7 @@ class TestHyperparameterTuning:
         Trainer = AutoTrainer.for_trainer_class(densenet_config.trainer_class_name)
         trainer = Trainer(densenet_config)
         output = trainer.train(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv')
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'train.csv')
         )
         print(f"{'*'*15}_Metrics:\n{output.metrics}")
         print(f"{'*'*15}_Best Hyperparameters:\n{output.best_hyperparameters}")
@@ -34,7 +36,7 @@ class TestHyperparameterTuning:
             trainer_id="structured-data-regression/densenet",
         )
         output = trainer.train(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv')
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'train.csv')
         )
         print(f"{'*'*15}_Metrics:\n{output.metrics}")
         print(f"{'*'*15}_Best Hyperparameters:\n{output.best_hyperparameters}")
@@ -46,7 +48,7 @@ class TestHyperparameterTuning:
         )
         
         output = trainer.train(
-            inputs=os.path.join(os.pardir, 'autotrain', 'datasets', 'image-classification'), 
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'image-classification')
         )
         
         print(f"{'*'*15}_Metrics:\n{output.metrics}")

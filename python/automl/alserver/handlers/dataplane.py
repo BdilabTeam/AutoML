@@ -16,7 +16,9 @@ from ..operators import TrainingClient
 EXCLUDE_ATTRIBUTES = [
     'model_type', 'task_type', 'trainer_class_name',
     'tp_project_name', 'tp_overwrite',  'tp_directory'
+    'dp_feature_extractor_class_name'
 ]
+
 class DataPlane:
     """
     Internal implementation of handlers, used by REST servers.

@@ -42,6 +42,9 @@ class Endpoints(object):
         # TODO 响应训练项目相关信息
         return JSONResponse(content='The training job was created successfully')
     
+    def delete_training_project(self):
+        pass
+    
     def delete_training_job(self, training_job_name: str = Path()):
         self._data_plane.delete_training_job(name=training_job_name)
         return JSONResponse(content=f"The training job '{training_job_name}' was deleted successfully")

@@ -14,14 +14,12 @@ ENV_PREFIX_SETTINGS = "AUTOML_SERVER_"
 
 DEFAULT_PARALLEL_WORKERS = 1
 
-DEFAULT_ENVIRONMENTS_DIR = os.path.join(os.getcwd(), ".envs")
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
+ENV_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', '.env')
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'automl-models-metadata.jsonl')
 
-
-ENV_FILE_PATH = os.path.abspath('autoselect/.env')
-PROMPT_TEMPLATE_FILE_PATH = os.path.abspath('autoselect/resources/prompt-templates/model-selection-prompt-v1.json')
-MODEL_METADATA_FILE_PATH = os.path.abspath('autoselect/resources/automl-models-metadata.jsonl')
-
-HOST_INFO_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoschedule', 'host_info.json'))
+HOST_INFO_FILE_PATH = os.path.join(PARENT_DIR, 'autoschedule', 'host_info.json')
 
 @contextmanager
 def _extra_sys_path(extra_path: str):
@@ -109,11 +107,6 @@ class Settings(BaseSettings):
     parallel_workers_timeout: int = Field(
         default=5,
         description=f"Grace timeout to wait until the workers shut down when stopping DGServer."
-    )
-
-    environments_dir: str = Field(
-        default=DEFAULT_ENVIRONMENTS_DIR,
-        description=f"Directory used to store custom environments."
     )
 
     server_name: str = Field(

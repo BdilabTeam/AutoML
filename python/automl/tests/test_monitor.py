@@ -2,11 +2,13 @@ import os
 from autoschedule.monitor import ResourceMonitor
 import pytest
 
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
+
 class Monitor:
     @pytest.fixture
     def resource_monitor():
         rm = ResourceMonitor(
-            host_info_file_path=os.path.abspath(os.path.join(os.pardir, 'autoselect', 'host_info.json'))
+            host_info_file_path=os.path.join(PARENT_DIR, 'autoselect', 'host_info.json')
         )
         return rm
     
