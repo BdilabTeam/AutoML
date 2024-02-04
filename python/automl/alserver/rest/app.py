@@ -50,32 +50,38 @@ def create_app(
         APIRoute(
             "/v1/training/project",
             endpoints.create_training_project,
-            methods=['POST']
+            methods=['POST'],
+            tags=["training-project"]
         ),
         APIRoute(
             "/v1/training/project/{traininig_project_id}",
             endpoints.get_training_project_info,
-            methods=['GET']
+            methods=['GET'],
+            tags=["training-project"]
         ),
         APIRoute(
             "/v1/training/project/{training_project_id}",
             endpoints.delete_training_project,
-            methods=['DELETE']
+            methods=['DELETE'],
+            tags=["training-project"]
         ),
         APIRoute(
             "/v1/training/job/{training_job_name}",
             endpoints.delete_training_job,
-            methods=['DELETE']
+            methods=['DELETE'],
+            tags=["training-job"]
         ),
         APIRoute(
             "/v1/selection/candidate-models",
             endpoints.get_candidate_models,
-            methods=['POST']
+            methods=['POST'],
+            tags=["model-selection"]
         ),
         APIRoute(
             "/v1/monitoring/info",
             endpoints.get_monitor_info,
-            methods=['GET']
+            methods=['GET'],
+            tags=["monitoring"]
         ),
     ]
     

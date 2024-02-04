@@ -68,7 +68,6 @@ class DataPlane:
         
         return self._mysql_client.get_session()
     
-    @staticmethod
     def transactional(func):
         def wrapper(self, *args, **kwargs):
             session = self.get_session()
