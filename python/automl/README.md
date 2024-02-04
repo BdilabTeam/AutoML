@@ -17,6 +17,8 @@ pip install --upgrade pip
 pip install poetry
 # 在虚拟环境中安装poetry, 按需安装可选依赖组
 poetry install --with autoselect,autoschedule,storage --without autotrain,test --no-root --no-cache
+# 创建数据库/表
+pytest -s -k test_generate_schemas test_mysql_server.py
 ```
 
 # Start Spec:

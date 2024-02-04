@@ -607,7 +607,8 @@ class TrainingClient(object):
         num_worker_replicas: int = None,
         packages_to_install: List[str] = None,
         pip_index_url: str = "https://pypi.org/simple",
-        host_ip: str = None
+        host_ip: str = None,
+        external_workspace_dir: str = None
     ):
         """Create TFJob from the function.
 
@@ -658,9 +659,10 @@ class TrainingClient(object):
             container_name=constants.TFJOB_CONTAINER,
             packages_to_install=packages_to_install,
             pip_index_url=pip_index_url,
-            host_ip=host_ip
+            host_ip=host_ip,
+            external_workspace_dir=external_workspace_dir
         )
-
+        
         # Create TFJob template.
         tfjob = models.KubeflowOrgV1TFJob(
             api_version=f"{constants.KUBEFLOW_GROUP}/{constants.OPERATOR_VERSION}",
@@ -671,6 +673,7 @@ class TrainingClient(object):
                 tf_replica_specs={},
             ),
         )
+        
 
         # Add Chief, PS, and Worker replicas to the TFJob.
         if num_chief_replicas is not None:
@@ -693,7 +696,6 @@ class TrainingClient(object):
             ] = models.V1ReplicaSpec(
                 replicas=num_worker_replicas, template=pod_template_spec,
             )
-
         # Create TFJob.
         self.create_tfjob(tfjob=tfjob, namespace=namespace)
 

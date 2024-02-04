@@ -53,6 +53,16 @@ def create_app(
             methods=['POST']
         ),
         APIRoute(
+            "/v1/training/project/{traininig_project_id}",
+            endpoints.get_training_project_info,
+            methods=['GET']
+        ),
+        APIRoute(
+            "/v1/training/project/{training_project_id}",
+            endpoints.delete_training_project,
+            methods=['DELETE']
+        ),
+        APIRoute(
             "/v1/training/job/{training_job_name}",
             endpoints.delete_training_job,
             methods=['DELETE']

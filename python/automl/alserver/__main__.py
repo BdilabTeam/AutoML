@@ -8,13 +8,14 @@ async def main():
     settings = Settings(
         kubernetes_enabled=True,
         model_selection_enabled=True,
+        mysql_enabled=True,
         http_port=32081
+        # http_port=8080
     )
     logger.info(f"The parameters of the AutoML-Server: \n{settings.__str__()}")
     
     server = AutoMLServer(settings)
     await server.start()
-    logger.info(f"AutoML-Server start successfully")
 
 if __name__=="__main__":
     asyncio.run(main())

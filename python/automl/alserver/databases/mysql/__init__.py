@@ -1,1 +1,1 @@
-from .server import MySQLServer
+from .server import MySQLClient

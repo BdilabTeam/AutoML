@@ -5,7 +5,12 @@ class AutoMLServerError(Exception):
         super().__init__(msg)
         self.status_code = status_code
 
-class MySQLServerNotExistError(AutoMLServerError):
+class DataFormatError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_400_BAD_REQUEST):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class MySQLNotExistError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code
@@ -30,7 +35,17 @@ class GetJobInfoError(AutoMLServerError):
         super().__init__(msg)
         self.status_code = status_code
 
-class GetModelConfigError(AutoMLServerError):
+class GetTrainingParamsError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class SaveTrainingParamsError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class TrainingProjectNotExistError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code

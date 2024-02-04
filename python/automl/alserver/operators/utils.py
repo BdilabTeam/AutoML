@@ -258,7 +258,8 @@ def get_pod_template_spec(
     container_name: str,
     packages_to_install: List[str],
     pip_index_url: str,
-    host_ip: str
+    host_ip: str,
+    external_workspace_dir: str
 ):
     """
     Get Pod template spec from the given function and input parameters.
@@ -318,9 +319,11 @@ def get_pod_template_spec(
                     image=base_image,
                     command=["bash", "-c"],
                     args=[exec_script],
-                    security_context=client.V1SecurityContext(run_as_user=0)
+                    security_context=client.V1SecurityContext(run_as_user=0),
+                    volume_mounts=[client.V1VolumeMount(name='workspace', mount_path='/metadata')] if external_workspace_dir else None
                 )
-            ]
+            ],
+            volumes=[client.V1Volume(name='workspace', host_path=client.V1HostPathVolumeSource(path=external_workspace_dir))] if external_workspace_dir else None
         ),
     )
 

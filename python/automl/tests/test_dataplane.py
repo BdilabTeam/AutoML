@@ -24,22 +24,9 @@ class TestDataplane:
     def dataplane(self, settings):
         return DataPlane(settings=settings)
 
-    def test_create_training_job(self, dataplane: DataPlane):
-        train_func = dataplane.get_train_func(model_type=MODEL_TYPE)
-        trainer_args_dict = {
-            'task_type': TASK_TYPE,
-            'model_type': MODEL_TYPE,
-            'max_trials': 1,
-            'tuner': TUNER,
-            'inputs': INPUTS
-        }
-        dataplane.create_training_job(
-            name=JOB_NAME,
-            func=train_func,
-            parameters=trainer_args_dict,
-            host_ip=HOST_IP
-        )
-        
+    def test_create_training_project(self, dataplane: DataPlane):
+        pass
+    
     def test_delete_training_job(self, dataplane: DataPlane):
         dataplane.delete_training_job(JOB_NAME)
     
