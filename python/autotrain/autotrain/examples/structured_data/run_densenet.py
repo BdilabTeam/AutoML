@@ -48,7 +48,6 @@ class DensenetTrainerArguments:
     tp_batch_size: int = 32
     tp_validation_split: float = 0.2
     tp_epochs: Optional[int] = None
-    tp_is_early_stop: Optional[bool] = True
 
 def main():
     parser = AutoArgumentParser((DensenetTrainerArguments))
@@ -81,12 +80,10 @@ def main():
         print(f"{'*'*15}_Best Feature Index:\n{feature_extract_output.best_feature_index}")
     
     logger.info(f"{'-'*5} Start training {'-'*5}")
-    trainer_output = trainer.train(inputs=trainer_args.inputs)
+    trainer.train(inputs=trainer_args.inputs)
         
-    logger.info(f"{'-'*5} Training history {'-'*5}")
-    print(f"{'*'*15}_Metrics:\n{trainer_output.metrics}")
-    print(f"{'*'*15}_Best Hyperparameters:\n{trainer_output.best_hyperparameters}")
-    print(f"{'*'*15}_Search Space Summary:\n{trainer_output.search_space_summary}")
+    train_summary = trainer.get_summary()
+    logger.info(f"{'-'*5} Train summary {'-'*5}:\n{train_summary}")
     
 if __name__ == "__main__":
     main()

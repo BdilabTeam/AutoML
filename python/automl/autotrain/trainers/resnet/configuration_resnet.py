@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Literal
 
 from ...utils.configuration_utils import (
     BaseTrainerConfig
@@ -38,19 +38,18 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         # AutoModel
         tp_project_name: str = "auto_model",
         tp_max_trials: int = 1,
-        tp_directory: Optional[str] = None,
+        tp_directory: str = None,
         tp_objective: str = "val_loss",
-        tp_tuner: str = "greedy",
+        tp_tuner: Literal["greedy", "bayesian", "hyperband", "random"] = "greedy",
         tp_overwrite: bool = False,
         tp_seed: Optional[int] = None,
         tp_max_model_size: Optional[int] = None,
         # AutoModel.fit()
         tp_batch_size: int = 32,
-        tp_epochs: Optional[int] = 100,
+        tp_epochs: Optional[int] = None,
         tp_validation_split: float = 0.2,
-        tp_is_early_stop: bool = True,
     ):
-        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name,)
+        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name, tp_project_name=tp_project_name, tp_directory=tp_directory)
         # Data Pipeline
         self.dp_batch_size = dp_batch_size
         self.dp_color_mode = dp_color_mode
@@ -86,5 +85,3 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         self.tp_batch_size = tp_batch_size
         self.tp_epochs = tp_epochs
         self.tp_validation_split = tp_validation_split
-        self.tp_is_early_stop = tp_is_early_stop
-        

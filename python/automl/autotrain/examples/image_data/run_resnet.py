@@ -52,7 +52,6 @@ class ResNetTrainerArguments:
     tp_batch_size: int = field(default=32)
     tp_epochs: Optional[int] = None
     tp_validation_split: float = field(default=0.2)
-    tp_is_early_stop: bool = field(default=True)
 
 def main():
     parser = AutoArgumentParser((ResNetTrainerArguments))
@@ -74,7 +73,7 @@ def main():
     trainer = AutoTrainer.from_config(config=config)
     logger.info(f"{'-'*5} Start training {'-'*5}")
     output = trainer.train(inputs=trainer_args.inputs)
-    logger.info(f"{'-'*5} Training history {'-'*5}")
+    logger.info(f"{'-'*5} Training output {'-'*5}")
     print(output)
 
 if __name__=="__main__":

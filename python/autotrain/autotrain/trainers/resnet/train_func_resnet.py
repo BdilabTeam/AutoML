@@ -20,7 +20,7 @@ def train_resnet(trainer_args: dict):
     trainer = AutoTrainer.from_config(config=config)
     
     logger.info(f"{'-'*5} Start training {'-'*5}")
-    output = trainer.train(inputs=inputs)
+    trainer.train(inputs=inputs)
     
-    logger.info(f"{'-'*5} Training history {'-'*5}")
-    print(output)
+    train_summary = trainer.get_summary()
+    logger.info(f"{'-'*5} Train summary {'-'*5}:\n{train_summary}")

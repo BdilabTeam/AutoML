@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import random
 
@@ -21,6 +22,7 @@ def generate_random_data(num_samples):
 
         # 生成淬透性目标值, 1:优, 0: 良, -1: 一般
         quenching_quality = random.choice(['1', '0', '-1'])
+        # quenching_quality = random.choice(['0.11', '1.0'])
 
         # 合并生成的数据
         row_data = {**steel_composition, **hot_rolling_params, **quenching_params, '淬透性': quenching_quality}
@@ -29,11 +31,11 @@ def generate_random_data(num_samples):
     return data
 
 # 生成10万条数据
-num_samples = 100
+num_samples = 500
 data = generate_random_data(num_samples)
 
 # 转换为DataFrame
 df = pd.DataFrame(data)
 
 # 将数据保存为CSV文件
-df.to_csv('/Users/treasures_y/Downloads/DocumentGeneration-main/python/automl/automl/datasets/train.csv', index=False)
+df.to_csv(os.path.join(os.path.dirname(__file__), 'structured-data-classification.csv'), index=False)
