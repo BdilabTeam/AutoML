@@ -1,5 +1,5 @@
 from alserver.databases.mysql import MySQLClient
-from alserver.models.taining_project_model import TrainingProject
+from alserver.models.experiment import Experiment
 from alserver.settings import Settings
 
 from sqlalchemy.orm.session import Session
@@ -21,5 +21,5 @@ class TestMySQLClient:
         assert mysql_client.generate_schemas() == True, 'Schemas生成失败'
         
     def test_get_session(self, session: Session):
-        training_project = session.query(TrainingProject).filter(TrainingProject.id == 1).one()
-        print(training_project)
+        experiment = session.query(Experiment).filter(Experiment.id == 1).one()
+        print(experiment)

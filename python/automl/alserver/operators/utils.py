@@ -273,7 +273,7 @@ def get_pod_template_spec(
 
     # Extract function implementation.
     func_code = inspect.getsource(func)
-
+    
     # Function might be defined in some indented scope (e.g. in another function).
     # We need to dedent the function code.
     func_code = textwrap.dedent(func_code)
@@ -326,5 +326,4 @@ def get_pod_template_spec(
             volumes=[client.V1Volume(name='workspace', host_path=client.V1HostPathVolumeSource(path=external_workspace_dir))] if external_workspace_dir else None
         ),
     )
-
     return pod_template_spec

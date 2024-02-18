@@ -367,7 +367,7 @@ class TrainingClient(object):
                     f"{job_kind} {namespace}/{name} is Failed. "
                     f"{job_kind} conditions: {job.status.conditions}"
                 )
-
+ 
             # Return Job when it reaches expected condition.
             for expected_condition in expected_conditions:
                 if utils.has_condition(conditions, expected_condition):
@@ -471,7 +471,7 @@ class TrainingClient(object):
             pods.append(pod.metadata.name)
         return pods
 
-    def get_job_logs(
+    async def get_job_logs(
         self,
         name: str,
         namespace: str = utils.get_default_target_namespace(),
@@ -481,6 +481,7 @@ class TrainingClient(object):
         container: str = constants.TFJOB_CONTAINER,
         follow: bool = False,
         timeout: int = constants.DEFAULT_TIMEOUT,
+        websocket = None
     ):
         """Print the training logs for the Job. By default it returns logs from
         the `master` pod.
@@ -554,6 +555,8 @@ class TrainingClient(object):
                                 finished[index] = True
                                 break
                             logging.info("[Pod %s]: %s", pods[index], logline)
+                            if websocket:
+                                await websocket.send_json(logline)
                         except queue.Empty:
                             break
         elif pods:
@@ -563,6 +566,8 @@ class TrainingClient(object):
                         pod, namespace, container=container
                     )
                     logging.info("The logs of pod %s:\n %s", pod, pod_logs)
+                    if websocket:
+                        await websocket.send_json(pod_logs)
                 except Exception:
                     raise RuntimeError(
                         f"Failed to read logs for pod {namespace}/{pod}"
@@ -634,7 +639,6 @@ class TrainingClient(object):
             TimeoutError: Timeout to create TFJob.
             RuntimeError: Failed to create TFJob.
         """
-
         # Check if at least one replica is set.
         # TODO (andreyvelich): Remove this check once we have CEL validation.
         # Ref: https://github.com/kubeflow/training-operator/issues/1708

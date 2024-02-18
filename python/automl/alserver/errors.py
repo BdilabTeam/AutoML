@@ -20,17 +20,17 @@ class SelectModelError(AutoMLServerError):
         super().__init__(msg)
         self.status_code = status_code
 
-class DeleteJobError(AutoMLServerError):
+class DeleteExperimentJobError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code
 
-class CreateJobError(AutoMLServerError):
+class CreateExperimentJobError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code
 
-class GetJobInfoError(AutoMLServerError):
+class GetExperimentJobLogsError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code
@@ -45,7 +45,32 @@ class SaveTrainingParamsError(AutoMLServerError):
         super().__init__(msg)
         self.status_code = status_code
 
-class TrainingProjectNotExistError(AutoMLServerError):
+class GetExperimentJobStatusError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class ExperimentNotExistError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class ParseExperimentSummaryError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class GetSessionError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class WebSocketQueryParamError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
+class ValueError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)
         self.status_code = status_code

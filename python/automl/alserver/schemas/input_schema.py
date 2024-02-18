@@ -2,8 +2,8 @@ from pydantic import BaseModel, Field
 from typing import Literal, IO, Dict, Any, Union
 
 
-class TrainingProjectBase(BaseModel):
-    project_name: str = Field(description="项目名称")
+class ExperimentBase(BaseModel):
+    experiment_name: str = Field(description="项目名称")
     task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Field(description="任务类型")
     model_type: Literal["densenet", "resnet"]= Field(description="模型 or 算法类型")
     files: IO = Field(description="训练数据")
@@ -11,7 +11,7 @@ class TrainingProjectBase(BaseModel):
     class Config:
         arbitrary_types_allowed = True
 
-class TrainingProjectCreate(TrainingProjectBase):
+class ExperimentCreate(ExperimentBase):
     max_trials: int = Field(description="最大试验次数", default=1, ge=1)
     tuner: Literal["greedy", "bayesian", "hyperband", "random"] = Field(description="超参数调优算法")
     training_params: Union[Dict[str, Any], Any] = Field(description="当前'模型'对应训练器的配置参数")

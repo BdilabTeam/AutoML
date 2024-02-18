@@ -1,6 +1,7 @@
 import os
-import shutil
+import re
 import json
+import shutil
 from pathlib import Path
 from typing import Dict, Any, Literal, List, TypeVar
 
@@ -9,20 +10,25 @@ from ..databases.mysql import MySQLClient
 from ..errors import (
     MySQLNotExistError, 
     SelectModelError, 
-    DeleteJobError,
-    CreateJobError,
-    GetJobInfoError,
+    DeleteExperimentJobError,
+    CreateExperimentJobError,
+    GetExperimentJobLogsError,
     GetTrainingParamsError,
     SaveTrainingParamsError,
-    TrainingProjectNotExistError
+    ExperimentNotExistError,
+    GetSessionError,
+    ParseExperimentSummaryError,
+    ValueError,
+    GetExperimentJobStatusError
 )
 from ..operators import TrainingClient
-from ..utils import dataplane_utils
-from ..schemas import input_schema, output_schema
+from ..utils import dataplane_utils, get_logger
+from ..schemas import output_schema
 
 UploadFile = TypeVar('UploadFile')
 
-
+logger = get_logger(__name__)
+from datetime import datetime
 class DataPlane:
     """
     Internal implementation of handlers, used by REST servers.
@@ -125,7 +131,7 @@ class DataPlane:
             except Exception as e:
                 raise GetTrainingParamsError(f"Failed to get the train parameters, for a specific reason: {e}")
             candidate_model = output_schema.CandidateModel(
-                id=str.lower(model.id),
+                model_type=str.lower(model.id),
                 reason=model.reason,
                 training_params=training_params_dict
             )
@@ -133,33 +139,40 @@ class DataPlane:
         return output_schema.CandidateModels(candidate_models=candidate_models)
     
     @transactional
-    def create_training_project(
+    def create_experiment(
         self, 
         name: str,
         task_type: str,
+        task_desc: str,
         model_type: str,
         training_params: Dict[str, Any],
         file_type: Literal['csv', 'image_folder'],
         files: List[UploadFile],
         host_ip: str,
         **kwargs
-    ) -> output_schema.TrainingProjectInfo:
+    ) -> output_schema.ExperimentInfo:
         from autotrain import AutoTrainFunc
-        from ..models.taining_project_model import TrainingProject
-        from ..cruds.training_project_crud import create_training_project
+        from ..models.experiment import Experiment
+        from ..cruds.experiment import create_experiment
+        from kubeflow.training.constants import constants
         
         # @transactional注解自动注入session
         session = kwargs.pop('session', None)
+        if not session:
+            raise GetSessionError("Failed to get database session.")
+        
         try:
-            # 数据库-创建训练项目
-            training_project = TrainingProject(project_name=name, task_type=task_type, model_type=model_type)
-            training_project = create_training_project(session=session, training_project=training_project)
-            training_project.job_name = dataplane_utils.get_training_job_name(training_project.id, training_project.project_name)
-            workspace_dir = dataplane_utils.generate_training_project_workspace_dir(worspace_name=str(training_project.id))
-            training_project.workspace_dir = workspace_dir
-            # 解析、存储数据
+            logger.info("Database - Add experiment items")
+            experiment = Experiment(experiment_name=name, task_type=task_type, task_desc=task_desc, model_type=model_type)
+            experiment = create_experiment(session=session, experiment=experiment)
+            experiment_job_name = dataplane_utils.get_experiment_job_name(experiment.id, experiment.experiment_name)
+            experiment.experiment_job_name = experiment_job_name
+            workspace_dir = dataplane_utils.generate_experiment_workspace_dir(worspace_name=str(experiment.id))
+            experiment.workspace_dir = workspace_dir
+            
+            logger.info("Parse and store data")
             data_dir = os.path.join(workspace_dir, 'datasets')
-            # training_project.data_dir = data_dir
+            # experiment.data_dir = data_dir
             if file_type == 'csv':
                 file_path = Path(data_dir, files[0].filename)
                 file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
@@ -178,9 +191,8 @@ class DataPlane:
             else:
                 raise ValueError
                     
-            # 获取训练函数
+            logger.info("Get the training function and its parameters")
             train_func = AutoTrainFunc.from_model_type(model_type)
-            # 更新训练参数
             training_params.update(
                 {
                     'tp_project_name': name,
@@ -190,24 +202,25 @@ class DataPlane:
                     'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER
                 }
             )
+            tp_max_trials = kwargs.pop('tp_max_trials', None)
+            if tp_max_trials:
+                training_params['tp_max_trials'] = tp_max_trials
+            tp_tuner = kwargs.pop("tp_tuner", None)
+            if tp_tuner:
+                training_params['tp_tuner'] = tp_tuner
             
-            # 训练参数字典存储为json文件
+            logger.info(f"Saving the training parameter.")
             training_params_file_path = os.path.join(workspace_dir, dataplane_utils.TRAINING_PARAMETERS_FILE_NAME)
-            training_project.trainig_params_file_path = training_params_file_path
             try:
                 dataplane_utils.save_dict_to_json_file(data=training_params, json_file=training_params_file_path)
             except Exception as e:
                 raise SaveTrainingParamsError(f"Failed to save the training parameters, for a specific reason: {e}")
+            experiment.training_params_file_path = training_params_file_path
             
-            # 生成job名称
-            job_name = dataplane_utils.get_training_job_name(
-                training_project_id=training_project.id, 
-                training_project_name=training_project.project_name
-            )
-            # 发布训练作业
+            logger.info("Publishing the experiment job.")
             try:
                 self._training_client.create_tfjob_from_func(
-                    name=job_name,
+                    name=experiment_job_name,
                     func=train_func,
                     parameters=training_params,
                     base_image=self._settings.base_image,
@@ -216,100 +229,179 @@ class DataPlane:
                     host_ip=host_ip,
                     external_workspace_dir=workspace_dir,
                 )
+                self._training_client.wait_for_job_conditions(
+                    name=experiment_job_name,
+                    namespace=self._settings.namespcae,
+                    expected_conditions=set([constants.JOB_CONDITION_CREATED]),
+                    timeout=30,
+                    polling_interval=1
+                )
+                
             except Exception as e:
-                raise CreateJobError(f"Failed to create a training job '{name}', for a specific reason: {e}")
+                raise CreateExperimentJobError(f"Failed to create a experiment job '{name}', for a specific reason: {e}")
             
-            return output_schema.TrainingProjectInfo(
-                id=training_project.id,
-                project_name=training_project.project_name,
-                task_type=training_project.task_type,
-                model_type=training_project.model_type,
+            return output_schema.ExperimentInfo(
+                experiment_id=experiment.id,
+                experiment_name=experiment.experiment_name,
+                task_type=experiment.task_type,
+                model_type=experiment.model_type,
             )
         except:
+            logger.error("Failed to create, start rollback operation")
             dataplane_utils.remove_workspace_dir(workspace_dir=workspace_dir)
-            self.delete_training_job(name=job_name)
+            self.delete_experiment_job(experiment_job_name=experiment_job_name)
             raise
     
     @transactional
-    def delete_training_project(self, training_project_id: int, **kwargs):
-        from ..cruds.training_project_crud import delete_training_project, get_training_project
+    def delete_experiment(self, experiment_id: int, **kwargs):
+        from ..cruds.experiment import delete_experiment, get_experiment
         
         # @transactional注解自动注入session
         session = kwargs.pop('session', None)
-        try: 
-            training_project = get_training_project(session=session, training_project_id=training_project_id)
-        except:    
-            raise TrainingProjectNotExistError(f"ID: {training_project_id} for training project does not exist.")
+        if not session:
+            raise GetSessionError("Failed to get database session.")
         
-        delete_training_project(session=session, training_project_id=training_project_id)
-        self.delete_training_job(name=training_project.job_name)
-        dataplane_utils.remove_workspace_dir(workspace_dir=training_project.workspace_dir)
+        try: 
+            experiment = get_experiment(session=session, experiment_id=experiment_id)
+        except:    
+            raise ExperimentNotExistError(f"ID: {experiment_id} for experiment does not exist.")
+        
+        self.delete_experiment_job(experiment_job_name=experiment.experiment_job_name)
+        delete_experiment(session=session, experiment_id=experiment_id)
+        dataplane_utils.remove_workspace_dir(workspace_dir=experiment.workspace_dir)
             
-    
-    def get_training_project_info(self, training_project_id: int) -> output_schema.TrainingProjectInfo:
-        from ..cruds.training_project_crud import get_training_project
+    def get_experiment_overview(self, experiment_id: int) -> output_schema.ExperimentOverview:
+        from ..cruds.experiment import get_experiment
+        from kubeflow.training.constants import constants
         
         session = self.get_session()
         try: 
-            training_project = get_training_project(session=session, training_project_id=training_project_id)
+            experiment = get_experiment(session=session, experiment_id=experiment_id)
         except:    
-            raise TrainingProjectNotExistError(f"ID: {training_project_id} for training project does not exist.")
+            raise ExperimentNotExistError(f"ID: {experiment_id} for experiment does not exist.")
         
-        job_name = training_project.job_name
-        # try:
-        #     job_status = self._training_client.get_tfjob(name=job_name, namespace=self._settings.namespcae).status
-        # except Exception as e:
-        #     raise GetJobInfoError(f"Failed to get training job '{job_name}' status information, for a specific reason: {e}")
+        logger.info("Getting the status of the experiment job")
+        experiment_job_name = experiment.experiment_job_name
+        try:
+            experiment_job_status = self._training_client.get_tfjob(name=experiment_job_name, namespace=self._settings.namespcae).status
+        except Exception as e:
+            raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment_job_name}', for a specific reason: {e}")
         
-        # 获取训练参数
-        file_path = training_project.trainig_params_file_path
-        with open(file_path, 'r') as file:
-            training_params = json.load(file)
+        if not experiment_job_status:
+            raise ValueError("Experiment job status cannot be None")
         
-        return output_schema.TrainingProjectInfo(
-            id=training_project_id,
-            project_name=training_project.project_name,
-            task_type=training_project.task_type,
-            model_type=training_project.model_type,
-            training_params=training_params,
-            job_info=output_schema.JobInfo(
-                job_name=job_name,
-                # job_status=job_status
+        experiment_start_time = experiment_job_status.start_time.strftime("%Y-%m-%d %H:%M:%S") if experiment_job_status.start_time else None
+        if experiment_job_status.completion_time:
+            experiment_completion_time = experiment_job_status.completion_time.strftime("%Y-%m-%d %H:%M:%S") 
+            experiment_duration_time = str(datetime.strptime(experiment_completion_time, "%Y-%m-%d %H:%M:%S") -  datetime.strptime(experiment_start_time, "%Y-%m-%d %H:%M:%S")).split(".")[0]
+        else:
+            experiment_completion_time = None
+            experiment_duration_time = None
+        conditions = experiment_job_status.conditions
+        if conditions:
+            for c in reversed(conditions):
+                if c.status == constants.CONDITION_STATUS_TRUE:
+                    experiment_status = c.type
+                    break
+        else:
+            experiment_status = 'Unknown'
+        
+        if experiment_status == constants.JOB_CONDITION_SUCCEEDED:
+            logger.info("Getting the summary of the experiment.")
+            try:
+                with open(os.path.join(experiment.workspace_dir, experiment.experiment_name, dataplane_utils.EXPERIMENT_SUMMARY_FILE_NAME)) as f:
+                    summary = json.load(f)
+            except Exception as e:
+                raise ParseExperimentSummaryError("Failed to parse the summary of the experiment, for a specific reason: {e}")
+            
+            best_model_tracker = summary.get("best_model_tracker")
+            if best_model_tracker:
+                best_model = output_schema.BestModel(
+                history=best_model_tracker.get("history"),
+                parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
+                model_graph_url=re.sub(r"metadata", os.path.join("metadata", str(experiment.id)), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
+            else:
+                raise ValueError("Failed to get the 'best_model_tracker' key of the 'summary dict'")
+            trials_tracker = summary.get('trials_tracker')
+            if trials_tracker:
+                trials = []
+                for trial in trials_tracker.get("trials"):
+                    trials.append(
+                        output_schema.Trial(
+                            trial_id=trial.get("trial_id"),
+                            trial_status=trial.get("status"),
+                            default_metric=round(trial.get("score"), 5),
+                            best_step=trial.get('best_step'),
+                            parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
+                            model_graph_url=re.sub(r"metadata", os.path.join("metadata", str(experiment.id)), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
+                        )
+                    )
+            else:
+                raise ValueError("Failed to get the 'trials_tracker' key of the 'summary dict'")
+            experiment_summary_url = os.path.join('/metadata', str(experiment_id), experiment.experiment_name, dataplane_utils.EXPERIMENT_SUMMARY_FILE_NAME)
+        else:
+            logger.info("Experiment job is incomplete. Can't get the summary.")
+            best_model = None
+            trials = None
+            
+        return output_schema.ExperimentOverview(
+            experiment_name=experiment.experiment_name,
+            experiment_status=experiment_status,
+            experiment_start_time=experiment_start_time,
+            experiment_completion_time=experiment_completion_time,
+            experiment_duration_time=experiment_duration_time,
+            experiment_summary_url=experiment_summary_url,
+            tuner=None,
+            trials=trials,
+            best_model=best_model
         )
     
-    def delete_training_job(self, name: str):
+    @transactional
+    def get_experiment_cards(self, **kwargs) -> output_schema.ExperimentCards:
+        from ..cruds.experiment import get_all_experiments
+        
+        # @transactional注解自动注入session
+        session = kwargs.pop('session', None)
+        if not session:
+            raise GetSessionError("Failed to get database session.")
+        
+        experiments = get_all_experiments(session=session)
+        experiment_cards = []
+        for experiment in experiments:
+            experiment_card = output_schema.ExperimentCard(
+                experiment_id=experiment.id,
+                experiment_name=experiment.experiment_name,
+                task_type=experiment.task_type,
+                task_desc=experiment.task_desc,
+                model_type=experiment.model_type,
+                experiment_job_name=experiment.experiment_job_name
+            )
+            experiment_cards.append(experiment_card)
+        return output_schema.ExperimentCards(experiment_cards=experiment_cards)
+    
+    def delete_experiment_job(self, experiment_job_name: str):
         try:
             self._training_client.delete_tfjob(
-                name=name, 
+                name=experiment_job_name, 
                 namespace=self._settings.namespcae
             )
         except Exception as e:
-            raise DeleteJobError(f"Failed to delete a training job '{name}', for a specific reason: {e}")
+            raise DeleteExperimentJobError(f"Failed to delete a experiment job '{experiment_job_name}', for a specific reason: {e}")
     
-    def is_training_job_succeeded(self, name: str):
-        """Verify if job is succeeded"""
+    async def get_experiment_job_logs(self, name: str, websocket = None):
         try:
-            return self._training_client.is_job_succeeded(name=name, namespace=self._settings.namespcae)
-        except Exception as e:
-            raise GetJobInfoError(f"Failed to get training job '{name}' status information, for a specific reason: {e}")
-    
-    def get_training_job_conditions(self, name: str):
-        """Get the Training Job conditions."""
-        try:
-            conditions = self._training_client.get_job_conditions(
+            await self._training_client.get_job_logs(
                 name=name,
-                namespace=self._settings.namespcae
-            )
-            return conditions
+                namespace=self._settings.namespcae,
+                is_master=False,
+                replica_type='worker',
+                follow=True,
+                websocket=websocket
+            )   
         except Exception as e:
-            raise GetJobInfoError(f"Failed to get training job '{name}' status information, for a specific reason: {e}")
-    
-    def get_training_job_logs(self, name: str):
-        return self._training_client.get_job_logs(
-            name=name,
-            namespace=self._settings.namespcae
-        )
+            await websocket.close(reason="Log acquisition process exception.")
+            raise GetExperimentJobLogsError(f"Failed to get the logs of the experiment job '{name}'")
     
     def get_gpu_and_host(self, threshold):
         return self._resource_monitor_service.get_gpu_and_host(threshold=threshold)
