@@ -66,6 +66,7 @@ class DataPlane:
             threading.Thread(target=self._resource_monitor_service.start(), daemon=True).start()
             
         self._settings = settings
+
     
     def get_session(self):
         """Provide database session"""
@@ -73,6 +74,7 @@ class DataPlane:
             raise MySQLNotExistError("No available MySQL database server")
         
         return self._mysql_client.get_session()
+
     
     def transactional(func):
         def wrapper(self, *args, **kwargs):
@@ -87,8 +89,8 @@ class DataPlane:
                 raise
             finally:
                 session.close()
-
         return wrapper
+
     
     async def aselect_models(
         self, 
@@ -137,6 +139,7 @@ class DataPlane:
             )
             candidate_models.append(candidate_model)
         return output_schema.CandidateModels(candidate_models=candidate_models)
+
     
     @transactional
     def create_experiment(
@@ -172,7 +175,6 @@ class DataPlane:
             
             logger.info("Parse and store data")
             data_dir = os.path.join(workspace_dir, 'datasets')
-            # experiment.data_dir = data_dir
             if file_type == 'csv':
                 file_path = Path(data_dir, files[0].filename)
                 file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
@@ -210,12 +212,11 @@ class DataPlane:
                 training_params['tp_tuner'] = tp_tuner
             
             logger.info(f"Saving the training parameter.")
-            training_params_file_path = os.path.join(workspace_dir, dataplane_utils.TRAINING_PARAMETERS_FILE_NAME)
+            training_params_file_path = dataplane_utils.get_experiment_training_params_file_path(workspace_dir)
             try:
                 dataplane_utils.save_dict_to_json_file(data=training_params, json_file=training_params_file_path)
             except Exception as e:
                 raise SaveTrainingParamsError(f"Failed to save the training parameters, for a specific reason: {e}")
-            experiment.training_params_file_path = training_params_file_path
             
             logger.info("Publishing the experiment job.")
             try:
@@ -251,7 +252,8 @@ class DataPlane:
             dataplane_utils.remove_workspace_dir(workspace_dir=workspace_dir)
             self.delete_experiment_job(experiment_job_name=experiment_job_name)
             raise
-    
+
+
     @transactional
     def delete_experiment(self, experiment_id: int, **kwargs):
         from ..cruds.experiment import delete_experiment, get_experiment
@@ -269,7 +271,8 @@ class DataPlane:
         self.delete_experiment_job(experiment_job_name=experiment.experiment_job_name)
         delete_experiment(session=session, experiment_id=experiment_id)
         dataplane_utils.remove_workspace_dir(workspace_dir=experiment.workspace_dir)
-            
+
+
     def get_experiment_overview(self, experiment_id: int) -> output_schema.ExperimentOverview:
         from ..cruds.experiment import get_experiment
         from kubeflow.training.constants import constants
@@ -356,6 +359,7 @@ class DataPlane:
             trials=trials,
             best_model=best_model
         )
+
     
     @transactional
     def get_experiment_cards(self, **kwargs) -> output_schema.ExperimentCards:
@@ -388,6 +392,7 @@ class DataPlane:
             )
         except Exception as e:
             raise DeleteExperimentJobError(f"Failed to delete a experiment job '{experiment_job_name}', for a specific reason: {e}")
+
     
     async def get_experiment_job_logs(self, name: str, websocket = None):
         try:
@@ -402,6 +407,7 @@ class DataPlane:
         except Exception as e:
             await websocket.close(reason="Log acquisition process exception.")
             raise GetExperimentJobLogsError(f"Failed to get the logs of the experiment job '{name}'")
+
     
     def get_gpu_and_host(self, threshold):
         return self._resource_monitor_service.get_gpu_and_host(threshold=threshold)

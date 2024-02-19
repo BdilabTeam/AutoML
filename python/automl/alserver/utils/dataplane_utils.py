@@ -5,8 +5,10 @@ from typing import Dict, Any
 from pathlib import Path
 
 EXPERIMENT_SUMMARY_FILE_NAME = 'summary.json'
-TRAINING_PARAMETERS_FILE_NAME = 'traininig-parameters.json'
+EXPERIMENT_TRAINING_PARAMETERS_FILE_NAME = 'traininig-parameters.json'
+DATASETS_FOLDER_NAME = 'datasets'
 IMAGE_FOLDER_NAME = 'image'
+BEST_MODEL_FOLDER_NAME = 'best_model'
 
 WORKSPACE_DIR_IN_CONTAINER = '/metadata'
 DATA_DIR_IN_CONTAINER = '/metadata/datasets'
@@ -58,6 +60,11 @@ def get_training_params_dict(task_type: str, model_type: str):
         training_params_dict[key] = value
     return training_params_dict
 
-def get_experiment_summary_dict(workspace_dir: str) -> Dict:
-    with open(os.path.join(workspace_dir, EXPERIMENT_SUMMARY_FILE_NAME)) as f:
-        return json.load(f)
+def get_experiment_data_dir(workspace_dir: str):
+    return os.path.join(workspace_dir, DATASETS_FOLDER_NAME)
+
+def get_experiment_training_params_file_path(workspace_dir: str):
+    return os.path.join(workspace_dir, EXPERIMENT_TRAINING_PARAMETERS_FILE_NAME)
+
+def get_experiment_best_model_dir(workspace_dir: str, experiment_name: str):
+    return os.path.join(workspace_dir, experiment_name, BEST_MODEL_FOLDER_NAME)
