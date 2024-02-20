@@ -3,3 +3,4 @@ from .trainer_ak_resnet import (
     AKResNetForImageClassificationTrainer,
     AKResNetForImageRegressionTrainer
 )
+from .train_func_resnet import train_resnet

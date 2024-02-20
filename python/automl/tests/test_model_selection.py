@@ -4,9 +4,10 @@ from autoselect.selection import LLMFactory, LLMSettings, ModelSelectionLLMSetti
 from autoselect.selection import ModelSelection
 from autoselect.selection.settings import ModelSelectionSettings
 
-ENV_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoselect', '.env'))
-PROMPT_TEMPLATE_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json'))
-MODEL_METADATA_FILE_PATH = os.path.abspath(os.path.join(os.pardir, 'autoselect', 'resources', 'huggingface-models-metadata.jsonl'))
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
+ENV_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', '.env')
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'huggingface-models-metadata.jsonl')
 
 class TestLLMFactory:
     @pytest.fixture(scope="class")

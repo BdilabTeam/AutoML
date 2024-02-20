@@ -1,4 +1,4 @@
-from typing import Optional, Union, List
+from typing import Optional, Union, List, Literal
 import numpy as np
 
 from ...utils.configuration_utils import BaseTrainerConfig
@@ -23,30 +23,29 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         # Model pipeline
         mp_enable_categorical_to_numerical: Optional[bool] = True,
         # DenseBlock
-        mp_num_layers: Optional[List[int]] = None,
-        mp_num_units: Optional[List[int]] = None,
+        mp_num_layers: Optional[List[int]] = [1, 2, 3],
+        mp_num_units: Optional[List[int]] = [16, 32, 64, 128, 256, 512, 1024],
         mp_use_batchnorm: Optional[bool] = True,
-        mp_dropout: Optional[List[float]] = None,
+        mp_dropout: Optional[List[float]] = [0.0, 0.25, 0.5],
         # ClassificationHead config
         mp_multi_label: bool = False,
         # Train pipeline
         # AutoModel
         tp_project_name: str = "auto_model",
+        tp_directory: str = None,
         tp_max_trials: int = 1,
-        tp_objective: str = "val_loss",
-        tp_tuner: str = "greedy",
+        tp_objective: str = None,
+        tp_tuner: Literal["greedy", "bayesian", "hyperband", "random"] = "greedy",
         tp_overwrite: bool = True,
-        tp_directory: Optional[str] = None,
         tp_seed: Optional[int] = None,
         tp_max_model_size: Optional[int] = None,
         # AutoModel.fit()
         tp_batch_size: int = 32,
         tp_validation_split: float = 0.2,
-        tp_epochs: Optional[int] = None,
-        tp_is_early_stop: Optional[bool] = True,
+        tp_epochs: Optional[int] = 100,
         **kwargs
     ) -> None:
-        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name)
+        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name, tp_project_name=tp_project_name, tp_directory=tp_directory)
         # AutoFeatureExtractor
         self.dp_enable_auto_feature_extract=dp_enable_auto_feature_extract
         self.dp_feature_num = dp_feature_num
@@ -66,7 +65,6 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         self.mp_dropout = mp_dropout
         # ClassificationHead config
         self.mp_multi_label=mp_multi_label
-
         # AutoModel
         self.tp_project_name = tp_project_name
         self.tp_max_trials = tp_max_trials
@@ -80,4 +78,3 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         self.tp_batch_size=tp_batch_size
         self.tp_epochs = tp_epochs
         self.tp_validation_split = tp_validation_split
-        self.tp_is_early_stop = tp_is_early_stop

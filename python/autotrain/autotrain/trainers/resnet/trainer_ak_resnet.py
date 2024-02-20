@@ -1,42 +1,18 @@
 import os
-import glob
 from functools import partial
-from typing import Union, Optional, Dict, Any
-from dataclasses import dataclass
-import numpy as np
+from typing import Union, Any
 
 import autokeras as ak
 from keras_tuner.engine import hyperparameters as hp
-import tensorflow as tf
+from keras.utils import plot_model
 
 from .configuration_resnet import ResNetTrainerConfig
 from ...utils import TaskType
-from ...utils.trainer_utils import BaseTrainerOutput, BaseTrainer
+from ...utils.trainer_utils import BaseTrainer, Trial, TrialsTracker, BestModelTracker, TrainerTracker
 
 
-@dataclass 
-class AKBaseTrainerOutput(BaseTrainerOutput):
-    metrics: Dict[str, Any] = None
-    search_space_summary: Dict[str, Any] = None
-    best_hyperparameters: Dict[str, Any] = None
-    results_summary: Any = None
-    model_summary: Any = None
-
-@dataclass 
-class AKImageClassificationTrainerOutput(BaseTrainerOutput):
-    metrics: Dict[str, Any] = None
-    search_space_summary: Dict[str, Any] = None
-    best_hyperparameters: Dict[str, Any] = None
-    results_summary: Any = None
-    model_summary: Any = None
-
-@dataclass 
-class AKImageRegressionTrainerOutput(BaseTrainerOutput):
-    metrics: Dict[str, Any] = None
-    search_space_summary: Dict[str, Any] = None
-    best_hyperparameters: Dict[str, Any] = None
-    results_summary: Any = None
-    model_summary: Any = None
+class AKBaseTrainerTracker(TrainerTracker):
+    pass
     
 class AKResNetMainTrainer:
     def __init__(
@@ -87,13 +63,12 @@ class AKResNetMainTrainer:
         auto_model_params["objective"] = config.tp_objective
         auto_model_params["tuner"] = config.tp_tuner
         auto_model_params["overwrite"] = config.tp_overwrite
-        if config.tp_directory:
-            auto_model_params["directory"] = config.tp_directory
+        auto_model_params["directory"] = config.tp_directory
         if config.tp_seed:
             auto_model_params["seed"] = config.tp_seed
         if config.tp_max_model_size:
             auto_model_params["max_model_size"] = config.tp_max_model_size
-        self.auto_model = ak.AutoModel(
+        self._auto_model = ak.AutoModel(
             inputs=input_node, 
             outputs=output_node, 
             **auto_model_params
@@ -104,104 +79,103 @@ class AKResNetMainTrainer:
         auto_fit_params["validation_split"] = config.tp_validation_split
         if config.tp_epochs:
             auto_fit_params["epochs"] = config.tp_epochs
-        if config.tp_is_early_stop:
-            cbs = []
-            cbs.append(tf.keras.callbacks.EarlyStopping(patience=100))
-            auto_fit_params["callbacks"] = cbs
-        self.auto_fit = partial(
-            self.auto_model.fit,
+ 
+        self._auto_fit = partial(
+            self._auto_model.fit,
             **auto_fit_params
         )
 
-        self.config = config
+        self._config = config
         
     def __call__(
         self,
         inputs: str,
         **kwargs
-    ) -> Union[AKBaseTrainerOutput, None]:
+    ) -> AKBaseTrainerTracker:
         data_pipeline_params = {}
-        if self.config.dp_batch_size:
-            data_pipeline_params["batch_size"] = self.config.dp_batch_size
-        if self.config.dp_color_mode:
-            data_pipeline_params["color_mode"] = self.config.dp_color_mode
-        if self.config.dp_image_size:
-            data_pipeline_params["image_size"] = self.config.dp_image_size
-        if self.config.dp_interpolation:
-            data_pipeline_params["interpolation"] = self.config.dp_interpolation
-        if self.config.dp_shuffle:
-            data_pipeline_params["shuffle"] = self.config.dp_shuffle
-        if self.config.dp_seed:
-            data_pipeline_params["seed"] = self.config.dp_seed
-        if self.config.dp_validation_split:
-            data_pipeline_params["validation_split"] = self.config.dp_validation_split
+        if self._config.dp_batch_size:
+            data_pipeline_params["batch_size"] = self._config.dp_batch_size
+        if self._config.dp_color_mode:
+            data_pipeline_params["color_mode"] = self._config.dp_color_mode
+        if self._config.dp_image_size:
+            data_pipeline_params["image_size"] = self._config.dp_image_size
+        if self._config.dp_interpolation:
+            data_pipeline_params["interpolation"] = self._config.dp_interpolation
+        if self._config.dp_shuffle:
+            data_pipeline_params["shuffle"] = self._config.dp_shuffle
+        if self._config.dp_seed:
+            data_pipeline_params["seed"] = self._config.dp_seed
+        if self._config.dp_validation_split:
+            data_pipeline_params["validation_split"] = self._config.dp_validation_split
         train_data = ak.image_dataset_from_directory(
             directory=inputs,
             subset='training',
             **data_pipeline_params
         )
 
-        self.auto_fit(train_data)
+        history = self._auto_fit(train_data)
 
-        # 指标
-        metrics = {}
-        metric_keys = self.auto_model.tuner.oracle.get_best_trials(1)[0].metrics.metrics.keys()
-        for metric_key in metric_keys:
-            metric_value = self.auto_model.tuner.oracle.get_best_trials()[0].metrics.get_statistics(metric_key)["mean"]
-            metrics.setdefault(metric_key, metric_value)
-        # 最优超参数
-        best_hyperparameters = self.auto_model.tuner.get_best_hyperparameters()[0].values
-        # 搜索空间
-        search_space_summary = self.auto_model.tuner.oracle.get_space().get_config()
-        # TODO 以下调用只会在控制台输出结果
-        # if output_results_summary:    # 训练历史
-        #    output.results_summary = self.auto_model.tp_tuner.results_summary()
-        #if output_model_summary:    # 模型结构描述
-        #    model = self.auto_model.export_model()
-        #    output.model_summary = model.summary()
-        return AKBaseTrainerOutput(
-            metrics=metrics,
-            best_hyperparameters=best_hyperparameters,
-            search_space_summary=search_space_summary
+        best_keras_model = self._auto_model.tuner.get_best_model()
+        try:
+            model_graph_path = os.path.join(self._auto_model.tuner.best_model_path, 'model.png')
+            plot_model(best_keras_model, to_file=model_graph_path, show_layer_activations=True, show_dtype=True, show_shapes=True, show_layer_names=False)
+        except:
+            model_graph_path = None
+
+        best_model_tracker = BestModelTracker(
+            history=history.history,
+            hyperparameters=self._auto_model.tuner.get_best_hyperparameters().pop().get_config(),
+            model_graph_path=model_graph_path
+        )
+        
+        max_trials = self._config.tp_max_trials
+        trials = []
+        models = self._auto_model.tuner.get_best_models(max_trials)
+        index = 0
+        for trial in self._auto_model.tuner.oracle.get_best_trials(max_trials):
+            try:
+                model_graph_path = os.path.join(self._auto_model.tuner.get_trial_dir(trial_id=trial.trial_id), 'model.png')
+                plot_model(model=models[index], to_file=model_graph_path, show_layer_activations=True, show_dtype=True, show_shapes=True, show_layer_names=False)
+            except:
+                model_graph_path = None
+            index += 1
+            trials.append(Trial(
+                **trial.get_state(),
+                model_graph_path=model_graph_path
+            ))
+        trials_tracker = TrialsTracker(trials=trials)
+        
+        return AKBaseTrainerTracker(
+            best_model_tracker=best_model_tracker,
+            trials_tracker=trials_tracker
         )
 
 class AKResNetForImageClassificationTrainer(BaseTrainer):
     def __init__(self, config: ResNetTrainerConfig, **kwargs) -> None:
         if config.task_type != TaskType.IMAGE_CLASSIFICATION.value:
             raise ValueError(f"Task type '{config.task_type}' mismatch, expected task type is '{TaskType.IMAGE_CLASSIFICATION.value}'")
+        super().__init__(config=config)
 
         self.trainer = AKResNetMainTrainer(config=config)
-        self.config = config
-    
-    def train(self, inputs: str, *args: Any, **kwds: Any) -> AKImageClassificationTrainerOutput:
-        outputs = self.trainer(
-            inputs=inputs,
-        )
-        return AKImageClassificationTrainerOutput(
-            metrics=outputs.metrics,
-            best_hyperparameters=outputs.best_hyperparameters,
-            search_space_summary=outputs.search_space_summary,
-            results_summary=outputs.results_summary,
-            model_summary=outputs.model_summary,
-        )
+        
+    def train(self, inputs: str, *args: Any, **kwds: Any):
+        if not self.trainer:
+            raise ValueError("No trainer is available")
+        trainer_tracker = self.trainer(inputs=inputs)
+        self.save_summary(trainer_tracker)
 
 class AKResNetForImageRegressionTrainer(BaseTrainer):
     def __init__(self, config: ResNetTrainerConfig, **kwargs):
         if config.task_type != TaskType.IMAGE_REGRESSION.value:
             raise ValueError(f"Task type '{config.task_type}' mismatch, expected task type is '{TaskType.IMAGE_REGRESSION.value}'")
+        super().__init__(config=config)
         
         self.trainer = AKResNetMainTrainer(config=config)
-        self.config = config
-    
-    def train(self, inputs: str, *args: Any, **kwds: Any) -> AKImageRegressionTrainerOutput:
-        outputs = self.trainer(
-            inputs=inputs,
-        )
-        return AKImageRegressionTrainerOutput(
-            metrics=outputs.metrics,
-            best_hyperparameters=outputs.best_hyperparameters,
-            search_space_summary=outputs.search_space_summary,
-            results_summary=outputs.results_summary,
-            model_summary=outputs.model_summary,
-        )
+        
+    def train(self, inputs: str, *args: Any, **kwds: Any):
+        if not self.trainer:
+            raise ValueError("No trainer is available")
+        trainer_tracker = self.trainer(inputs=inputs)
+        self.save_summary(trainer_tracker)
+        
     

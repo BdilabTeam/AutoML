@@ -51,4 +51,4 @@ class AutoMLServer:
             
         if self._settings.mysql_enabled:
             logger.info("Stopping the mysql server")
-            await self._mysql_server.stop()
+            await self._mysql_client.stop()

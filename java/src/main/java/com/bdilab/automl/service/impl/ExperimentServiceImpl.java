@@ -1,0 +1,190 @@
+package com.bdilab.automl.service.impl;
+
+import com.alibaba.fastjson.JSONObject;
+import com.bdilab.automl.common.exception.InternalServerErrorException;
+import com.bdilab.automl.common.utils.*;
+import com.bdilab.automl.mapper.ExperimentMapper;
+import com.bdilab.automl.model.Experiment;
+import com.bdilab.automl.service.ExperimentService;
+import io.cloudevents.CloudEvent;
+import io.cloudevents.core.v1.CloudEventBuilder;
+import io.fabric8.knative.client.DefaultKnativeClient;
+import io.fabric8.knative.serving.v1.ServiceSpec;
+import io.fabric8.knative.serving.v1.ServiceSpecBuilder;
+import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.time.OffsetDateTime;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
+
+
+@Service
+@Slf4j
+public class ExperimentServiceImpl implements ExperimentService {
+    @Resource
+    private ExperimentMapper experimentMapper;
+
+    @Resource
+    private DefaultKnativeClient defaultKnativeClient;
+
+    @Resource
+    private KubernetesClient kubernetesClient;
+
+    @Value("${server.ip}")
+    private String serverIp;
+
+    @Value("${server.port}")
+    private String serverPort;
+    @Override
+    @Transactional
+    public void deployment(Integer experimentId) {
+        io.fabric8.knative.serving.v1.Service service = new io.fabric8.knative.serving.v1.Service();
+        service.setApiVersion("serving.knative.dev/v1");
+        service.setKind("Service");
+        Experiment experiment = experimentMapper.selectById(experimentId);
+        if (null == experiment) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的实验不存在", experimentId)));
+        }
+        String ksvcName = Utils.getModelServerName(experimentId);
+        ObjectMeta objectMeta = new ObjectMetaBuilder()
+                .withName(ksvcName)
+                .withNamespace(Utils.NAMESPACE)
+                .build();
+        service.setMetadata(objectMeta);
+
+        Map<String, String> annotations = new HashMap() {
+            {
+                put("autoscaling.knative.dev/minScale", "1");
+            }
+        };
+
+        Map<String, String> nodeSelector = new HashMap() {
+            {
+                put("kubernetes.io/hostname", "node1");
+            }
+        };
+
+        List<String> commands = new ArrayList<String>() {
+            {
+                add("python");
+                add("-m");
+                add("autokeras_server");
+                add(String.format("--model_name=%s", Utils.getModelServerName(experimentId)));
+                add(String.format("--model_dir=%s", Utils.getBestModelDirInContainer(experimentId, experiment.getExperimentName())));
+            }
+        };
+        // 构造volumeMount
+        VolumeMount volumeMount = new VolumeMountBuilder()
+                .withName("model-dir")
+                .withMountPath(Utils.METADATA_DIR_IN_CONTAINER)
+                .withReadOnly()
+                .build();
+
+        // 构造container
+        Container container = new ContainerBuilder()
+                .withName(Utils.BASE_MODEL_SERVER_NAME)
+                .withImage(Utils.BASE_IMAGE)
+                .withImagePullPolicy("IfNotPresent")
+                .withCommand(commands)
+                .withVolumeMounts(volumeMount)
+                .build();
+        // 构造volume
+        Volume volume = new VolumeBuilder()
+                .withName("model-dir")
+                .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(Utils.PVC_NAME, true))
+                .build();
+
+        // spec
+        ServiceSpec spec = new ServiceSpecBuilder()
+                .withNewTemplate()
+                .withNewMetadata()
+                .withAnnotations(annotations)
+                .endMetadata()
+                .withNewSpec()
+                .withNodeSelector(nodeSelector)
+                .withContainers(container)
+                .withVolumes(volume).endSpec()
+                .endTemplate()
+                .build();
+
+        service.setSpec(spec);
+
+        log.info("Creating the model server.");
+        try {
+            io.fabric8.knative.serving.v1.Service created_service = defaultKnativeClient.services().create(service);
+            defaultKnativeClient.services().resource(created_service).waitUntilReady(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            defaultKnativeClient.services().resource(service).delete();
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("推理服务部署失败, 具体原因: %s", e)));
+        }
+
+        String host = Utils.generateHost(ksvcName);
+        experiment.setVirtualHost(host);
+        try {
+            experimentMapper.updateById(experiment);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("数据库表更新失败, 具体原因: %s", e)));
+        }
+    }
+
+    @Override
+    @Transactional
+    public void undeploy(Integer experimentId) {
+        Experiment experiment = experimentMapper.selectById(experimentId);
+        if (null == experiment) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的训练项目不存在", experimentId)));
+        }
+        String ksvcName = Utils.getModelServerName(experimentId);
+        try {
+            List<StatusDetails> statusDetails = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(ksvcName).delete();
+            log.info(statusDetails.toString());
+        } catch (Exception e) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("删除ksvc失败, 具体原因:", e)));
+        }
+        experiment.setVirtualHost(null);
+        try {
+            experimentMapper.updateById(experiment);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("更新数据库失败, 具体原因:", e)));
+        }
+    }
+
+    @Override
+    public String infer(Integer experimentId, List<Object> instances) {
+        Experiment experiment = experimentMapper.selectById(experimentId);
+        if (null == experiment) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的训练项目不存在", experimentId)));
+        }
+
+        log.info("Parsing the data.");
+        if (null == instances || instances.size() == 0) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData("推理数据不能为空"));
+        }
+        JSONObject var1 = new JSONObject();
+        var1.put("instances", instances);
+        String jsonFormatInstances = var1.toJSONString();
+
+        log.info("Sending the inference request.");
+        String modelName = Utils.getModelServerName(experimentId);
+        String host = experiment.getVirtualHost();
+        // 使用推理服务，并获取推理结果
+        String url = "http://" + serverIp + ":" + IstioUtils.INGRESS_GATEWAY_PORT + "/v2/models/" + modelName + "/infer";
+        CloudEvent event = new CloudEventBuilder()
+                .withId(experimentId + "-" + UUID.randomUUID())
+                .withSource(URI.create("http://automl.deployment.com"))
+                .withType("com.deployment.automl.inference.request")
+                .withTime(OffsetDateTime.now())
+                .withData("application/json", jsonFormatInstances.getBytes(StandardCharsets.UTF_8))
+                .build();
+        return CloudEventUtils.sendBinaryCloudEvent(event, url, HttpMethod.POST, host, null);
+    }
+}

@@ -1,9 +1,12 @@
+import json
+from pathlib import Path
+from typing import List, Dict, Any, Union, Literal
 from fastapi.responses import JSONResponse
-from fastapi import Body, File, UploadFile, Form, Path
+from fastapi import Body, File, UploadFile, Form, WebSocket
 
 from ..handlers import DataPlane
-from ..schemas import input_schemas, output_schemas
-import json
+from ..schemas import input_schema, output_schema
+from ..errors import DataFormatError, WebSocketQueryParamError
 
 
 class Endpoints(object):
@@ -15,80 +18,96 @@ class Endpoints(object):
     def __init__(self, data_plane: DataPlane):
         self._data_plane = data_plane
     
-    # async def create_training_project(self, 
-    #                          files: List[UploadFile] = File(description="Multiple files as UploadFile"), 
-    #                          template_id: str = Form(),
-    #                          template_parameters: str = Form()) -> JSONResponse:
-    #        return JSONResponse(
-    #         content="{'test': 'ok'}"
-    #     )
-    def create_training_project(self, training_project_vo: input_schemas.TrainingProjectCreate) -> JSONResponse:
-        # 获取训练函数
-        train_func = self._data_plane.get_train_func(model_type=training_project_vo.model_type)
-        # 获取训练函数接口所需的参数字典
-        # TODO 接收数据文件、存储数据文件、确定inputs字段值
-        training_project_vo.training_params.update({
-            'task_type': training_project_vo.task_type,
-            'model_type': training_project_vo.model_type,
-            'inputs': training_project_vo.inputs
-        })
-        # TODO 获取调度信息
-        self._data_plane.create_training_job(
-            name=training_project_vo.project_name,
-            func=train_func,
-            parameters=training_project_vo.training_params,
-            host_ip='60.204.186.96'
-        )
-        # TODO 响应训练项目相关信息
-        return JSONResponse(content='The training job was created successfully')
-    
-    def delete_training_job(self, training_job_name: str = Path()):
-        self._data_plane.delete_training_job(name=training_job_name)
-        return JSONResponse(content=f"The training job '{training_job_name}' was deleted successfully")
-
-    async def get_candidate_models(self, candidate_model_select_vo: input_schemas.CandidateModelSelect = Body()) -> JSONResponse:
+    async def get_candidate_models(self, candidate_model_select_vo: input_schema.CandidateModelSelect = Body()) -> output_schema.CandidateModels:
         # 获取候选模型
-        models = await self._data_plane.aselect_models(
+        candidate_models = await self._data_plane.aselect_models(
             user_input=candidate_model_select_vo.task_desc,
-            task=candidate_model_select_vo.task_type,
+            task_type=candidate_model_select_vo.task_type,
             model_nums=candidate_model_select_vo.model_nums
         )
-        candidate_models = []
-        for model in models:
-            # 获取候选模型对应的训练器配置参数
-            trainer_id = candidate_model_select_vo.task_type + '/' + model.id
-            training_params_dict = self._data_plane.get_training_params_dict(trainer_id=trainer_id)
-            
-            candidate_model = output_schemas.CandidateModel(
-                id=str.lower(model.id),
-                reason=model.reason,
-                training_params=training_params_dict
-            )
-            candidate_models.append(candidate_model)
-        return output_schemas.CandidateModels(candidate_models=candidate_models)
+        return candidate_models
+    
+    def create_experiment(
+        self, 
+        experiment_name: str = Form(...),
+        task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Form(...),
+        task_desc: str = Form(max_length=150, example="钢材淬透性预测"),
+        model_type: Literal["densenet", "resnet"] = Form(...),
+        files: List[UploadFile] = File(description="Multiple files as UploadFile"),
+        tp_max_trials: int = Form(ge=1),
+        tp_tuner: Literal["greedy", "bayesian", "hyperband", "random"] = Form(...),
+        training_params: Union[Dict, Any] = Form(...)
+    ) -> output_schema.ExperimentInfo:
+        # 手动检查training_params字段值是否为dict格式
+        if not isinstance(training_params, dict):
+            try:
+                training_params = json.loads(training_params)
+            except (TypeError, ValueError):
+                raise DataFormatError(f"training_params字段值错误, 期望为dict格式")
         
-    
-    def delete_training_project(self) -> JSONResponse:
-        pass
+        if len(files) == 0:
+            raise DataFormatError("数据文件不能为空")
+        # 检查文件类型
+        path_parts = Path(files[0].filename).parts
+        if len(path_parts) == 1 and len(files) == 1:
+            if files[0].filename.endswith('csv'):
+                file_type = 'csv'
+            else:
+                raise DataFormatError(f"仅[csv]扩展文件类型")
+        elif len(path_parts) == 2:
+            for file in files:
+                # Check the depth of the folder. The length should be less than or equal to 2.
+                if len(path_parts) != 2:
+                    raise DataFormatError("图片数据文件格式错误")
+                if not file.filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
+                    raise DataFormatError(f"图片格式错误, 扩展名必须为:[.jpg, .jpeg, .png, .gif, .bmp]")
+            file_type = 'image_folder'
+        else:
+            raise DataFormatError("数据文件格式错误")
 
-    def update_training_project(self) -> JSONResponse:
-        pass
-    
-    def get_training_project(self) -> JSONResponse:
-        pass
-
-    def get_training_projects(self) -> JSONResponse:
-        pass
-
-    def start_training_job(self) -> JSONResponse:
-        pass
-    
-    def stop_training_job(self) -> JSONResponse:
-        pass
-    
-    def get_training_job_info(self) -> JSONResponse:
-        pass
+        # TODO 获取调度信息
+        host_ip = '60.204.186.96'
         
+        experiment_info = self._data_plane.create_experiment(
+            name=experiment_name,
+            task_type=task_type,
+            task_desc=task_desc,
+            model_type=model_type,
+            training_params=training_params,
+            file_type=file_type,
+            files=files,
+            host_ip=host_ip,
+            tp_max_trials=tp_max_trials,
+            tp_tuner=tp_tuner
+        )
+        return experiment_info
+    
+    def delete_experiment(self, experiment_id: int = Path()) -> JSONResponse:
+        self._data_plane.delete_experiment(experiment_id=experiment_id)
+        return JSONResponse(content=f'Success to delete  {experiment_id} traininig project')
+    
+    def get_experiment_overview(self, experiment_id: int = Path()) -> output_schema.ExperimentOverview:
+        experiment_overview = self._data_plane.get_experiment_overview(experiment_id=experiment_id)
+        return experiment_overview
+    
+    def get_experiment_cards(self) -> output_schema.ExperimentCards:
+        experiment_cards = self._data_plane.get_experiment_cards()
+        return experiment_cards
+    
+    def delete_experiment_job(self, experiment_job_name: str = Path()):
+        self._data_plane.delete_experiment_job(experiment_job_name=experiment_job_name)
+        return JSONResponse(content=f"The training job '{experiment_job_name}' was deleted successfully")
+
+    async def get_experiment_job_logs(self, websocket: WebSocket):
+        # 处理 connect 消息
+        await websocket.accept()
+        experiment_job_name = websocket.query_params.get("experiment_job_name", None)
+        if not experiment_job_name:
+            raise WebSocketQueryParamError("Expect to include the 'experiment_job_name' request parameter")
+        websocket.send_json
+        await self._data_plane.get_experiment_job_logs(name=experiment_job_name, websocket=websocket)
+        await websocket.close(reason="Completed")
+    
     async def get_monitor_info(self) -> JSONResponse:
         return JSONResponse(
         content="{'test': 'ok'}"

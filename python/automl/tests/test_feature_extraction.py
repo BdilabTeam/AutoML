@@ -1,6 +1,8 @@
 import os
 from autotrain import AutoFeatureExtractor, AutoConfig, AutoTrainer
 
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
+
 class TestFeatureExtraction:
     def test_dg_for_densenet(self):
         densenet_config = AutoConfig.from_repository(
@@ -13,7 +15,7 @@ class TestFeatureExtraction:
         
         extractor = AutoFeatureExtractor.from_config(densenet_config)
         output = extractor.extract(
-            inputs=os.path.abspath(os.path.join(os.pardir, 'autotrain', 'datasets', 'train.csv')),
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'train.csv'),
             trainer=trainer, 
         )
         print(f"{'*'*15}_Best Feature Index:\n{output.best_feature_index}")

@@ -7,7 +7,6 @@ import numpy as np
 import pandas as pd
 from dataclasses import dataclass
 
-from .trainer_ak_densenet import AKStructruedDataClassificationTrainerOutput
 from .configuration_densenet import DenseNetTrainerConfig
 from ...utils.feature_extraction_utils import BaseFeatureExtractor, BaseFeatureExtractorOutput
 
@@ -15,13 +14,11 @@ from ...utils.feature_extraction_utils import BaseFeatureExtractor, BaseFeatureE
 class GADenseNetFeatureExtractorOutput(BaseFeatureExtractorOutput):
     final_data: Union[np.ndarray, List] = None
     best_feature_index: Union[np.ndarray, List]= None
-    trainer_history: AKStructruedDataClassificationTrainerOutput = None
     
 @dataclass
 class GABaseFeatureExtractorOutput(BaseFeatureExtractorOutput):
     final_data: Union[np.ndarray, List] = None
     best_feature_index: Union[np.ndarray, List] = None
-    trainer_history: AKStructruedDataClassificationTrainerOutput = None
 
 class GAFeatureExtractor:
     def __init__(
@@ -131,15 +128,14 @@ class GAFeatureExtractor:
                 # pd.DataFrame(_y).to_csv(r'V:\project\automl\middle_data\ceshi_y.csv')
                 
                 inputs = pd.DataFrame(np.concatenate((_features, _y.reshape(-1, 1)), axis=1))
-                
-                # TODO why do i need to instantiate every time? 
-                # Trainer = AutoTrainer.for_trainer_class(self.config.model_class_name)
-                # trainer = Trainer(self.config)
                 trainer = copy.deepcopy(self.trainer)
-                trainer_summary = trainer.train(inputs=inputs, return_summary_dict=True)
-                acc = trainer_summary.metrics["val_accuracy"]
-                
-                _fitness = self.fitness(population[i], acc, self.svm_weight, self.feature_weight, C=self.C)
+                trainer.train(inputs=inputs)
+                try:
+                    trainer_summary = trainer.get_summary()
+                    metric = trainer_summary.get('best_model_tracker', None).get('history', None).get('val_loss', None)
+                except:
+                    raise ValueError('Unable to get trainer evaluation metrics')
+                _fitness = self.fitness(population[i], metric, self.svm_weight, self.feature_weight, C=self.C)
                 fitness_list.append(_fitness)
             fitness_array = np.array(fitness_list)
 
