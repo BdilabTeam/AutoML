@@ -31,10 +31,10 @@ public class ExperimentController {
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("部署成功"));
     }
 
-    @DeleteMapping("/undeploy/{experimentName}")
+    @DeleteMapping("/undeploy/{endpointName}")
     @ApiOperation(value = "下线模型服务", notes = "下线已部署的模型推理服务")
-    public HttpResponse undeploy(@PathVariable String experimentName) {
-        experimentService.undeploy(experimentName);
+    public HttpResponse undeploy(@PathVariable String endpointName) {
+        experimentService.undeploy(endpointName);
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("删除部署成功"));
     }
 
