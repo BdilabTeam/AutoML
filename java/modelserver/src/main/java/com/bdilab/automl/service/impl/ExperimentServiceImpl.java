@@ -44,6 +44,12 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public void deploy(String experimentName, String endpointName) {
+        // Check whether the experiment exists
+        Experiment experiment = experimentMapper.selectOne(new QueryWrapper<Experiment>().lambda().eq(Experiment::getExperimentName, experimentName));
+        if (null == experiment) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Name:%s for experiment does not exist.", experimentName)));
+        }
+        // Check whether the endpoint is already in use
         if (defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get() != null) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("The endpoint name %s is already in use, please change it", endpointName)));
         }
@@ -51,16 +57,11 @@ public class ExperimentServiceImpl implements ExperimentService {
         io.fabric8.knative.serving.v1.Service service = new io.fabric8.knative.serving.v1.Service();
         service.setApiVersion("serving.knative.dev/v1");
         service.setKind("Service");
-        Experiment experiment = experimentMapper.selectOne(new QueryWrapper<Experiment>().lambda().eq(Experiment::getExperimentName, experimentName));
-        if (null == experiment) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Name:%s for experiment does not exist.", experimentName)));
-        }
         ObjectMeta objectMeta = new ObjectMetaBuilder()
                 .withName(endpointName)
                 .withNamespace(Utils.NAMESPACE)
                 .build();
         service.setMetadata(objectMeta);
-
         Map<String, String> annotations = new HashMap() {
             {
                 put("autoscaling.knative.dev/minScale", "1");
@@ -86,7 +87,6 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withMountPath(Utils.METADATA_DIR_IN_CONTAINER)
                 .withReadOnly()
                 .build();
-
         // 构造container
         Container container = new ContainerBuilder()
                 .withName(endpointName)
@@ -115,7 +115,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         service.setSpec(spec);
 
-        log.info("Creating the model server.");
+        log.info("Creating the inference endpoint.");
         try {
             io.fabric8.knative.serving.v1.Service created_service = defaultKnativeClient.services().create(service);
             defaultKnativeClient.services().resource(created_service).waitUntilReady(10, TimeUnit.SECONDS);
@@ -128,8 +128,12 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public void undeploy(String endpointName) {
+        io.fabric8.knative.serving.v1.Service service = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get();
+        if (service == null) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Inference endpoint with name %s does not exist.", endpointName)));
+        }
         try {
-            List<StatusDetails> statusDetails = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).delete();
+            List<StatusDetails> statusDetails = defaultKnativeClient.services().resource(service).delete();
             log.info(statusDetails.toString());
         } catch (Exception e) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Failed to delete the endpoint %s, for a specific reason:", endpointName, e)));
@@ -138,6 +142,11 @@ public class ExperimentServiceImpl implements ExperimentService {
 
     @Override
     public String infer(String endpointName, List<Object> instances) {
+        // Check if the endpoint exists
+        io.fabric8.knative.serving.v1.Service service = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get();
+        if (service == null) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Inference endpoint with name %s does not exist.", endpointName)));
+        }
         log.info("Parsing the data.");
         if (null == instances || instances.size() == 0) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData("推理数据不能为空"));
