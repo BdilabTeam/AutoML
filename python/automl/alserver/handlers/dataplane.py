@@ -19,7 +19,8 @@ from ..errors import (
     GetSessionError,
     ParseExperimentSummaryError,
     ValueError,
-    GetExperimentJobStatusError
+    GetExperimentJobStatusError,
+    ExperimentNameError
 )
 from ..operators import TrainingClient
 from ..utils import dataplane_utils, get_logger
@@ -144,7 +145,7 @@ class DataPlane:
     @transactional
     def create_experiment(
         self, 
-        name: str,
+        experiment_name: str,
         task_type: str,
         task_desc: str,
         model_type: str,
@@ -156,7 +157,7 @@ class DataPlane:
     ) -> output_schema.ExperimentInfo:
         from autotrain import AutoTrainFunc
         from ..models.experiment import Experiment
-        from ..cruds.experiment import create_experiment
+        from ..cruds.experiment import create_experiment, get_experiment
         from kubeflow.training.constants import constants
         
         # @transactional注解自动注入session
@@ -164,13 +165,14 @@ class DataPlane:
         if not session:
             raise GetSessionError("Failed to get database session.")
         
+        if get_experiment(session=session, experiment_name=experiment_name):
+                raise ExperimentNameError("The experiment name has already been used, please re-enter it.")
+            
         try:
             logger.info("Database - Add experiment items")
-            experiment = Experiment(experiment_name=name, task_type=task_type, task_desc=task_desc, model_type=model_type)
+            experiment = Experiment(experiment_name=experiment_name, task_type=task_type, task_desc=task_desc, model_type=model_type)
             experiment = create_experiment(session=session, experiment=experiment)
-            experiment_job_name = dataplane_utils.get_experiment_job_name(experiment.id, experiment.experiment_name)
-            experiment.experiment_job_name = experiment_job_name
-            workspace_dir = dataplane_utils.generate_experiment_workspace_dir(worspace_name=str(experiment.id))
+            workspace_dir = dataplane_utils.generate_experiment_workspace_dir(experiment_name=experiment_name)
             experiment.workspace_dir = workspace_dir
             
             logger.info("Parse and store data")
@@ -197,7 +199,7 @@ class DataPlane:
             train_func = AutoTrainFunc.from_model_type(model_type)
             training_params.update(
                 {
-                    'tp_project_name': name,
+                    'tp_project_name': dataplane_utils.TP_PROJECT_NAME,
                     'task_type': task_type,
                     'model_type': model_type,
                     'inputs': inputs,
@@ -212,7 +214,7 @@ class DataPlane:
                 training_params['tp_tuner'] = tp_tuner
             
             logger.info(f"Saving the training parameter.")
-            training_params_file_path = dataplane_utils.get_experiment_training_params_file_path(workspace_dir)
+            training_params_file_path = dataplane_utils.get_experiment_training_params_file_path(experiment_name=experiment_name)
             try:
                 dataplane_utils.save_dict_to_json_file(data=training_params, json_file=training_params_file_path)
             except Exception as e:
@@ -221,7 +223,7 @@ class DataPlane:
             logger.info("Publishing the experiment job.")
             try:
                 self._training_client.create_tfjob_from_func(
-                    name=experiment_job_name,
+                    name=experiment_name,
                     func=train_func,
                     parameters=training_params,
                     base_image=self._settings.base_image,
@@ -231,7 +233,7 @@ class DataPlane:
                     external_workspace_dir=workspace_dir,
                 )
                 self._training_client.wait_for_job_conditions(
-                    name=experiment_job_name,
+                    name=experiment_name,
                     namespace=self._settings.namespcae,
                     expected_conditions=set([constants.JOB_CONDITION_CREATED]),
                     timeout=30,
@@ -239,7 +241,7 @@ class DataPlane:
                 )
                 
             except Exception as e:
-                raise CreateExperimentJobError(f"Failed to create a experiment job '{name}', for a specific reason: {e}")
+                raise CreateExperimentJobError(f"Failed to create a experiment job '{experiment_name}', for a specific reason: {e}")
             
             return output_schema.ExperimentInfo(
                 experiment_id=experiment.id,
@@ -250,12 +252,12 @@ class DataPlane:
         except:
             logger.error("Failed to create, start rollback operation")
             dataplane_utils.remove_workspace_dir(workspace_dir=workspace_dir)
-            self.delete_experiment_job(experiment_job_name=experiment_job_name)
+            self.delete_experiment_job(experiment_name=experiment_name)
             raise
 
 
     @transactional
-    def delete_experiment(self, experiment_id: int, **kwargs):
+    def delete_experiment(self, experiment_name: str, **kwargs):
         from ..cruds.experiment import delete_experiment, get_experiment
         
         # @transactional注解自动注入session
@@ -264,31 +266,30 @@ class DataPlane:
             raise GetSessionError("Failed to get database session.")
         
         try: 
-            experiment = get_experiment(session=session, experiment_id=experiment_id)
+            experiment = get_experiment(session=session, experiment_name=experiment_name)
         except:    
-            raise ExperimentNotExistError(f"ID: {experiment_id} for experiment does not exist.")
+            raise ExperimentNotExistError(f"Name: {experiment_name} for experiment does not exist.")
         
-        self.delete_experiment_job(experiment_job_name=experiment.experiment_job_name)
-        delete_experiment(session=session, experiment_id=experiment_id)
+        self.delete_experiment_job(experiment_name=experiment_name)
+        delete_experiment(session=session, experiment_name=experiment_name)
         dataplane_utils.remove_workspace_dir(workspace_dir=experiment.workspace_dir)
 
 
-    def get_experiment_overview(self, experiment_id: int) -> output_schema.ExperimentOverview:
+    def get_experiment_overview(self, experiment_name: str) -> output_schema.ExperimentOverview:
         from ..cruds.experiment import get_experiment
         from kubeflow.training.constants import constants
         
         session = self.get_session()
         try: 
-            experiment = get_experiment(session=session, experiment_id=experiment_id)
+            experiment = get_experiment(session=session, experiment_name=experiment_name)
         except:    
-            raise ExperimentNotExistError(f"ID: {experiment_id} for experiment does not exist.")
+            raise ExperimentNotExistError(f"Name: {experiment_name} for experiment does not exist.")
         
         logger.info("Getting the status of the experiment job")
-        experiment_job_name = experiment.experiment_job_name
         try:
-            experiment_job_status = self._training_client.get_tfjob(name=experiment_job_name, namespace=self._settings.namespcae).status
+            experiment_job_status = self._training_client.get_tfjob(name=experiment_name, namespace=self._settings.namespcae).status
         except Exception as e:
-            raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment_job_name}', for a specific reason: {e}")
+            raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment_name}', for a specific reason: {e}")
         
         if not experiment_job_status:
             raise ValueError("Experiment job status cannot be None")
@@ -312,17 +313,17 @@ class DataPlane:
         if experiment_status == constants.JOB_CONDITION_SUCCEEDED:
             logger.info("Getting the summary of the experiment.")
             try:
-                with open(os.path.join(experiment.workspace_dir, experiment.experiment_name, dataplane_utils.EXPERIMENT_SUMMARY_FILE_NAME)) as f:
+                with open(dataplane_utils.get_experiment_summary_file_path(experiment_name=experiment_name)) as f:
                     summary = json.load(f)
             except Exception as e:
-                raise ParseExperimentSummaryError("Failed to parse the summary of the experiment, for a specific reason: {e}")
+                raise ParseExperimentSummaryError(f"Failed to parse the summary of the experiment, for a specific reason: {e}")
             
             best_model_tracker = summary.get("best_model_tracker")
             if best_model_tracker:
                 best_model = output_schema.BestModel(
                 history=best_model_tracker.get("history"),
                 parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
-                model_graph_url=re.sub(r"metadata", os.path.join("metadata", str(experiment.id)), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
+                model_graph_url=re.sub(r"metadata", os.path.join("metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
             else:
                 raise ValueError("Failed to get the 'best_model_tracker' key of the 'summary dict'")
@@ -337,16 +338,17 @@ class DataPlane:
                             default_metric=round(trial.get("score"), 5),
                             best_step=trial.get('best_step'),
                             parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
-                            model_graph_url=re.sub(r"metadata", os.path.join("metadata", str(experiment.id)), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
+                            model_graph_url=re.sub(r"metadata", os.path.join("metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
                         )
                     )
             else:
                 raise ValueError("Failed to get the 'trials_tracker' key of the 'summary dict'")
-            experiment_summary_url = os.path.join('/metadata', str(experiment_id), experiment.experiment_name, dataplane_utils.EXPERIMENT_SUMMARY_FILE_NAME)
+            experiment_summary_url = dataplane_utils.get_experiment_summary_file_url(experiment_name=experiment_name)
         else:
             logger.info("Experiment job is incomplete. Can't get the summary.")
             best_model = None
             trials = None
+            experiment_summary_url = None
             
         return output_schema.ExperimentOverview(
             experiment_name=experiment.experiment_name,
@@ -374,7 +376,6 @@ class DataPlane:
         experiment_cards = []
         for experiment in experiments:
             experiment_card = output_schema.ExperimentCard(
-                experiment_id=experiment.id,
                 experiment_name=experiment.experiment_name,
                 task_type=experiment.task_type,
                 task_desc=experiment.task_desc,
@@ -384,20 +385,20 @@ class DataPlane:
             experiment_cards.append(experiment_card)
         return output_schema.ExperimentCards(experiment_cards=experiment_cards)
     
-    def delete_experiment_job(self, experiment_job_name: str):
+    def delete_experiment_job(self, experiment_name: str):
         try:
             self._training_client.delete_tfjob(
-                name=experiment_job_name, 
+                name=experiment_name, 
                 namespace=self._settings.namespcae
             )
         except Exception as e:
-            raise DeleteExperimentJobError(f"Failed to delete a experiment job '{experiment_job_name}', for a specific reason: {e}")
+            raise DeleteExperimentJobError(f"Failed to delete a experiment job '{experiment_name}', for a specific reason: {e}")
 
     
-    async def get_experiment_job_logs(self, name: str, websocket = None):
+    async def get_experiment_logs(self, experiment_name: str, websocket = None):
         try:
             await self._training_client.get_job_logs(
-                name=name,
+                name=experiment_name,
                 namespace=self._settings.namespcae,
                 is_master=False,
                 replica_type='worker',
@@ -406,8 +407,20 @@ class DataPlane:
             )   
         except Exception as e:
             await websocket.close(reason="Log acquisition process exception.")
-            raise GetExperimentJobLogsError(f"Failed to get the logs of the experiment job '{name}'")
+            raise GetExperimentJobLogsError(f"Failed to get the logs of the experiment job '{experiment_name}'")
 
     
     def get_gpu_and_host(self, threshold):
         return self._resource_monitor_service.get_gpu_and_host(threshold=threshold)
+    
+    def get_model_repository(self) -> output_schema.ModelRepository:
+        from ..cruds.experiment import get_all_experiments
+        
+        session = self.get_session()
+        experiments = get_all_experiments(session=session)
+        models = []
+        for experiment in experiments:
+            if self._training_client.is_job_succeeded(name=experiment.experiment_name, namespace=self._settings.namespcae):
+                models.append(experiment.experiment_name)
+        return output_schema.ModelRepository(models=models)
+        

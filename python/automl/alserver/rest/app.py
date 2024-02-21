@@ -63,7 +63,7 @@ def create_app(
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/experiment/overview/{experiment_id}",
+            "/v1/experiment/overview/{experiment_name}",
             endpoints.get_experiment_overview,
             methods=['GET'],
             tags=["experiment"]
@@ -75,22 +75,22 @@ def create_app(
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/experiment/{experiment_id}",
+            "/v1/experiment/{experiment_name}",
             endpoints.delete_experiment,
             methods=['DELETE'],
             tags=["experiment"]
-        ),
-        APIRoute(
-            "/v1/experiment/job/{experiment_job_name}",
-            endpoints.delete_experiment_job,
-            methods=['DELETE'],
-            tags=["experiment-job"]
         ),
         APIRoute(
             "/v1/monitoring/info",
             endpoints.get_monitor_info,
             methods=['GET'],
             tags=["monitoring"]
+        ),
+        APIRoute(
+            "/v1/repository/model",
+            endpoints.get_monitor_info,
+            methods=['GET'],
+            tags=["model-repository"]
         ),
     ]
     

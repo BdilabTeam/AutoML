@@ -1,6 +1,7 @@
 package com.bdilab.automl.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bdilab.automl.common.exception.InternalServerErrorException;
 import com.bdilab.automl.common.utils.*;
 import com.bdilab.automl.mapper.ExperimentMapper;
@@ -12,7 +13,6 @@ import io.fabric8.knative.client.DefaultKnativeClient;
 import io.fabric8.knative.serving.v1.ServiceSpec;
 import io.fabric8.knative.serving.v1.ServiceSpecBuilder;
 import io.fabric8.kubernetes.api.model.*;
-import io.fabric8.kubernetes.client.KubernetesClient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
@@ -32,54 +32,53 @@ import java.util.concurrent.TimeUnit;
 public class ExperimentServiceImpl implements ExperimentService {
     @Resource
     private ExperimentMapper experimentMapper;
-
     @Resource
     private DefaultKnativeClient defaultKnativeClient;
-
-    @Resource
-    private KubernetesClient kubernetesClient;
 
     @Value("${server.ip}")
     private String serverIp;
 
     @Value("${server.port}")
     private String serverPort;
+
     @Override
     @Transactional
-    public void deployment(Integer experimentId) {
+    public void deploy(String experimentName, String endpointName) {
+        // Check whether the experiment exists
+        Experiment experiment = experimentMapper.selectOne(new QueryWrapper<Experiment>().lambda().eq(Experiment::getExperimentName, experimentName));
+        if (null == experiment) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Name:%s for experiment does not exist.", experimentName)));
+        }
+        // Check whether the endpoint is already in use
+        if (defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get() != null) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("The endpoint name %s is already in use, please change it", endpointName)));
+        }
+
         io.fabric8.knative.serving.v1.Service service = new io.fabric8.knative.serving.v1.Service();
         service.setApiVersion("serving.knative.dev/v1");
         service.setKind("Service");
-        Experiment experiment = experimentMapper.selectById(experimentId);
-        if (null == experiment) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的实验不存在", experimentId)));
-        }
-        String ksvcName = Utils.getModelServerName(experimentId);
         ObjectMeta objectMeta = new ObjectMetaBuilder()
-                .withName(ksvcName)
+                .withName(endpointName)
                 .withNamespace(Utils.NAMESPACE)
                 .build();
         service.setMetadata(objectMeta);
-
         Map<String, String> annotations = new HashMap() {
             {
                 put("autoscaling.knative.dev/minScale", "1");
             }
         };
-
         Map<String, String> nodeSelector = new HashMap() {
             {
                 put("kubernetes.io/hostname", "node1");
             }
         };
-
         List<String> commands = new ArrayList<String>() {
             {
                 add("python");
                 add("-m");
                 add("autokeras_server");
-                add(String.format("--model_name=%s", Utils.getModelServerName(experimentId)));
-                add(String.format("--model_dir=%s", Utils.getBestModelDirInContainer(experimentId, experiment.getExperimentName())));
+                add(String.format("--model_name=%s", endpointName));
+                add(String.format("--model_dir=%s", Utils.getBestModelDirInContainer(experimentName)));
             }
         };
         // 构造volumeMount
@@ -88,10 +87,9 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withMountPath(Utils.METADATA_DIR_IN_CONTAINER)
                 .withReadOnly()
                 .build();
-
         // 构造container
         Container container = new ContainerBuilder()
-                .withName(Utils.BASE_MODEL_SERVER_NAME)
+                .withName(endpointName)
                 .withImage(Utils.BASE_IMAGE)
                 .withImagePullPolicy("IfNotPresent")
                 .withCommand(commands)
@@ -102,7 +100,6 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withName("model-dir")
                 .withPersistentVolumeClaim(new PersistentVolumeClaimVolumeSource(Utils.PVC_NAME, true))
                 .build();
-
         // spec
         ServiceSpec spec = new ServiceSpecBuilder()
                 .withNewTemplate()
@@ -118,7 +115,7 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         service.setSpec(spec);
 
-        log.info("Creating the model server.");
+        log.info("Creating the inference endpoint.");
         try {
             io.fabric8.knative.serving.v1.Service created_service = defaultKnativeClient.services().create(service);
             defaultKnativeClient.services().resource(created_service).waitUntilReady(10, TimeUnit.SECONDS);
@@ -126,45 +123,30 @@ public class ExperimentServiceImpl implements ExperimentService {
             defaultKnativeClient.services().resource(service).delete();
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("推理服务部署失败, 具体原因: %s", e)));
         }
-
-        String host = Utils.generateHost(ksvcName);
-        experiment.setVirtualHost(host);
-        try {
-            experimentMapper.updateById(experiment);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("数据库表更新失败, 具体原因: %s", e)));
-        }
     }
 
     @Override
     @Transactional
-    public void undeploy(Integer experimentId) {
-        Experiment experiment = experimentMapper.selectById(experimentId);
-        if (null == experiment) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的训练项目不存在", experimentId)));
+    public void undeploy(String endpointName) {
+        io.fabric8.knative.serving.v1.Service service = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get();
+        if (service == null) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Inference endpoint with name %s does not exist.", endpointName)));
         }
-        String ksvcName = Utils.getModelServerName(experimentId);
         try {
-            List<StatusDetails> statusDetails = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(ksvcName).delete();
+            List<StatusDetails> statusDetails = defaultKnativeClient.services().resource(service).delete();
             log.info(statusDetails.toString());
         } catch (Exception e) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("删除ksvc失败, 具体原因:", e)));
-        }
-        experiment.setVirtualHost(null);
-        try {
-            experimentMapper.updateById(experiment);
-        } catch (Exception e) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("更新数据库失败, 具体原因:", e)));
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Failed to delete the endpoint %s, for a specific reason:", endpointName, e)));
         }
     }
 
     @Override
-    public String infer(Integer experimentId, List<Object> instances) {
-        Experiment experiment = experimentMapper.selectById(experimentId);
-        if (null == experiment) {
-            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("ID为%d的训练项目不存在", experimentId)));
+    public String infer(String endpointName, List<Object> instances) {
+        // Check if the endpoint exists
+        io.fabric8.knative.serving.v1.Service service = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).withName(endpointName).get();
+        if (service == null) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Inference endpoint with name %s does not exist.", endpointName)));
         }
-
         log.info("Parsing the data.");
         if (null == instances || instances.size() == 0) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData("推理数据不能为空"));
@@ -174,12 +156,11 @@ public class ExperimentServiceImpl implements ExperimentService {
         String jsonFormatInstances = var1.toJSONString();
 
         log.info("Sending the inference request.");
-        String modelName = Utils.getModelServerName(experimentId);
-        String host = experiment.getVirtualHost();
+        String host = Utils.generateHost(endpointName);
         // 使用推理服务，并获取推理结果
-        String url = "http://" + serverIp + ":" + IstioUtils.INGRESS_GATEWAY_PORT + "/v2/models/" + modelName + "/infer";
+        String url = "http://" + serverIp + ":" + IstioUtils.INGRESS_GATEWAY_PORT + "/v2/models/" + endpointName + "/infer";
         CloudEvent event = new CloudEventBuilder()
-                .withId(experimentId + "-" + UUID.randomUUID())
+                .withId(UUID.randomUUID().toString())
                 .withSource(URI.create("http://automl.deployment.com"))
                 .withType("com.deployment.automl.inference.request")
                 .withTime(OffsetDateTime.now())

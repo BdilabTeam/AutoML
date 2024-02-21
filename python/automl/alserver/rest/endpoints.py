@@ -69,7 +69,7 @@ class Endpoints(object):
         host_ip = '60.204.186.96'
         
         experiment_info = self._data_plane.create_experiment(
-            name=experiment_name,
+            experiment_name=experiment_name,
             task_type=task_type,
             task_desc=task_desc,
             model_type=model_type,
@@ -82,22 +82,18 @@ class Endpoints(object):
         )
         return experiment_info
     
-    def delete_experiment(self, experiment_id: int = Path()) -> JSONResponse:
-        self._data_plane.delete_experiment(experiment_id=experiment_id)
-        return JSONResponse(content=f'Success to delete  {experiment_id} traininig project')
+    def delete_experiment(self, experiment_name: str = Path()) -> JSONResponse:
+        self._data_plane.delete_experiment(experiment_name=experiment_name)
+        return JSONResponse(content=f'Success to delete {experiment_name}')
     
-    def get_experiment_overview(self, experiment_id: int = Path()) -> output_schema.ExperimentOverview:
-        experiment_overview = self._data_plane.get_experiment_overview(experiment_id=experiment_id)
+    def get_experiment_overview(self, experiment_name: str = Path()) -> output_schema.ExperimentOverview:
+        experiment_overview = self._data_plane.get_experiment_overview(experiment_name=experiment_name)
         return experiment_overview
     
     def get_experiment_cards(self) -> output_schema.ExperimentCards:
         experiment_cards = self._data_plane.get_experiment_cards()
         return experiment_cards
     
-    def delete_experiment_job(self, experiment_job_name: str = Path()):
-        self._data_plane.delete_experiment_job(experiment_job_name=experiment_job_name)
-        return JSONResponse(content=f"The training job '{experiment_job_name}' was deleted successfully")
-
     async def get_experiment_job_logs(self, websocket: WebSocket):
         # 处理 connect 消息
         await websocket.accept()
@@ -112,3 +108,7 @@ class Endpoints(object):
         return JSONResponse(
         content="{'test': 'ok'}"
     )
+        
+    def get_model_repository_info(self) -> output_schema.ModelRepository:
+        model_repository = self._data_plane.get_model_repository()
+        return model_repository
