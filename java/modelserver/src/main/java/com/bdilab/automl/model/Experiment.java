@@ -33,10 +33,4 @@ public class Experiment {
 
     @ApiModelProperty("当前实验工作区目录")
     private String workspaceDir;
-
-    @ApiModelProperty("实验作业名称")
-    private String experimentJobName;
-
-    @ApiModelProperty("Ksvc-虚拟主机头")
-    private String virtualHost;
 }

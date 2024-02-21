@@ -55,6 +55,11 @@ class ExperimentNotExistError(AutoMLServerError):
         super().__init__(msg)
         self.status_code = status_code
 
+class ExperimentNameError(AutoMLServerError):
+    def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(msg)
+        self.status_code = status_code
+
 class ParseExperimentSummaryError(AutoMLServerError):
     def __init__(self, msg: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
         super().__init__(msg)

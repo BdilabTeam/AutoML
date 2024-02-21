@@ -16,24 +16,21 @@ class CandidateModels(BaseModel):
 class JobInfo(BaseModel):
     experiment_job_name: Optional[str]
     experiment_job_status: Optional[Dict[str, Any]]
-    
+ 
 class ExperimentInfo(BaseModel):
-    experiment_id: Optional[int]
     experiment_name: Optional[str]
     task_type: Optional[str]
     model_type: Optional[str]
     training_params: Optional[Dict[str, Any]]
     job_info: Optional[JobInfo]
 
-
 class ExperimentCard(BaseModel):
-    experiment_id: Optional[int]
     experiment_name: Optional[str]
     task_type: Optional[str]
     task_desc: Optional[str]
     model_type: Optional[str]
     experiment_job_name: Optional[str]
-    
+   
 class ExperimentCards(BaseModel):
     experiment_cards: List[ExperimentCard]
 
@@ -61,5 +58,6 @@ class ExperimentOverview(BaseModel):
     max_trial_number: Optional[int]
     trials: Optional[List[Trial]]
     best_model: Optional[BestModel]
-    
-    
+
+class ModelRepository(BaseModel):
+    models: Optional[List[str]]
