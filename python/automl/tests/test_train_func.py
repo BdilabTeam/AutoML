@@ -14,7 +14,7 @@ class TestTrainFunc:
             "tp_max_trials": 1,
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
-            "tp_epochs": 100,
+            "tp_epochs": 10,
             "tp_validation_split": 0.2
         }
         
@@ -31,7 +31,7 @@ class TestTrainFunc:
             "tp_max_trials": 1,
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
-            "tp_epochs": 100,
+            "tp_epochs": 10,
             "tp_validation_split": 0.2,
             "dp_enable_auto_feature_extract": True,
         }

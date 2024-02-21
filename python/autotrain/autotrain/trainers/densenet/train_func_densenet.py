@@ -1,5 +1,6 @@
 def train_densenet(trainer_args: dict):
     import os
+    import pandas as pd
     from autotrain.trainers.auto import AutoConfig, AutoTrainer, AutoFeatureExtractor
     from autotrain.utils.logging import get_logger
 
@@ -27,7 +28,18 @@ def train_densenet(trainer_args: dict):
         )
         
         logger.info(f"{'-'*5} Feature extraction history {'-'*5}")
-        print(f"{'*'*15}_Best Feature Index:\n{feature_extract_output.best_feature_index}")
+        logger.info(f"{'*'*15}_Best Feature Index:\n{feature_extract_output.best_feature_index}")
+        
+        logger.info(f"Saving the extracted datasets.")
+        best_feature_index = feature_extract_output.best_feature_index
+        datasets = pd.read_csv(inputs)
+        best_feature_index.append(-1)   # Add label index
+        extracted_datasets = datasets.iloc[:, best_feature_index]
+        extracted_file_name = '-'.join(['extracted', os.path.basename(inputs)])
+        parent_dir = os.path.dirname(inputs)
+        extracted_file_path = os.path.join(parent_dir, extracted_file_name)
+        extracted_datasets.to_csv(extracted_file_path, index=False)
+        inputs = extracted_file_path
     
     logger.info(f"{'-'*5} Start training {'-'*5}")
     trainer.train(inputs=inputs)

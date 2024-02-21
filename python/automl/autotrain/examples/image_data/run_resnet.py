@@ -71,10 +71,12 @@ def main():
             setattr(config, key, value)
     
     trainer = AutoTrainer.from_config(config=config)
+    
     logger.info(f"{'-'*5} Start training {'-'*5}")
-    output = trainer.train(inputs=trainer_args.inputs)
-    logger.info(f"{'-'*5} Training output {'-'*5}")
-    print(output)
+    trainer.train(inputs=trainer_args.inputs)
+    
+    train_summary = trainer.get_summary()
+    logger.info(f"{'-'*5} Train summary {'-'*5}:\n{train_summary}")
 
 if __name__=="__main__":
     main()

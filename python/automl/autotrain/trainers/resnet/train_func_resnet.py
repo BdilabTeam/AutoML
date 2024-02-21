@@ -23,5 +23,4 @@ def train_resnet(trainer_args: dict):
     trainer.train(inputs=inputs)
     
     train_summary = trainer.get_summary()
-    logger.info(f"{'-'*5} Train summary {'-'*5}")
-    print(train_summary)
+    logger.info(f"{'-'*5} Train summary {'-'*5}:\n{train_summary}")

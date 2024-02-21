@@ -16,7 +16,7 @@ pip install --upgrade pip
 # 在虚拟环境中安装poetry
 pip install poetry
 # 在虚拟环境中安装poetry, 按需安装可选依赖组
-poetry install --with autoselect,autoschedule,storage --without autotrain,test --no-root --no-cache
+poetry install --with autoselect,autoschedule,storage,autotrain,test --no-root --no-cache
 # 创建数据库/表
 pytest -s -k test_generate_schemas test_mysql_server.py
 ```
@@ -39,4 +39,3 @@ pytest -s {script_name}
 # 执行指定py文件中的指定测试函数
 pytest -k {test_func} {test_file.py}
 ```
-

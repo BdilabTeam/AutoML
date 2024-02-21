@@ -87,7 +87,7 @@ class AKDenseNetMainTrainer:
         
     def __call__(
         self,
-        inputs: str,
+        inputs,
         **kwargs
     ) -> AKBaseTrainerTracker:
         # 数据准备
@@ -98,8 +98,13 @@ class AKDenseNetMainTrainer:
                 X = X_y.iloc[:, 0:(features_nums - 1)].to_numpy()
                 y = X_y.iloc[:, -1].to_numpy()
                 x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
+            elif isinstance(inputs, pd.DataFrame):
+                _, features_nums = inputs.shape
+                X = inputs.iloc[:, :(features_nums - 1)].to_numpy()
+                y = inputs.iloc[:, -1].to_numpy()
+                x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
             else:
-                raise ValueError("'inputs' must be a 'str' of the file path")
+                raise ValueError("`inputs` must be pd.DataFrame or str")
         else:
             raise ValueError("You have to specify the `inputs` field")
 
@@ -130,10 +135,9 @@ class AKDenseNetMainTrainer:
             except:
                 model_graph_path = None
             index += 1
-            trials.append(Trial(
-                **trial.get_state(),
-                model_graph_path=model_graph_path
-            ))
+            trials.append(
+                Trial(**trial.get_state(), model_graph_path=model_graph_path)
+            )
         trials_tracker = TrialsTracker(trials=trials)
         
         return AKBaseTrainerTracker(
@@ -150,7 +154,7 @@ class AKDenseNetForStructruedDataClassificationTrainer(BaseTrainer):
     
         self.trainer = AKDenseNetMainTrainer(config)
         
-    def train(self, inputs: str, *args: Any, **kwds: Any):
+    def train(self, inputs, *args: Any, **kwds: Any):
         if not self.trainer:
             raise ValueError("No trainer is available")
         trainer_tracker = self.trainer(inputs=inputs)
@@ -165,7 +169,7 @@ class AKDenseNetForStructruedDataRegressionTrainer(BaseTrainer):
     
         self.trainer = AKDenseNetMainTrainer(config=config)
         
-    def train(self, inputs: str, *args: Any, **kwds: Any):
+    def train(self, inputs, *args: Any, **kwds: Any):
         if not self.trainer:
             raise ValueError("No trainer is available")
         trainer_tracker = self.trainer(inputs=inputs)
