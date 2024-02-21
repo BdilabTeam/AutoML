@@ -33,7 +33,6 @@ public class ExperimentController {
 
     @DeleteMapping("/undeploy/{experimentName}")
     @ApiOperation(value = "下线模型服务", notes = "下线已部署的模型推理服务")
-    @ApiImplicitParam(name = "id", value = "实验ID", required = true, example = "1")
     public HttpResponse undeploy(@PathVariable String experimentName) {
         experimentService.undeploy(experimentName);
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("删除部署成功"));
