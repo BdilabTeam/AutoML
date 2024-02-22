@@ -126,13 +126,12 @@ class GAFeatureExtractor:
                 # 等推理接口好了以后，直接调用
                 # pd.DataFrame(_features).to_csv(r'V:\project\automl\middle_data\ceshi_features.csv')
                 # pd.DataFrame(_y).to_csv(r'V:\project\automl\middle_data\ceshi_y.csv')
-                
-                inputs = pd.DataFrame(np.concatenate((_features, _y.reshape(-1, 1)), axis=1))
+                inputs = pd.DataFrame(pd.concat((pd.DataFrame(_features), pd.DataFrame(_y.reshape(-1, 1))), axis=1))
                 trainer = copy.deepcopy(self.trainer)
                 trainer.train(inputs=inputs)
                 try:
                     trainer_summary = trainer.get_summary()
-                    metric = trainer_summary.get('best_model_tracker', None).get('history', None).get('val_loss', None)
+                    metric = trainer_summary.get('best_model_tracker', None).get('history', None).get('val_loss', None)[0]
                 except:
                     raise ValueError('Unable to get trainer evaluation metrics')
                 _fitness = self.fitness(population[i], metric, self.svm_weight, self.feature_weight, C=self.C)

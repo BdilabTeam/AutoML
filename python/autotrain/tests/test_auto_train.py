@@ -45,7 +45,7 @@ class TestAutoTrain:
         )
         summary = trainer.get_summary()
         print(f"{'*'*5}summary:\n{summary}")
-
+     
     def test_densenet_for_structured_data_regression(self):
         trainer = AutoTrainer.from_repository(
             tp_project_name="structured-data-regression",

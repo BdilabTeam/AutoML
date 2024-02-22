@@ -64,11 +64,10 @@ langchain-openai = "^0.0.2.post1"
 [tool.poetry.group.autotrain]
 optional = true
 [tool.poetry.group.autotrain.dependencies]
-numpy = "1.23.3"
 scikit-learn = "1.2.2"
 autokeras = { version = "^1.1.0", source = "tsinghua" }
-tensorflow-macos = { version = "^2.13.1", source = "tsinghua", markers = "sys_platform == 'darwin'" }
 pyyaml = "^6.0.1"
+pydot = "1.3.0"
 
 [tool.poetry.group.autoschedule]
 optional = true
