@@ -7,11 +7,15 @@ import com.bdilab.automl.common.utils.*;
 import com.bdilab.automl.mapper.ExperimentMapper;
 import com.bdilab.automl.model.Experiment;
 import com.bdilab.automl.service.ExperimentService;
+import com.bdilab.automl.vo.ServiceInfoVo;
 import io.cloudevents.CloudEvent;
 import io.cloudevents.core.v1.CloudEventBuilder;
 import io.fabric8.knative.client.DefaultKnativeClient;
+import io.fabric8.knative.internal.pkg.apis.Condition;
+import io.fabric8.knative.serving.v1.ServiceList;
 import io.fabric8.knative.serving.v1.ServiceSpec;
 import io.fabric8.knative.serving.v1.ServiceSpecBuilder;
+import io.fabric8.knative.serving.v1.TrafficTarget;
 import io.fabric8.kubernetes.api.model.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLOutput;
 import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -167,5 +172,37 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withData("application/json", jsonFormatInstances.getBytes(StandardCharsets.UTF_8))
                 .build();
         return CloudEventUtils.sendBinaryCloudEvent(event, url, HttpMethod.POST, host, null);
+    }
+
+    @Override
+    public List<ServiceInfoVo> ServiceInfo() {
+        ServiceList serviceList = defaultKnativeClient.services().inNamespace(Utils.NAMESPACE).list();
+        List<ServiceInfoVo> serviceInfoVoList = new ArrayList<ServiceInfoVo>();
+        List<io.fabric8.knative.serving.v1.Service> items = serviceList.getItems();
+        for (io.fabric8.knative.serving.v1.Service item : items) {
+            ServiceInfoVo serviceInfo = new ServiceInfoVo();
+
+            serviceInfo.setName(item.getMetadata().getName());
+
+            Container container = item.getSpec().getTemplate().getSpec().getContainers().get(0);
+            serviceInfo.setImage(container.getImage());
+
+            TrafficTarget trafficTarget = item.getSpec().getTraffic().get(0);
+            serviceInfo.setTrafficPercent(trafficTarget.getPercent());
+
+            Condition condition = item.getStatus().getConditions().get(0);
+            serviceInfo.setLastReadyTime(condition.getLastTransitionTime());
+
+            serviceInfo.setUrl(item.getStatus().getUrl() + "/v2/models/" + item.getMetadata().getName() + "/infer");
+
+            serviceInfo.setLastReadyRevision(item.getStatus().getLatestReadyRevisionName());
+            serviceInfo.setLastCreatedRevision(item.getStatus().getLatestCreatedRevisionName());
+
+            serviceInfo.setNodeSelect("node1");
+            serviceInfo.setModificationCount(item.getStatus().getObservedGeneration());
+
+            serviceInfoVoList.add(serviceInfo);
+        }
+        return serviceInfoVoList;
     }
 }
