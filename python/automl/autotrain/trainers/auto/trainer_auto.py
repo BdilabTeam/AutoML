@@ -25,6 +25,20 @@ MODEL_FOR_TRAINER_MAPPING_NAMES = OrderedDict(
                 "AKResNetForImageRegressionTrainer"
             )
         ),
+        (
+            "xception",
+            (
+                "AKXceptionForImageClassificationTrainer",
+                "AKXceptionForImageRegressionTrainer"
+            )
+        ),
+        (
+            "convnet",
+            (
+                "AKConvNetForImageClassificationTrainer",
+                "AKConvNetForImageRegressionTrainer"
+            )
+        )
     ]
 )
 
@@ -52,7 +66,11 @@ TRAINER_MAPPING_NAMES = OrderedDict(
         ("structured-data-classification/densenet", "AKDenseNetForStructruedDataClassificationTrainer"),
         ("structured-data-regression/densenet", "AKDenseNetForStructruedDataRegressionTrainer"),
         ("image-classification/resnet", "AKResNetForImageClassificationTrainer"),
-        ("image-regression/resnet", "AKResNetForImageRegressionTrainer")
+        ("image-regression/resnet", "AKResNetForImageRegressionTrainer"),
+        ("image-classification/xception", "AKXceptionForImageClassificationTrainer"),
+        ("image-regression/xception", "AKXceptionForImageRegressionTrainer"),
+        ("image-classification/convnet", "AKConvNetForImageClassificationTrainer"),
+        ("image-regression/convnet", "AKConvNetForImageRegressionTrainer")
     ]
 )
 

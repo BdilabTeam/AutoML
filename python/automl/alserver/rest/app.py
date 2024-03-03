@@ -51,44 +51,44 @@ def create_app(
     
     routes = [
         APIRoute(
-            "/v1/selection/candidate-models",
+            "/api/v1/selection/candidate-models",
             endpoints.get_candidate_models,
             methods=['POST'],
             tags=["model-selection"]
         ),
         APIRoute(
-            "/v1/experiment",
+            "/api/v1/experiment",
             endpoints.create_experiment,
             methods=['POST'],
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/experiment/overview/{experiment_name}",
+            "/api/v1/experiment/overview/{experiment_name}",
             endpoints.get_experiment_overview,
             methods=['GET'],
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/experiment/cards",
+            "/api/v1/experiment/cards",
             endpoints.get_experiment_cards,
             methods=['GET'],
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/experiment/{experiment_name}",
+            "/api/v1/experiment/{experiment_name}",
             endpoints.delete_experiment,
             methods=['DELETE'],
             tags=["experiment"]
         ),
         APIRoute(
-            "/v1/monitoring/info",
+            "/api/v1/monitoring/info",
             endpoints.get_monitor_info,
             methods=['GET'],
             tags=["monitoring"]
         ),
         APIRoute(
-            "/v1/repository/model",
-            endpoints.get_monitor_info,
+            "/api/v1/repository/model",
+            endpoints.get_model_repository_info,
             methods=['GET'],
             tags=["model-repository"]
         ),
@@ -102,7 +102,7 @@ def create_app(
     app.router.route_class = APIRoute
     
     app.mount(
-        path="/metadata",
+        path="/api/v1/metadata",
         app=StaticFiles(
             directory=STATIC_FILES_DIR
         ),
@@ -110,7 +110,7 @@ def create_app(
     )
     
     app.add_websocket_route(
-        path="/v1/experiment/job/logs",
+        path="/api/v1/experiment/job/logs",
         route=endpoints.get_experiment_job_logs
     )
     return app

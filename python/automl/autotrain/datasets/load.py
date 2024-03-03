@@ -1,3 +1,7 @@
+import os
+import glob
+import tensorflow as tf
+import numpy as np
 from typing import Optional, Union, Sequence, Mapping
 
 def load_dataset(
@@ -8,9 +12,9 @@ def load_dataset(
 ):
     pass
 
-def image_dataset_from_directory(directory: str):
+def regression_image_dataset_from_directory(directory: str):
     # 数据准备
-    train_dir = inputs
+    train_dir = directory
     items = os.listdir(train_dir)
     # 获取'文件夹'名称
     folder_names = [item for item in items if os.path.isdir(os.path.join(train_dir, item))]
@@ -20,7 +24,7 @@ def image_dataset_from_directory(directory: str):
     for folder_name in folder_names:
         files = glob.glob(os.path.join(train_dir, folder_name, '*'))
         file_paths.extend(files)
-        labels.extend([folder_name] * len(files))
+        labels.extend([float(folder_name)] * len(files))
         
     dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
 

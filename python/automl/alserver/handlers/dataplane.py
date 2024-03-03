@@ -251,7 +251,7 @@ class DataPlane:
             )
         except:
             logger.error("Failed to create, start rollback operation")
-            dataplane_utils.remove_workspace_dir(workspace_dir=workspace_dir)
+            dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
             self.delete_experiment_job(experiment_name=experiment_name)
             raise
 
@@ -272,7 +272,7 @@ class DataPlane:
         
         self.delete_experiment_job(experiment_name=experiment_name)
         delete_experiment(session=session, experiment_name=experiment_name)
-        dataplane_utils.remove_workspace_dir(workspace_dir=experiment.workspace_dir)
+        dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
 
 
     def get_experiment_overview(self, experiment_name: str) -> output_schema.ExperimentOverview:
@@ -323,7 +323,7 @@ class DataPlane:
                 best_model = output_schema.BestModel(
                 history=best_model_tracker.get("history"),
                 parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
-                model_graph_url=re.sub(r"metadata", os.path.join("metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
+                model_graph_url=re.sub(r"metadata", os.path.join("/api/v1/metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
             else:
                 raise ValueError("Failed to get the 'best_model_tracker' key of the 'summary dict'")
@@ -338,7 +338,7 @@ class DataPlane:
                             default_metric=round(trial.get("score"), 5),
                             best_step=trial.get('best_step'),
                             parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
-                            model_graph_url=re.sub(r"metadata", os.path.join("metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
+                            model_graph_url=re.sub(r"metadata", os.path.join("/api/v1/metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
                         )
                     )
             else:
@@ -380,7 +380,6 @@ class DataPlane:
                 task_type=experiment.task_type,
                 task_desc=experiment.task_desc,
                 model_type=experiment.model_type,
-                experiment_job_name=experiment.experiment_job_name
             )
             experiment_cards.append(experiment_card)
         return output_schema.ExperimentCards(experiment_cards=experiment_cards)
@@ -420,7 +419,11 @@ class DataPlane:
         experiments = get_all_experiments(session=session)
         models = []
         for experiment in experiments:
-            if self._training_client.is_job_succeeded(name=experiment.experiment_name, namespace=self._settings.namespcae):
-                models.append(experiment.experiment_name)
+            try:
+                if self._training_client.is_job_succeeded(name=experiment.experiment_name, namespace=self._settings.namespcae):
+                    models.append(experiment.experiment_name)
+            except Exception as e:
+                logger.exception(e)
+        
         return output_schema.ModelRepository(models=models)
         

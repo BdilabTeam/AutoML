@@ -67,12 +67,15 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withNamespace(Utils.NAMESPACE)
                 .build();
         service.setMetadata(objectMeta);
-        Map<String, String> annotations = new HashMap() {
+        Map<String, String> annotations = new HashMap<String, String>() {
             {
                 put("autoscaling.knative.dev/minScale", "1");
+                put("automl/experimentName", experimentName);
+                put("automl/taskType", experiment.getTaskType());
+                put("automl/modelType", experiment.getModelType());
             }
         };
-        Map<String, String> nodeSelector = new HashMap() {
+        Map<String, String> nodeSelector = new HashMap<String, String>() {
             {
                 put("kubernetes.io/hostname", "node1");
             }
@@ -153,7 +156,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Inference endpoint with name %s does not exist.", endpointName)));
         }
         log.info("Parsing the data.");
-        if (null == instances || instances.size() == 0) {
+        if (null == instances || instances.isEmpty()) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData("推理数据不能为空"));
         }
         JSONObject var1 = new JSONObject();

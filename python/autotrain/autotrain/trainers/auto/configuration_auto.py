@@ -8,7 +8,9 @@ CONFIG_MAPPING_NAMES = OrderedDict(
     [
         # Add configs here
         ("densenet", "DenseNetTrainerConfig"),
-        ("resnet", "ResNetTrainerConfig")
+        ("resnet", "ResNetTrainerConfig"),
+        ("xception", "XceptionTrainerConfig"),
+        ("convnet", "ConvNetTrainerConfig")
     ]
 )
 

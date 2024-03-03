@@ -32,17 +32,17 @@ class AKDenseNetMainTrainer:
         
         dense_block_params = {}
         if config.mp_num_layers:
-            dense_block_params["num_layers"] = hp.Choice("num_layers", values=config.mp_num_layers, default=2)
+            dense_block_params["num_layers"] = hp.Choice("num_layers", values=config.mp_num_layers)
         if config.mp_num_units:
-            dense_block_params["num_units"] = hp.Choice("num_units", values=config.mp_num_units, default=32)
+            dense_block_params["num_units"] = hp.Choice("num_units", values=config.mp_num_units)
         if config.mp_dropout:
-            dense_block_params["dropout"] = hp.Choice("dropout", values=config.mp_dropout, default=0.0)
+            dense_block_params["dropout"] = hp.Choice("dropout", values=config.mp_dropout)
         if config.mp_use_batchnorm:
             dense_block_params["use_batchnorm"] = hp.Boolean("use_batchnorm")
         if config.dp_enable_auto_feature_extract:
-            dense_block_params["num_layers"] = dense_block_params.pop("num_layers", 2).default
-            dense_block_params["num_units"] = dense_block_params.pop("num_units", 32).default
-            dense_block_params["dropout"] = dense_block_params.pop("dropout", 0.0).default
+            dense_block_params["num_layers"] = dense_block_params.pop("num_layers").default
+            dense_block_params["num_units"] = dense_block_params.pop("num_units").default
+            dense_block_params["dropout"] = dense_block_params.pop("dropout").default
         output_node = ak.DenseBlock(**dense_block_params)(output_node)
         
         if config.task_type == TaskType.STRUCTURED_DATA_CLASSIFICATION.value:

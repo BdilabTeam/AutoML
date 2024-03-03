@@ -3,6 +3,11 @@ import inspect
 from typing import no_type_check, Optional, Union
 from pydantic import Field, BaseSettings as _BaseSettings
 
+PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'resources', 'automl-models-metadata.jsonl')
+ENV_FILE_PATH = os.path.join(PARENT_DIR, '.env')
+
 class BaseSettings(_BaseSettings):
     @no_type_check
     def __setattr__(self, name, value):
@@ -62,7 +67,7 @@ class LLMSettings(BaseSettings):
         description="Base URL path for API requests, leave blank if not using a proxy or service emulator."
     )
     env_file_path: str = Field(
-        default=os.path.join(os.pardir, '.env'),
+        default=ENV_FILE_PATH,
         description="Path to 'environment variables' file"
     )
 
@@ -92,10 +97,10 @@ class OutputFixingLLMSettings(LLMSettings):
 
 class ModelSelectionSettings(BaseSettings):
     prompt_template_file_path: str = Field(
-        default=os.path.join(os.pardir, 'resources/prompt-templates/model-selection-prompt-v2.json'),
+        default=PROMPT_TEMPLATE_FILE_PATH,
         description="Model selection prompts template file path"
     )
     model_metadata_file_path: str = Field(
-        default=os.path.join(os.pardir, 'resources/huggingface-models-metadata.jsonl'),
+        default=MODEL_METADATA_FILE_PATH,
         description="Model metadata file path"
     )

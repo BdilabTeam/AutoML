@@ -17,7 +17,7 @@ DATA_DIR_IN_CONTAINER = '/metadata/datasets'
 EXCLUDE_ATTRIBUTES = [
     'model_type', 'task_type', 'trainer_class_name',
     'tp_project_name', 'tp_overwrite',  'tp_directory',
-    'dp_feature_extractor_class_name'
+    'tp_tuner', 'dp_feature_extractor_class_name'
 ]
 
 PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
@@ -40,7 +40,7 @@ def get_experiment_summary_file_path(experiment_name: str):
     return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
 
 def get_experiment_summary_file_url(experiment_name: str):
-    os.path.join('/metadata', experiment_name, TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
+    return os.path.join('/metadata', experiment_name, TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
     
 def get_experiment_data_dir_in_container():
     return DATA_DIR_IN_CONTAINER
@@ -49,11 +49,12 @@ def save_dict_to_json_file(data: Dict[str, Any], json_file: str):
     with open(json_file, "w") as json_file:
         json.dump(data, json_file)
 
-def remove_workspace_dir(workspace_dir: str):
-    if not Path(workspace_dir).exists():
+def remove_experiment_workspace_dir(experiment_name: str):
+    experiment_workspace_dir = get_experiment_workspace_dir(experiment_name=experiment_name)
+    if not Path(experiment_workspace_dir).exists():
         return
     
-    shutil.rmtree(workspace_dir)
+    shutil.rmtree(experiment_workspace_dir)
     
 def get_training_params_dict(task_type: str, model_type: str):
     """Get the configuration parameters of the trainer"""

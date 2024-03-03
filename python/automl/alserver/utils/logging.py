@@ -7,7 +7,7 @@ from typing import Optional
 _lock = threading.Lock()
 _default_handler: Optional[logging.Handler] = None
 
-LoggerName = "automl-serve"
+LoggerName = "automl-server"
 
 from logging import (
     CRITICAL,  # NOQA

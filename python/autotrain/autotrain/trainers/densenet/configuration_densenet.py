@@ -26,7 +26,7 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         mp_num_layers: Optional[List[int]] = [1, 2, 3],
         mp_num_units: Optional[List[int]] = [16, 32, 64, 128, 256, 512, 1024],
         mp_use_batchnorm: Optional[bool] = True,
-        mp_dropout: Optional[List[float]] = [0.0, 0.25, 0.5],
+        mp_dropout: Optional[List[float]] = [0.25, 0.5],
         # ClassificationHead config
         mp_multi_label: bool = False,
         # Train pipeline

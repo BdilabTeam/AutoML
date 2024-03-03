@@ -11,6 +11,10 @@ python run_densenet.py \
     --model_type "densenet" \
     --inputs "" \
     --dp_enable_auto_feature_extract True \
+    --mp_num_layers "[1, 2, 3]" \
+    --mp_num_units "[16, 32, 64, 128, 256, 512, 1024]" \
+    --mp_use_batchnorm True \
+    --mp_dropout "[0.0, 0.25, 0.5]" \
     --tp_directory "" \
     --tp_overwrite "True" \
     --tp_project_name "test" \

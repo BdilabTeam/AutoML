@@ -21,9 +21,8 @@ class LLMFactory():
         """Get the model selection llm"""
         values = dict()
         openai_params = dict()
-        if llm_settings.env_file_path:
-            if not load_dotenv(llm_settings.env_file_path, verbose=True):
-                raise EnvironmentError(f"Failed to load environment variable file")
+        if llm_settings.env_file_path and load_dotenv(llm_settings.env_file_path, verbose=True):
+            return ChatOpenAI(**openai_params)
         else:
             if not llm_settings.openai_api_key:
                 raise ValueError(f"Did not find the 'api_key', you must set one.")
