@@ -39,4 +39,53 @@ class TestTrainFunc:
         train_func = AutoTrainFunc.from_model_type('densenet')
         train_func(training_params)
         
+    def test_train_resnet_for_image_classification(self):
+        training_params = {
+            'inputs': os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'image-classification'),
+            'tp_project_name': 'resnet-image-classification',
+            'task_type': 'image-classification',
+            'model_type': 'resnet',
+            'tp_directory': os.path.dirname(__file__),
+            "tp_max_trials": 1,
+            "tp_tuner": "greedy",
+            "tp_batch_size": 32,
+            "tp_epochs": 10,
+            "tp_validation_split": 0.2
+        }
         
+        train_func = AutoTrainFunc.from_model_type('resnet')
+        train_func(training_params)
+        
+    def test_train_convnet_for_image_classification(self):
+        training_params = {
+            'inputs': os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'image-classification'),
+            'tp_project_name': 'convnet-image-classification',
+            'task_type': 'image-classification',
+            'model_type': 'convnet',
+            'tp_directory': os.path.dirname(__file__),
+            "tp_max_trials": 1,
+            "tp_tuner": "greedy",
+            "tp_batch_size": 32,
+            "tp_epochs": 10,
+            "tp_validation_split": 0.2
+        }
+        
+        train_func = AutoTrainFunc.from_model_type('convnet')
+        train_func(training_params) 
+    
+    def test_train_xception_for_image_classification(self):
+        training_params = {
+            'inputs': os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'image-classification'),
+            'tp_project_name': 'xception-image-classification',
+            'task_type': 'image-classification',
+            'model_type': 'xception',
+            'tp_directory': os.path.dirname(__file__),
+            "tp_max_trials": 1,
+            "tp_tuner": "greedy",
+            "tp_batch_size": 32,
+            "tp_epochs": 10,
+            "tp_validation_split": 0.2
+        }
+        
+        train_func = AutoTrainFunc.from_model_type('xception')
+        train_func(training_params) 

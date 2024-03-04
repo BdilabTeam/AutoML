@@ -29,6 +29,7 @@ class ExperimentCard(BaseModel):
     task_type: Optional[str]
     task_desc: Optional[str]
     model_type: Optional[str]
+    experiment_status: Optional[str]
    
 class ExperimentCards(BaseModel):
     experiment_cards: List[ExperimentCard]

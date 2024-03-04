@@ -3,22 +3,17 @@ package com.bdilab.automl.controller;
 import com.bdilab.automl.common.exception.InternalServerErrorException;
 import com.bdilab.automl.common.response.HttpResponse;
 import com.bdilab.automl.common.utils.HttpResponseUtils;
+import com.bdilab.automl.dto.InferenceServiceInfo;
 import com.bdilab.automl.service.impl.ExperimentServiceImpl;
 import com.bdilab.automl.vo.EndpointInfoVO;
 import com.bdilab.automl.vo.InferenceDataVO;
-import com.bdilab.automl.vo.ServiceInfoVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.lang.reflect.Field;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/v1/automl")
@@ -56,29 +51,18 @@ public class ExperimentController {
         }
     }
 
-    @GetMapping("/ServiceInfomation")
+    @GetMapping("/inference-service/overview")
     @ApiOperation(value = "服务信息", notes = "获取Knative服务信息")
     public HttpResponse ServiceInfo(){
-        Map<String, Object> serviceInfoMap = new LinkedHashMap<>();
-        List<Map<String, Object>> serviceInfoMapList = new LinkedList<>();
-        List<ServiceInfoVo> serviceInfoVoList = experimentService.ServiceInfo();
-        for (ServiceInfoVo serviceInfoVo : serviceInfoVoList) {
-            serviceInfoMap.put("name", serviceInfoVo.getName());
-            serviceInfoMap.put("image", serviceInfoVo.getImage());
-            serviceInfoMap.put("trafficPercent", serviceInfoVo.getTrafficPercent());
-            serviceInfoMap.put("lastReadyTime", serviceInfoVo.getLastReadyTime());
-            serviceInfoMap.put("url", serviceInfoVo.getUrl());
-            serviceInfoMap.put("LastReadyVisionName", serviceInfoVo.getLastReadyRevision());
-            serviceInfoMap.put("LastCreatedVisionName", serviceInfoVo.getLastCreatedRevision());
-            serviceInfoMap.put("node", serviceInfoVo.getNodeSelect());
-            serviceInfoMap.put("modificationCount", serviceInfoVo.getModificationCount());
-
-            serviceInfoMapList.add(serviceInfoMap);
+        List<InferenceServiceInfo> inferenceServiceInfoList;
+        try {
+            inferenceServiceInfoList = experimentService.serviceOverview();
+        } catch (Exception e) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("Failed to get the overview of the services, for a specific reason: %s", e)));
         }
 
-        Map<String, Object> resultMap = new LinkedHashMap<>();
-        resultMap.put("data", serviceInfoMapList);
-
-        return new HttpResponse(resultMap);
+        Map<String, Object> res = new HashMap<>();
+        res.put("services-overview", inferenceServiceInfoList);
+        return new HttpResponse(res);
     }
 }

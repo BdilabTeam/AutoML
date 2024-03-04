@@ -365,6 +365,7 @@ class DataPlane:
     
     @transactional
     def get_experiment_cards(self, **kwargs) -> output_schema.ExperimentCards:
+        from kubeflow.training.constants import constants
         from ..cruds.experiment import get_all_experiments
         
         # @transactional注解自动注入session
@@ -375,11 +376,28 @@ class DataPlane:
         experiments = get_all_experiments(session=session)
         experiment_cards = []
         for experiment in experiments:
+            try:
+                experiment_job_status = self._training_client.get_tfjob(name=experiment.experiment_name, namespace=self._settings.namespcae).status
+            except Exception as e:
+                raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment_name}', for a specific reason: {e}")
+            
+            if not experiment_job_status:
+                raise ValueError("Experiment job status cannot be None")
+            
+            conditions = experiment_job_status.conditions
+            if conditions:
+                for c in reversed(conditions):
+                    if c.status == constants.CONDITION_STATUS_TRUE:
+                        experiment_status = c.type
+                        break
+            else:
+                experiment_status = 'Unknown'
             experiment_card = output_schema.ExperimentCard(
                 experiment_name=experiment.experiment_name,
                 task_type=experiment.task_type,
                 task_desc=experiment.task_desc,
                 model_type=experiment.model_type,
+                experiment_status=experiment_status
             )
             experiment_cards.append(experiment_card)
         return output_schema.ExperimentCards(experiment_cards=experiment_cards)
