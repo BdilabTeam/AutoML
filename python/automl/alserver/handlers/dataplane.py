@@ -323,7 +323,7 @@ class DataPlane:
                 best_model = output_schema.BestModel(
                 history=best_model_tracker.get("history"),
                 parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
-                model_graph_url=re.sub(r"metadata", os.path.join("/api/v1/metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
+                model_graph_url=re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
             else:
                 raise ValueError("Failed to get the 'best_model_tracker' key of the 'summary dict'")
@@ -338,7 +338,7 @@ class DataPlane:
                             default_metric=round(trial.get("score"), 5),
                             best_step=trial.get('best_step'),
                             parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
-                            model_graph_url=re.sub(r"metadata", os.path.join("/api/v1/metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
+                            model_graph_url=re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
                         )
                     )
             else:

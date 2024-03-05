@@ -11,9 +11,6 @@ ARG POETRY_VERSION=1.6.1
 # Required for building packages for arm64 arch
 # RUN apt-get update && apt-get install -y --no-install-recommends python3-dev build-essential
 
-# Required for keras.utils.plot_model()
-RUN apt update && apt install -y graphviz
-
 RUN pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple && pip config set global.timeout 1800 && pip config set global.retries 10
 RUN python3 -m venv ${POETRY_HOME} && ${POETRY_HOME}/bin/python3 -m pip install --upgrade pip && ${POETRY_HOME}/bin/pip install poetry==${POETRY_VERSION}
 ENV PATH="$PATH:${POETRY_HOME}/bin"
@@ -33,6 +30,9 @@ RUN cd autotrain && poetry install --no-interaction --no-cache
 
 
 FROM ${BASE_IMAGE} as prod
+
+# Required for keras.utils.plot_model()
+RUN apt update && apt install -y graphviz
 
 # Activate virtual env
 ARG VENV_PATH
