@@ -8,6 +8,7 @@ import com.bdilab.automl.service.impl.ExperimentServiceImpl;
 import com.bdilab.automl.vo.EndpointInfoVO;
 import com.bdilab.automl.vo.InferenceDataVO;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,9 +32,10 @@ public class ExperimentController {
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("部署成功"));
     }
 
-    @DeleteMapping("/undeploy/{endpointName}")
+    @DeleteMapping("/undeploy/{endpoint-name}")
     @ApiOperation(value = "下线模型服务", notes = "下线已部署的模型推理服务")
-    public HttpResponse undeploy(@PathVariable String endpointName) {
+    @ApiImplicitParam(name = "endpoint-name", value = "端点名称", required = true, example = "test")
+    public HttpResponse undeploy(@PathVariable("endpoint-name") String endpointName) {
         experimentService.undeploy(endpointName);
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("删除部署成功"));
     }

@@ -1,10 +1,12 @@
 package com.bdilab.automl.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -17,7 +19,8 @@ public class InferenceServiceInfo {
     @NotNull
     private String status;
     @NotNull
-    private String readyTime;
+    @JsonFormat(pattern="yyyy-MM-dd HH:mm:ss", timezone="GMT+8")
+    private LocalDateTime createTime;
     @NotNull
     private String url;
     @NotNull

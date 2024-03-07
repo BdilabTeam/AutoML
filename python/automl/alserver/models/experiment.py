@@ -10,6 +10,7 @@ class Experiment(Base):
     id: Mapped[int] = mapped_column(init=False, primary_key=True, autoincrement=True)
     experiment_name: Mapped[str] = mapped_column(type_=String(50))
     task_type: Mapped[str] = mapped_column(type_=String(50))
-    task_desc: Mapped[str] = mapped_column(type_=String(150), doc="任务描述信息")
+    task_desc: Mapped[str] = mapped_column(type_=String(150), doc="任务描述信息", nullable=True)
     model_type: Mapped[str] = mapped_column(type_=String(50))
+    tuner_type: Mapped[str] = mapped_column(init=False, nullable=True, type_=String(50))
     workspace_dir: Mapped[str] = mapped_column(init=False, type_=String(100), nullable=True, doc="实验工作目录")

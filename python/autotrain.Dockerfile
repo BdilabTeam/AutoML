@@ -23,7 +23,8 @@ ENV VIRTUAL_ENV=${VENV_PATH}
 RUN python3 -m venv ${VIRTUAL_ENV}
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-COPY autotrain/pyproject.toml autotrain/poetry.lock autotrain/
+# COPY autotrain/pyproject.toml autotrain/poetry.lock autotrain/
+COPY autotrain/pyproject.toml autotrain/
 RUN cd autotrain && poetry install --no-root --no-interaction --no-cache
 COPY autotrain autotrain
 RUN cd autotrain && poetry install --no-interaction --no-cache

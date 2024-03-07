@@ -40,7 +40,7 @@ def get_experiment_summary_file_path(experiment_name: str):
     return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
 
 def get_experiment_summary_file_url(experiment_name: str):
-    return os.path.join('/metadata', experiment_name, TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
+    return os.path.join('/api/v1/metadata', experiment_name, TP_PROJECT_NAME, EXPERIMENT_SUMMARY_FILE_NAME)
     
 def get_experiment_data_dir_in_container():
     return DATA_DIR_IN_CONTAINER
@@ -79,3 +79,6 @@ def get_experiment_training_params_file_path(experiment_name: str):
 
 def get_experiment_best_model_dir(experiment_name: str):
     return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, BEST_MODEL_FOLDER_NAME)
+
+def get_external_workspace_dir(experiment_name: str):
+    return "/nfs/automl/workspace/python" + get_experiment_workspace_dir(experiment_name=experiment_name)

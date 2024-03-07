@@ -206,12 +206,11 @@ class DataPlane:
                     'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER
                 }
             )
-            tp_max_trials = kwargs.pop('tp_max_trials', None)
-            if tp_max_trials:
-                training_params['tp_max_trials'] = tp_max_trials
-            tp_tuner = kwargs.pop("tp_tuner", None)
-            if tp_tuner:
-                training_params['tp_tuner'] = tp_tuner
+            tp_max_trials = kwargs.pop('tp_max_trials', 5)
+            training_params['tp_max_trials'] = tp_max_trials
+            tp_tuner = kwargs.pop("tp_tuner", "greedy")
+            training_params['tp_tuner'] = tp_tuner
+            experiment.tuner_type = tp_tuner
             
             logger.info(f"Saving the training parameter.")
             training_params_file_path = dataplane_utils.get_experiment_training_params_file_path(experiment_name=experiment_name)
@@ -230,7 +229,7 @@ class DataPlane:
                     namespace=self._settings.namespcae,
                     num_worker_replicas=1,
                     host_ip=host_ip,
-                    external_workspace_dir=workspace_dir,
+                    external_workspace_dir=dataplane_utils.get_external_workspace_dir(experiment_name=experiment_name),
                 )
                 self._training_client.wait_for_job_conditions(
                     name=experiment_name,
@@ -244,10 +243,10 @@ class DataPlane:
                 raise CreateExperimentJobError(f"Failed to create a experiment job '{experiment_name}', for a specific reason: {e}")
             
             return output_schema.ExperimentInfo(
-                experiment_id=experiment.id,
+                # experiment_id=experiment.id,
                 experiment_name=experiment.experiment_name,
-                task_type=experiment.task_type,
-                model_type=experiment.model_type,
+                # task_type=experiment.task_type,
+                # model_type=experiment.model_type,
             )
         except:
             logger.error("Failed to create, start rollback operation")
@@ -357,7 +356,7 @@ class DataPlane:
             experiment_completion_time=experiment_completion_time,
             experiment_duration_time=experiment_duration_time,
             experiment_summary_url=experiment_summary_url,
-            tuner=None,
+            tuner=experiment.tuner_type,
             trials=trials,
             best_model=best_model
         )
@@ -379,7 +378,7 @@ class DataPlane:
             try:
                 experiment_job_status = self._training_client.get_tfjob(name=experiment.experiment_name, namespace=self._settings.namespcae).status
             except Exception as e:
-                raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment_name}', for a specific reason: {e}")
+                raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment.experiment_name}', for a specific reason: {e}")
             
             if not experiment_job_status:
                 raise ValueError("Experiment job status cannot be None")

@@ -25,7 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -183,16 +186,25 @@ public class ExperimentServiceImpl implements ExperimentService {
         for (io.fabric8.knative.serving.v1.Service item : items) {
             InferenceServiceInfo inferenceServiceInfo = new InferenceServiceInfo();
             inferenceServiceInfo.setName(item.getMetadata().getName());
+            String creationTimestamp = item.getMetadata().getCreationTimestamp();
+            Instant instant = Instant.parse(creationTimestamp);
+            LocalDateTime creationTime = LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
+            inferenceServiceInfo.setCreateTime(creationTime);
             inferenceServiceInfo.setTrafficPercent(item.getSpec().getTraffic().get(0).getPercent());
-            Condition condition = item.getStatus().getConditions().get(0);
-            inferenceServiceInfo.setStatus(condition.getStatus());
-            inferenceServiceInfo.setReadyTime(condition.getLastTransitionTime());
+            String status = "Ready";
+            List<Condition> conditions = item.getStatus().getConditions();
+            for (int i = conditions.size() - 1; i >= 0; i--) {
+                if (!"True".equals(conditions.get(i).getStatus())) {
+                    status = "NotReady";
+                }
+            }
+            inferenceServiceInfo.setStatus(status);
             inferenceServiceInfo.setUrl(item.getStatus().getUrl() + "/v2/models/" + item.getMetadata().getName() + "/infer");
-            inferenceServiceInfo.setExperimentName(item.getMetadata().getAnnotations().getOrDefault("automl/experimentName", "Unknown"));
+            inferenceServiceInfo.setExperimentName(item.getSpec().getTemplate().getMetadata().getAnnotations().getOrDefault("automl/experimentName", "Unknown"));
             inferenceServiceInfo.setTaskWithModel(
-                    item.getMetadata().getAnnotations().getOrDefault("automl/taskType", "Unknown") +
-                    "-" +
-                    item.getMetadata().getAnnotations().getOrDefault("automl/modelType", "Unknown")
+                    item.getSpec().getTemplate().getMetadata().getAnnotations().getOrDefault("automl/taskType", "Unknown") +
+                    "/" +
+                    item.getSpec().getTemplate().getMetadata().getAnnotations().getOrDefault("automl/modelType", "Unknown")
             );
             inferenceServiceInfoList.add(inferenceServiceInfo);
         }

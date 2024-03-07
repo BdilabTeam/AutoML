@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: automl-python
+  namespace: zauto
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      team: bdilab
+  template:
+    metadata:
+      labels:
+        team: bdilab
+    spec:
+      nodeName: node1
+      containers:
+        - name: automl-python
+          image: registry.cn-hangzhou.aliyuncs.com/treasures/automl:latest
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+          ports:
+            - containerPort: 31185 # Pod端口，应和应用程序监听端口一致
+          volumeMounts:
+            - name: automl-metadata
+              mountPath: /automl/alserver/metadata
+            - name: kube-config
+              mountPath: /root/.kube/config
+
+      volumes:
+        - name: automl-metadata
+          persistentVolumeClaim:
+            claimName: automl-metadata-pvc
+        - name: kube-config
+          persistentVolumeClaim:
+            claimName: automl-kube-config-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: automl-python
+  namespace: zauto
+spec:
+  type: NodePort
+  ports:
+    - port: 31185 # Service端口，映射Pod中的容器端口，可被外部访问
+      targetPort: 31185 # Pod容器端口
+      nodePort: 31185
+  selector:
+    team: bdilab

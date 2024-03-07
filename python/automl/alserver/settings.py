@@ -20,6 +20,7 @@ PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 
 MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'automl-models-metadata.jsonl')
 
 HOST_INFO_FILE_PATH = os.path.join(PARENT_DIR, 'autoschedule', 'host_info.json')
+KUBE_CONFIG_FILE_PATh = "/root/.kube/config"
 
 @contextmanager
 def _extra_sys_path(extra_path: str):
@@ -163,7 +164,7 @@ class Settings(BaseSettings):
         description=f"Database name."
     )
     query_mysql: dict = Field(
-        default={"charset": "utf8mb4"},
+        default={"charset": "utf8mb4", "collation": "utf8mb4_general_ci"},
         description=f"Database query."
     )
     async_enabled: bool = Field(
@@ -176,12 +177,12 @@ class Settings(BaseSettings):
         description=""
     )
     kube_config_file: str = Field(
-        default="~/.kube/config",
+        default=KUBE_CONFIG_FILE_PATh,
         description="Path to the kube-config file."
     )
     # TFJob
     base_image: str = Field(
-        default='autotrain:0.0.5',
+        default='autotrain:0.0.7',
         description=''
     )
     namespcae: str = Field(

@@ -80,12 +80,12 @@ def create_app(
             methods=['DELETE'],
             tags=["experiment"]
         ),
-        APIRoute(
-            "/api/v1/monitoring/info",
-            endpoints.get_monitor_info,
-            methods=['GET'],
-            tags=["monitoring"]
-        ),
+        # APIRoute(
+        #     "/api/v1/monitoring/info",
+        #     endpoints.get_monitor_info,
+        #     methods=['GET'],
+        #     tags=["monitoring"]
+        # ),
         APIRoute(
             "/api/v1/repository/model",
             endpoints.get_model_repository_info,

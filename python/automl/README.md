@@ -18,6 +18,7 @@ pip install poetry
 # 在虚拟环境中安装poetry, 按需安装可选依赖组
 poetry install --with autoselect,autoschedule,storage,autotrain,test --no-root --no-cache
 # 创建数据库/表
+CREATE DATABASE automl CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
 pytest -s -k test_generate_schemas test_mysql_server.py
 ```
 
