@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Data
-public class FilePathConfig {
+public class PathConfig {
     @Value("${kubernetes.config.path}")
     private String kubernetesConfigPath;
 }

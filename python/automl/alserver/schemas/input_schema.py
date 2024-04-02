@@ -5,7 +5,7 @@ from typing import Literal, IO, Dict, Any, Union
 class ExperimentBase(BaseModel):
     experiment_name: str = Field(description="项目名称")
     task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Field(description="任务类型")
-    model_type: Literal["densenet", "resnet"]= Field(description="模型 or 算法类型")
+    model_type: Literal["densenet", "resnet", "convnet", "xception"]= Field(description="模型 or 算法类型")
     files: IO = Field(description="训练数据")
 
     class Config:

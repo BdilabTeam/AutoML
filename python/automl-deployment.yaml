@@ -1,9 +1,10 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: automl-python
+  name: automl-backend-python
   namespace: zauto
 spec:
+  serviceName: automl-backend-python
   replicas: 1
   selector:
     matchLabels:
@@ -18,6 +19,11 @@ spec:
         - name: automl-python
           image: registry.cn-hangzhou.aliyuncs.com/treasures/automl:latest
           imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: "0.5" # 请求的CPU资源
+            limits:
+              cpu: "1" # CPU资源的限制
           securityContext:
             runAsUser: 0
           ports:
@@ -27,7 +33,8 @@ spec:
               mountPath: /automl/alserver/metadata
             - name: kube-config
               mountPath: /root/.kube/config
-
+            - name: code
+              mountPath: /automl
       volumes:
         - name: automl-metadata
           persistentVolumeClaim:
@@ -35,11 +42,14 @@ spec:
         - name: kube-config
           persistentVolumeClaim:
             claimName: automl-kube-config-pvc
+        - name: code
+          hostPath:
+            path: /nfs/automl/workspace/python/automl
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: automl-python
+  name: automl-backend-python
   namespace: zauto
 spec:
   type: NodePort

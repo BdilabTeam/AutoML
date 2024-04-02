@@ -12,10 +12,6 @@ class CandidateModel(BaseModel):
     
 class CandidateModels(BaseModel):
     candidate_models: List[CandidateModel] = Field(description="候选模型列表, 每单项表示一个候选模型")
-
-# class JobInfo(BaseModel):
-#     experiment_job_name: Optional[str]
-#     experiment_job_status: Optional[Dict[str, Any]]
  
 class ExperimentInfo(BaseModel):
     experiment_name: Optional[str]
@@ -53,7 +49,8 @@ class ExperimentOverview(BaseModel):
     experiment_start_time: Optional[str] = Field(description="实验开始时间")
     experiment_completion_time: Optional[str] = Field(description="实验结束时间")
     experiment_duration_time: Optional[str] = Field(description="实验持续时间")
-    experiment_summary_url: Optional[str] = Field(description="实验总结")
+    # experiment_summary_url: Optional[str] = Field(description="实验总结")
+    experiment_summary: Optional[Dict[str, Any]] = Field("实验总结")
     tuner: Optional[str] = Field(description="调优算法")
     max_trial_number: Optional[int] = Field(description="最大调优次数")
     trials: Optional[List[Trial]] = Field(description="调优试验列表详情")

@@ -18,3 +18,12 @@ istio:
   ingressgateway:
     ip: 124.70.188.119
     port: 32300
+
+prometheus:
+  server:
+    ip: 124.70.188.119
+    port: 30001
+  monitor:
+    pod:
+      cpu: node_namespace_pod_container:container_cpu_usage_seconds_total:sum_irate{namespace='%s', pod=~'%s.*', container='%s'}
+      memory: node_namespace_pod_container:container_memory_rss{namespace='%s', pod=~'%s.*', container='%s'}

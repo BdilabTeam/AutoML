@@ -4,6 +4,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bdilab.automl.common.exception.InternalServerErrorException;
 import com.bdilab.automl.common.utils.*;
+import com.bdilab.automl.common.websocket.LogCallback;
+import com.bdilab.automl.common.websocket.WebSocketOutputStream;
 import com.bdilab.automl.dto.InferenceServiceInfo;
 import com.bdilab.automl.mapper.ExperimentMapper;
 import com.bdilab.automl.model.Experiment;
@@ -16,13 +18,26 @@ import io.fabric8.knative.serving.v1.ServiceList;
 import io.fabric8.knative.serving.v1.ServiceSpec;
 import io.fabric8.knative.serving.v1.ServiceSpecBuilder;
 import io.fabric8.kubernetes.api.model.*;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.kubernetes.client.PodLogs;
+import io.kubernetes.client.openapi.ApiException;
+import io.kubernetes.client.openapi.apis.CoreV1Api;
+import io.kubernetes.client.openapi.apis.LogsApi;
+import io.kubernetes.client.openapi.models.V1Pod;
+import io.kubernetes.client.openapi.models.V1PodList;
+import io.kubernetes.client.util.Streams;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import javax.annotation.Resource;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -40,6 +55,10 @@ public class ExperimentServiceImpl implements ExperimentService {
     private ExperimentMapper experimentMapper;
     @Resource
     private DefaultKnativeClient defaultKnativeClient;
+    @Resource
+    private CoreV1Api coreV1Api;
+//    @Resource
+//    private KubernetesClient kubernetesClient;
 
     @Value("${server.ip}")
     private String serverIp;
@@ -210,4 +229,68 @@ public class ExperimentServiceImpl implements ExperimentService {
         }
         return inferenceServiceInfoList;
     }
+
+    @Override
+    public void logs(WebSocketSession session, String endpointName) throws Exception {
+        log.info(String.format("获取%s端点日志", endpointName));
+        // 获取 Pod
+        V1PodList podList;
+        try {
+            podList = coreV1Api.listNamespacedPod(Utils.NAMESPACE, null, null, null, null, null, null, null, null, null, false);
+        } catch (ApiException e) {
+            throw new Exception(String.format("获取pod列表失败，具体原因：%s", e.getMessage()));
+        }
+        String podName = null;
+        String phase = "";
+        for (V1Pod pod : podList.getItems()) {
+            phase = pod.getStatus().getPhase();
+            // 排除一些不正常的pod
+            if (phase.isEmpty() || "Terminating".equals(phase)  || ("Failed".equals(phase)  && "UnexpectedAdmissionError".equals(pod.getStatus().getReason()))) {
+                continue;
+            }
+            String serviceName = pod.getMetadata().getLabels().get("serving.knative.dev/service");
+            if (serviceName != null && serviceName.equals(endpointName)) {
+                podName = pod.getMetadata().getName();
+                log.info("Pod name:" + podName);
+                break;
+            }
+        }
+
+        // 获取 Pod 历史日志
+        coreV1Api.readNamespacedPodLogAsync(podName, Utils.NAMESPACE, endpointName, null, null, null, null, null, null, 50, true, new LogCallback(session));
+//        // 获取pod实时日志
+//        coreV1Api.readNamespacedPodLogAsync(podName, Utils.NAMESPACE, endpointName, true, null, null, null, false, null, null, true, new LogCallback(session));
+//        log.info("follow done");
+
+//        log.info(String.format("获取%s端点日志", endpointName));
+//        // 获取 Pod 名称
+//        V1PodList podList;
+//        try {
+//            podList = coreV1Api.listNamespacedPod(Utils.NAMESPACE, null, null, null, null, null, null, null, null, null, false);
+//        } catch (ApiException e) {
+//            throw new Exception(String.format("获取pod列表失败，具体原因：%s", e.getMessage()));
+//        }
+//        V1Pod selectedPod = null;
+//        for (V1Pod pod : podList.getItems()) {
+//            String serviceName = pod.getMetadata().getLabels().get("serving.knative.dev/service");
+//            if (serviceName != null && serviceName.equals(endpointName)) {
+//                selectedPod = pod;
+//                break;
+//            }
+//        }
+//        if (selectedPod == null) {
+//            log.info("未查询到关联pod");
+//        }
+//        PodLogs podLogs = new PodLogs();
+//        InputStream is = podLogs.streamNamespacedPodLog(selectedPod);
+//        log.info(IOUtils.toString(is, "UTF-8"));
+//        while (session.isOpen()) {
+//            if (is.available() != 0) {
+//                session.sendMessage(new TextMessage(IOUtils.toString(is, "UTF-8")));
+//                is.reset();
+//            }
+//        }
+//        log.info(String.format("Session %s 关闭", session.getId()));
+    }
 }
+

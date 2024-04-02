@@ -9,3 +9,5 @@ __pycache__
 ### Java ###
 target/
 .idea
+
+image-classification/

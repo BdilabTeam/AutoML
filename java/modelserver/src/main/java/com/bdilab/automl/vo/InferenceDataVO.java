@@ -1,5 +1,6 @@
 package com.bdilab.automl.vo;
 
+import com.bdilab.automl.model.Instance;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;

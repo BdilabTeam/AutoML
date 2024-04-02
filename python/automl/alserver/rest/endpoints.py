@@ -54,10 +54,10 @@ class Endpoints(object):
                 file_type = 'csv'
             else:
                 raise DataFormatError(f"仅[csv]扩展文件类型")
-        elif len(path_parts) == 2:
+        elif len(path_parts) == 3:
             for file in files:
                 # Check the depth of the folder. The length should be less than or equal to 2.
-                if len(path_parts) != 2:
+                if len(path_parts) != 3:
                     raise DataFormatError("图片数据文件格式错误")
                 if not file.filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
                     raise DataFormatError(f"图片格式错误, 扩展名必须为:[.jpg, .jpeg, .png, .gif, .bmp]")
@@ -100,10 +100,10 @@ class Endpoints(object):
         experiment_job_name = websocket.query_params.get("experiment_job_name", None)
         if not experiment_job_name:
             raise WebSocketQueryParamError("Expect to include the 'experiment_job_name' request parameter")
-        websocket.send_json
         await self._data_plane.get_experiment_logs(experiment_name=experiment_job_name, websocket=websocket)
-        await websocket.close(reason="Completed")
+        # await websocket.close(reason="Completed")
     
     def get_model_repository_info(self) -> output_schema.ModelRepository:
         model_repository = self._data_plane.get_model_repository()
         return model_repository
+    

@@ -55,7 +55,7 @@ public class ExperimentController {
 
     @GetMapping("/inference-service/overview")
     @ApiOperation(value = "服务信息", notes = "获取Knative服务信息")
-    public HttpResponse ServiceInfo(){
+    public HttpResponse serviceInfo(){
         List<InferenceServiceInfo> inferenceServiceInfoList;
         try {
             inferenceServiceInfoList = experimentService.serviceOverview();
@@ -67,4 +67,5 @@ public class ExperimentController {
         res.put("services-overview", inferenceServiceInfoList);
         return new HttpResponse(res);
     }
+
 }

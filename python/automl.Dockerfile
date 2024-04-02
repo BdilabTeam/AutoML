@@ -29,7 +29,7 @@ RUN cd automl && poetry install --no-root --no-interaction --no-cache --with aut
 COPY automl automl
 RUN cd automl && poetry install --no-interaction --no-cache --all-extras --with autoselect,autoschedule,storage,autotrain --without test
 # 不通过poetry，单独安装
-RUN pip install autokeras==1.1.0
+RUN pip install --upgrade pip && pip install autokeras==1.1.0 && pip install --upgrade tensorflow==2.15.0
 
 FROM ${BASE_IMAGE} as prod
 

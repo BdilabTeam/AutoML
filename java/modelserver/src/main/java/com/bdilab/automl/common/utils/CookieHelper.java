@@ -25,7 +25,7 @@ import java.util.List;
 @Component
 @DependsOn("istioUtils")
 @Slf4j
-@EnableScheduling
+//@EnableScheduling
 public class CookieHelper {
     @Value("${server.ip}")
     private String serverHost;
@@ -41,7 +41,7 @@ public class CookieHelper {
         getCookie();
     }
 
-    @Scheduled(cron = "0 0 0/1 * * ?")
+//    @Scheduled(cron = "0 0 0/1 * * ?")
     public void getCookie() {
         try {
             String rootUrl = String.join("", "http://", serverHost, ":", IstioUtils.INGRESS_GATEWAY_PORT);

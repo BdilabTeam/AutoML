@@ -185,9 +185,8 @@ class DataPlane:
                 inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, files[0].filename).__str__()
             elif file_type == 'image_folder':
                 for file in files:
-                    # path_parts = Path(file.filename).parts
-                    # file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, *path_parts)
-                    file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, file.filename)
+                    path_parts = Path(file.filename).parts
+                    file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, *path_parts[1:])
                     file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
                     with file_path.open("wb") as buffer:
                         shutil.copyfileobj(file.file, buffer)
@@ -235,7 +234,7 @@ class DataPlane:
                     name=experiment_name,
                     namespace=self._settings.namespcae,
                     expected_conditions=set([constants.JOB_CONDITION_CREATED]),
-                    timeout=30,
+                    timeout=600,
                     polling_interval=1
                 )
                 
@@ -257,20 +256,15 @@ class DataPlane:
 
     @transactional
     def delete_experiment(self, experiment_name: str, **kwargs):
-        from ..cruds.experiment import delete_experiment, get_experiment
+        from ..cruds.experiment import delete_experiment
         
         # @transactional注解自动注入session
         session = kwargs.pop('session', None)
         if not session:
             raise GetSessionError("Failed to get database session.")
         
-        try: 
-            experiment = get_experiment(session=session, experiment_name=experiment_name)
-        except:    
-            raise ExperimentNotExistError(f"Name: {experiment_name} for experiment does not exist.")
-        
-        self.delete_experiment_job(experiment_name=experiment_name)
         delete_experiment(session=session, experiment_name=experiment_name)
+        self.delete_experiment_job(experiment_name=experiment_name)
         dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
 
 
@@ -342,12 +336,17 @@ class DataPlane:
                     )
             else:
                 raise ValueError("Failed to get the 'trials_tracker' key of the 'summary dict'")
-            experiment_summary_url = dataplane_utils.get_experiment_summary_file_url(experiment_name=experiment_name)
+            # experiment_summary_url = dataplane_utils.get_experiment_summary_file_url(experiment_name=experiment_name)
+            summary_path = dataplane_utils.get_experiment_summary_file_path(experiment_name=experiment_name)
+            with open(summary_path, 'r', encoding='utf-8') as file:
+                experiment_summary = json.load(file)
+            
         else:
             logger.info("Experiment job is incomplete. Can't get the summary.")
             best_model = None
             trials = None
-            experiment_summary_url = None
+            # experiment_summary_url = None
+            experiment_summary = None
             
         return output_schema.ExperimentOverview(
             experiment_name=experiment.experiment_name,
@@ -355,7 +354,8 @@ class DataPlane:
             experiment_start_time=experiment_start_time,
             experiment_completion_time=experiment_completion_time,
             experiment_duration_time=experiment_duration_time,
-            experiment_summary_url=experiment_summary_url,
+            # experiment_summary_url=experiment_summary_url,
+            experiment_summary=experiment_summary,
             tuner=experiment.tuner_type,
             trials=trials,
             best_model=best_model
@@ -378,7 +378,8 @@ class DataPlane:
             try:
                 experiment_job_status = self._training_client.get_tfjob(name=experiment.experiment_name, namespace=self._settings.namespcae).status
             except Exception as e:
-                raise GetExperimentJobStatusError(f"Failed to get the status of the experiment '{experiment.experiment_name}', for a specific reason: {e}")
+                logger.exception(f"Failed to get the status of the experiment '{experiment.experiment_name}', for a specific reason: {e}")
+                continue
             
             if not experiment_job_status:
                 raise ValueError("Experiment job status cannot be None")
@@ -422,7 +423,7 @@ class DataPlane:
                 websocket=websocket
             )   
         except Exception as e:
-            await websocket.close(reason="Log acquisition process exception.")
+            # await websocket.close(reason="Log acquisition process exception.")
             raise GetExperimentJobLogsError(f"Failed to get the logs of the experiment job '{experiment_name}'")
 
     

@@ -28,3 +28,4 @@ class TestWebSocket:
                 print("WebSocket closed:", e)
             finally:
                 websocket.close()
+                

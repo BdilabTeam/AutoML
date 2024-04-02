@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import Response as FastAPIResponse
 from fastapi.routing import APIRoute as FastAPIRoute
+from fastapi.middleware.cors import CORSMiddleware
 
 from .endpoints import Endpoints
 from .requests import Request
@@ -113,4 +114,12 @@ def create_app(
         path="/api/v1/experiment/job/logs",
         route=endpoints.get_experiment_job_logs
     )
+    
+    # app.add_middleware(
+    #     CORSMiddleware, 
+    #     allow_origins=["*"],
+    #     allow_credentials=False,
+    #     allow_methods=["*"],
+    #     allow_headers=["*"],
+    # )
     return app
