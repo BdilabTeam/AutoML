@@ -7,15 +7,25 @@ import com.bdilab.automl.dto.InferenceServiceInfo;
 import com.bdilab.automl.service.impl.ExperimentServiceImpl;
 import com.bdilab.automl.vo.EndpointInfoVO;
 import com.bdilab.automl.vo.InferenceDataVO;
+import com.bdilab.automl.vo.InferenceFolderVO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.javassist.bytecode.ByteArray;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.tensorflow.Tensor;
+import org.tensorflow.ndarray.ByteNdArray;
+import org.tensorflow.types.TFloat32;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
 import java.util.*;
 
+import static com.bdilab.automl.common.utils.Utils.FileToData;
+
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/automl")
 public class ExperimentController {
@@ -45,6 +55,29 @@ public class ExperimentController {
     public HttpResponse infer(@Valid @RequestBody InferenceDataVO inferenceData) {
 
         String inferenceResult = experimentService.infer(inferenceData.getEndpointName(), inferenceData.getInstances());
+        try {
+            Map<String, Object> data = objectMapper.readValue(inferenceResult, Map.class);
+            return new HttpResponse(data);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData("Inference result format is incorrect."));
+        }
+    }
+
+    @PostMapping("/inferFolder")
+    @ApiOperation(value = "推理文件夹", notes = "执行文件夹的推理")
+    public HttpResponse inferFolder(@Valid @ModelAttribute InferenceFolderVO inferenceFolder) throws Exception {
+        List<Object> allData = new ArrayList<>();
+        for (MultipartFile file : inferenceFolder.getFiles()) {
+            String fileName = file.getOriginalFilename().toLowerCase();
+            if (fileName.endsWith(".csv")) {
+                allData = FileToData(file);
+                break;
+            }
+            List<Object> data = FileToData(file);
+            allData.add(data);
+        }
+        log.info(allData.toString());
+        String inferenceResult = experimentService.infer(inferenceFolder.getEndpointName(), allData);
         try {
             Map<String, Object> data = objectMapper.readValue(inferenceResult, Map.class);
             return new HttpResponse(data);

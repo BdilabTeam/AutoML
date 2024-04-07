@@ -3,9 +3,17 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
+import org.tensorflow.Tensor;
+import org.tensorflow.ndarray.ByteNdArray;
+import org.tensorflow.ndarray.NdArraySequence;
+import org.tensorflow.ndarray.NdArrays;
+import org.tensorflow.ndarray.Shape;
+import org.tensorflow.ndarray.buffer.DataBuffers;
+import org.tensorflow.types.TUint8;
 
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
@@ -14,6 +22,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class TestAll {
     @org.junit.Test
@@ -70,23 +81,63 @@ public class TestAll {
     }
     @Test
     public void imageConvertToTensor() throws Exception {
-        String imagePath = "/Users/treasures_y/Documents/code/HG/AutoML/python/autotrain/autotrain/datasets/image-classification/angular_leaf_spot/angular_leaf_spot_val.0.jpg";
-        BufferedImage image = ImageIO.read(new File(imagePath));
-        // 图像预处理：将像素值缩放到 [0, 1] 范围内
-        ByteBuffer buffer = normalizeImage(image);
-        // 创建张量（Tensor）
-        int width = image.getWidth();
-        int height = image.getHeight();
-        long[] shape = new long[]{1, 256, 256, 3}; // 图像的形状（batch size, height, width, channels）
-//        Tensor tensor = Tensor.of(Float.class, Shape.of(shape), buffer); // 创建张量
-        // 打印张量的形状和数据类型
-//        System.out.println("Tensor shape: " + tensor.shape().toString());
+        String imageFile = "D:\\word\\OneDrive\\Desktop\\image-classification\\angular_leaf_spot\\angular_leaf_spot_val.0.jpg";
+        // 读取图像文件
+        BufferedImage image = ImageIO.read(new File(imageFile));
+
+        // 调整图像大小到256x256
+        Image tmp = image.getScaledInstance(256, 256, Image.SCALE_SMOOTH);
+        BufferedImage resizedImage = new BufferedImage(256, 256, BufferedImage.TYPE_3BYTE_BGR);
+        Graphics2D g2d = resizedImage.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        // 将调整大小后的图像转换为Tensor
+        byte[] imageBytes = new byte[256 * 256 * 3];
+        int index = 0;
+        for (int y = 0; y < 256; y++) {
+            for (int x = 0; x < 256; x++) {
+                int pixel = resizedImage.getRGB(x, y);
+                imageBytes[index++] = (byte) ((pixel >> 16) & 0xff); // Red
+                imageBytes[index++] = (byte) ((pixel >> 8) & 0xff);  // Green
+                imageBytes[index++] = (byte) (pixel & 0xff);         // Blue
+            }
+        }
+
+        // 创建Tensor
+        ByteNdArray byteNdArray = NdArrays.wrap(Shape.of(256, 256, 3), DataBuffers.of(imageBytes));
+
+        // 从ByteNdArray中提取数据到Java多维数组
+        byte[][][] javaArray = new byte[256][256][3];
+
+        // 填充Java多维数组
+        for (int h = 0; h < byteNdArray.shape().size(0); h++) { // Height dimension
+            for (int w = 0; w < byteNdArray.shape().size(1); w++) { // Width dimension
+                for (int c = 0; c < byteNdArray.shape().size(2); c++) { // Channels dimension
+                    javaArray[h][w][c] = byteNdArray.getByte(h, w, c);
+                }
+            }
+        }
+        System.out.println(javaArray.length);
+        System.out.println(javaArray[0].length);
+        System.out.println(javaArray[0][0].length);
+
+
+//        Tensor tensor = TUint8.tensorOf(byteNdArray);
+//        System.out.println(byteNdArray.size());
+//        System.out.println(byteNdArray.shape());
+//        NdArraySequence<ByteNdArray> scalars = byteNdArray.scalars();
+//        scalars.forEach(new Consumer<ByteNdArray>() {
+//            @Override
+//            public void accept(ByteNdArray byteNdArray) {
+//                System.out.println(byteNdArray.getByte());
+//            }
+//        });
     }
     private static ByteBuffer normalizeImage(BufferedImage image) {
         int width = image.getWidth();
         int height = image.getHeight();
         ByteBuffer buffer = ByteBuffer.allocateDirect(width * height * 3 * Float.BYTES);
-
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 int rgb = image.getRGB(x, y);

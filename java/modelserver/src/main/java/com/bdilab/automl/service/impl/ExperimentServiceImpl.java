@@ -181,7 +181,9 @@ public class ExperimentServiceImpl implements ExperimentService {
         }
         JSONObject var1 = new JSONObject();
         var1.put("instances", instances);
+        log.info(instances.toString());
         String jsonFormatInstances = var1.toJSONString();
+        log.info(jsonFormatInstances);
 
         log.info("Sending the inference request.");
         String host = Utils.generateHost(endpointName);
