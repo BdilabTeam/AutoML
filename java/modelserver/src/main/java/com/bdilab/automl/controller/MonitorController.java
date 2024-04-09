@@ -4,7 +4,7 @@ import com.bdilab.automl.common.exception.InternalServerErrorException;
 import com.bdilab.automl.common.response.HttpResponse;
 import com.bdilab.automl.common.utils.HttpResponseUtils;
 import com.bdilab.automl.common.utils.Utils;
-import com.bdilab.automl.dto.prometheus.MetricsInfo;
+import com.bdilab.automl.dto.prometheus.MetricsCharts;
 import com.bdilab.automl.service.impl.MonitorServiceImpl;
 import io.swagger.annotations.ApiImplicitParam;
 import io.swagger.annotations.ApiOperation;
@@ -27,14 +27,25 @@ public class MonitorController {
     @ApiImplicitParam(name = "serviceName", value = "服务名称", example = "test")
     public HttpResponse getResourceMetrics(@PathVariable String serviceName){
         try {
-            MetricsInfo metricsInfo = monitorService.getResourceUsageInfo(Utils.NAMESPACE, serviceName);
+            MetricsCharts metricsCharts = monitorService.getResourceUsageInfo(Utils.NAMESPACE, serviceName);
             return new HttpResponse(new HashMap<String, Object>(){
                 {
-                    put("metrics", metricsInfo);
+                    put("metrics", metricsCharts);
                 }
             });
         } catch (Exception e) {
             throw new InternalServerErrorException(HttpResponseUtils.generateExceptionResponseData(String.format("获取监控指标异常, 具体原因: %s", e)));
         }
+    }
+
+    @ApiOperation("获取Grafana访问URL")
+    @GetMapping("/grafana/url")
+    public HttpResponse getGrafanaUrl() {
+        String grafanaUrl = monitorService.getGrafanaUrl();
+        return new HttpResponse(new HashMap<String, Object>(){
+            {
+                put("grafanaUrl", grafanaUrl);
+            }
+        });
     }
 }

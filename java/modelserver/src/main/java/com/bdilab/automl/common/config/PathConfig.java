@@ -9,4 +9,7 @@ import org.springframework.stereotype.Component;
 public class PathConfig {
     @Value("${kubernetes.config.path}")
     private String kubernetesConfigPath;
+
+    @Value("${grafana.url}")
+    private String grafanaUrl;
 }

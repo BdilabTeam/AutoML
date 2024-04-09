@@ -15,7 +15,7 @@ ENV_PREFIX_SETTINGS = "AUTOML_SERVER_"
 DEFAULT_PARALLEL_WORKERS = 1
 
 PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
-ENV_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', '.env')
+ENV_FILE_PATH = os.path.join(os.getcwd(), ".env")
 PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
 MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'automl-models-metadata.jsonl')
 
@@ -203,8 +203,26 @@ class Settings(BaseSettings):
         description="Model metadata file path"
     )
     env_file_path: str = Field(
-        default=ENV_FILE_PATH,
+        default=None,
         description="Path to 'environment variables' file"
+    )
+    # OpenAI API
+    llm_name_or_path: str = Field(
+        # default="qwen1.5-14b-chat",
+        default="gpt-3.5-turbo",
+    )
+    embedding_name_or_path: str = Field(
+        # default="text-davinci-003",
+        default="sentence-transformers/all-mpnet-base-v2",
+    )
+    openai_api_key: str = Field(
+        # default="EMPTY"
+        default="sk-kUx6CDr4B0Elct2aq015N9tyu6siuSxsMrS0j4g86Ssf3w1l"
+        # default="sk-no-key-required"
+    )
+    openai_api_base: str = Field(
+        # default="http://10.78.180.40:7002/v1"
+        default="https://api.chatanywhere.com.cn"
     )
     # Monitor
     monitor_enabled: bool = Field(

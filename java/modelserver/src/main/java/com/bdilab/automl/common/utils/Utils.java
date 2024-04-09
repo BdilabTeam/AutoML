@@ -54,7 +54,7 @@ public class Utils {
     }
 
     //csv文件转换成数组格式
-    public static List<Object> csvConvertToTensor(MultipartFile csvFile) throws Exception{
+    public static List<Object> csvConvertToTensor(MultipartFile csvFile) {
         String line = "";
         List<Object> allData = new ArrayList<>(); // 用于存储所有数据的大列表
 
@@ -83,7 +83,6 @@ public class Utils {
     }
 
     public static List<Object> imageConvertToTensor(MultipartFile imageFile) throws Exception{
-//        List<Object> data = new ArrayList<>();
         // 读取图像文件
         BufferedImage image = ImageIO.read(imageFile.getInputStream());
 
@@ -133,10 +132,6 @@ public class Utils {
             }
             outerList.add(innerList1);
         }
-
-//        Tensor tensor = TUint8.tensorOf(byteNdArray);
-
-
         return outerList;
     }
 }

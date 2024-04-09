@@ -40,7 +40,7 @@ class DenseNetTrainerConfig(BaseTrainerConfig):
         tp_seed: Optional[int] = None,
         tp_max_model_size: Optional[int] = None,
         # AutoModel.fit()
-        tp_batch_size: int = 32,
+        tp_batch_size: int = 8,
         tp_validation_split: float = 0.2,
         tp_epochs: Optional[int] = 100,
         **kwargs

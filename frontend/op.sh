@@ -7,15 +7,14 @@ op=$1
 DIR_PATH="$(cd "$(dirname "$0")"; pwd -P)"
 
 # 镜像信息
-IMAGE_FULL="registry.cn-hangzhou.aliyuncs.com/treasures/automl:latest"
-IMAGE_NAME="registry.cn-hangzhou.aliyuncs.com/treasures/automl"
+IMAGE_FULL="registry.cn-hangzhou.aliyuncs.com/treasures/automl-frontend:latest"
+IMAGE_NAME="registry.cn-hangzhou.aliyuncs.com/treasures/automl-frontend"
 IMAGE_TAG="latest"
 
-DOCKERFILE="${DIR_PATH}/automl.Dockerfile"
+DOCKERFILE="${DIR_PATH}/automl-frontend.Dockerfile"
 CONTEXT="${DIR_PATH}"
 
-DEPLOYMENT_YAML="${DIR_PATH}/automl-deployment.yaml"
-PV_PVC_YAML="${DIR_PATH}/automl-pv-pvc.yaml"
+DEPLOYMENT_YAML="${DIR_PATH}/deploy_automl_frontend.yaml"
 
 
 is_file_exist() {
@@ -190,32 +189,29 @@ op_iamge() {
 
 
 # 上线automl
-up_automl() {
+up_automl_frontend() {
     op_iamge build ${IMAGE_FULL} ${DOCKERFILE} ${CONTEXT}
-    # apply automl-pv-pvc.yaml
-    op_yaml apply ${PV_PVC_YAML}
     # apply automl-deployment.yaml
     op_yaml apply ${DEPLOYMENT_YAML}
     
 }
 
-down_automl() {
+down_automl_frontend() {
     # delete automl-deployment.yaml
     op_yaml delete ${DEPLOYMENT_YAML}
     sleep 4
-    op_yaml delete ${PV_PVC_YAML}
     op_iamge rmi ${IMAGE_FULL}
 }
 
 
 case "$op" in
 up)
-    echo "Deploying automl server"
-    up_automl
+    echo "Deploying automl frontend server"
+    up_automl_frontend
     ;;
 down)
-    echo "Closing automl server"
-    down_automl
+    echo "Closing automl frontend server"
+    down_automl_frontend
     ;;
 *)
     echo "${op} does not support"

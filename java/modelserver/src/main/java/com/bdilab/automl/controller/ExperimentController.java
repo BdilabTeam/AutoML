@@ -50,8 +50,8 @@ public class ExperimentController {
         return new HttpResponse(HttpResponseUtils.generateSuccessResponseData("删除部署成功"));
     }
 
-    @PostMapping("/infer")
-    @ApiOperation(value = "推理", notes = "执行模型推理")
+    @PostMapping("/infer/tensor")
+    @ApiOperation(value = "推理", notes = "使用'预转换张量'进行推理")
     public HttpResponse infer(@Valid @RequestBody InferenceDataVO inferenceData) {
 
         String inferenceResult = experimentService.infer(inferenceData.getEndpointName(), inferenceData.getInstances());
@@ -63,9 +63,9 @@ public class ExperimentController {
         }
     }
 
-    @PostMapping("/inferFolder")
-    @ApiOperation(value = "推理文件夹", notes = "执行文件夹的推理")
-    public HttpResponse inferFolder(@Valid @ModelAttribute InferenceFolderVO inferenceFolder) throws Exception {
+    @PostMapping("/infer/file")
+    @ApiOperation(value = "推理", notes = "使用文件/文件夹进行推理")
+    public HttpResponse inferFolder(@Valid @ModelAttribute InferenceFolderVO inferenceFolder) {
         List<Object> allData = new ArrayList<>();
         for (MultipartFile file : inferenceFolder.getFiles()) {
             String fileName = file.getOriginalFilename().toLowerCase();
@@ -76,7 +76,7 @@ public class ExperimentController {
             List<Object> data = FileToData(file);
             allData.add(data);
         }
-        log.info(allData.toString());
+        log.info("Converted data：" + allData.toString());
         String inferenceResult = experimentService.infer(inferenceFolder.getEndpointName(), allData);
         try {
             Map<String, Object> data = objectMapper.readValue(inferenceResult, Map.class);

@@ -52,48 +52,6 @@ class BaseSettings(_BaseSettings):
             **kwargs,
         )
 
-class LLMSettings(BaseSettings):
-    """LLM config"""
-    llm_name_or_path: Optional[str] = Field(
-        default="gpt-3.5-turbo-instruct",
-        description="The name or path of the llm"
-    )
-    openai_api_key: str = Field(
-        default=None,
-        description="Automatically inferred from env var `OPENAI_API_KEY` if not provided."
-    )
-    openai_base_url: str = Field(
-        default=None,
-        description="Base URL path for API requests, leave blank if not using a proxy or service emulator."
-    )
-    env_file_path: str = Field(
-        default=ENV_FILE_PATH,
-        description="Path to 'environment variables' file"
-    )
-
-class ModelSelectionLLMSettings(LLMSettings):
-    llm_max_tokens: Optional[int] = Field(
-        default=4097,
-        description="Maximum number of tokens that llm can handle"
-    )
-    logit_bias: Union[int, float] = Field(
-        default=None,
-        description="Logit bias is used to bias the output in machine learning and deep learning models to improve the performance of the model."
-    )
-    temperature: Optional[float] = Field(
-        default=0,
-        description="Used to adjust the degree of randomness of generated text."
-    )
-
-class OutputFixingLLMSettings(LLMSettings):
-    llm_max_tokens: Optional[int] = Field(
-        default=4097,
-        description="Maximum number of tokens that llm can handle"
-    )
-    temperature: Optional[float] = Field(
-        default=0,
-        description="Used to adjust the degree of randomness of generated text."
-    )
 
 class ModelSelectionSettings(BaseSettings):
     prompt_template_file_path: str = Field(

@@ -4,6 +4,7 @@ import json
 import shutil
 from pathlib import Path
 from typing import Dict, Any, Literal, List, TypeVar
+from dotenv import load_dotenv
 
 from ..settings import Settings
 from ..databases.mysql import MySQLClient
@@ -35,15 +36,26 @@ class DataPlane:
     Internal implementation of handlers, used by REST servers.
     """
     def __init__(self, settings: Settings):
-        
+        # 加载环境变量
+        if settings.env_file_path and load_dotenv(settings.env_file_path, verbose=True):
+            logger.info("Loding the env from the .env file.")
+        else:
+            if not os.environ.get("OPENAI_API_KEY"):
+                os.environ["OPENAI_API_KEY"] = settings.openai_api_key if settings.openai_api_key else ValueError(f"Did not find the 'api_key', you must set one.")
+            if not os.environ.get("OPENAI_API_BASE"):
+                os.environ["OPENAI_API_BASE"] = settings.openai_api_base if settings.openai_api_base else None
+                    
+        # 创建mysql客户端
         if settings.mysql_enabled:
             self._mysql_client = MySQLClient(settings)
-
+            
+        # 创建Training Operator客户端
         if settings.kubernetes_enabled:
             self._training_client = TrainingClient(
                 config_file=settings.kube_config_file, 
             )
             
+        # 开启模型选择模块
         if settings.model_selection_enabled:
             from autoselect import (
                 ModelSelection, ModelSelectionSettings
@@ -55,7 +67,7 @@ class DataPlane:
             )
             self._model_selection_service = ModelSelection(settings=model_selection_settings)
             
-        
+        # 开启监控模块
         if settings.monitor_enabled:
             from autoschedule import ResourceMonitor
             import threading
@@ -99,20 +111,10 @@ class DataPlane:
         task_type: str, 
         model_nums: int = 1
     ) -> output_schema.CandidateModels:
-        from autoselect import LLMFactory, ModelSelectionLLMSettings, OutputFixingLLMSettings
+        from langchain_openai import ChatOpenAI
         
-        model_selection_llm_settings = ModelSelectionLLMSettings(
-            env_file_path=self._settings.env_file_path,
-            temperature=0
-        )
-        model_selection_llm = LLMFactory.get_model_selection_llm(llm_settings=model_selection_llm_settings)
-        
-        output_fixing_llm_settings = OutputFixingLLMSettings(
-            env_file_path=self._settings.env_file_path,
-            temperature=0
-        )
-        output_fixing_llm = LLMFactory.get_output_fixing_llm(output_fixing_llm_settings)
-        
+        model_selection_llm = ChatOpenAI(name=self._settings.llm_name_or_path, verbose=True)
+        output_fixing_llm = ChatOpenAI(name=self._settings.llm_name_or_path, verbose=True)
         try:
             models = await self._model_selection_service.aselect_model(
                 user_input=user_input,

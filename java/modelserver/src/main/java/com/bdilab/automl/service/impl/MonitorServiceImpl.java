@@ -1,7 +1,9 @@
 package com.bdilab.automl.service.impl;
 
 import com.bdilab.automl.common.config.MonitorConfig;
-import com.bdilab.automl.dto.prometheus.MetricsInfo;
+import com.bdilab.automl.common.config.PathConfig;
+import com.bdilab.automl.dto.prometheus.Chart;
+import com.bdilab.automl.dto.prometheus.MetricsCharts;
 import com.bdilab.automl.dto.prometheus.Values;
 import com.bdilab.automl.service.MonitorService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -24,6 +26,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.function.Consumer;
 
 
 @Service
@@ -36,6 +39,8 @@ public class MonitorServiceImpl implements MonitorService {
     private RestTemplate restTemplate;
     @Resource
     private ObjectMapper objectMapper;
+    @Resource
+    private PathConfig pathConfig;
 
     @Value("${prometheus.server.ip}")
     private String prometheusServerIp;
@@ -102,8 +107,22 @@ public class MonitorServiceImpl implements MonitorService {
         }
         return null;
     }
+
+    private Chart getChart(Values values) {
+        Chart chart = new Chart();
+        ArrayList<Object> xAxis = new ArrayList<>();
+        ArrayList<Object> yAxis = new ArrayList<>();
+        values.getValue().forEach(objects -> {
+            xAxis.add(objects.get(0));
+            yAxis.add(objects.get(1));
+        });
+        chart.setXAxis(xAxis);
+        chart.setYAxis(yAxis);
+        return chart;
+    }
+
     @Override
-    public MetricsInfo getResourceUsageInfo(String namespace, String serviceName) throws Exception {
+    public MetricsCharts getResourceUsageInfo(String namespace, String serviceName) throws Exception {
         CompletableFuture<String> cpuUsageInfoFuture = CompletableFuture.supplyAsync(
                 () -> queryPrometheus(String.format(monitorConfig.getCpuMetricStatement(), namespace, serviceName, serviceName)),
                 executorService
@@ -112,16 +131,23 @@ public class MonitorServiceImpl implements MonitorService {
                 () -> queryPrometheus(String.format(monitorConfig.getMemoryMetricStatement(), namespace, serviceName, serviceName)),
                 executorService
         );
-        MetricsInfo metricsInfo = new MetricsInfo();
+        MetricsCharts metricsCharts = new MetricsCharts();
         String cpuUsageInfoJsonString = cpuUsageInfoFuture.get(10, TimeUnit.SECONDS);
         Values cpuUsage = getValues(cpuUsageInfoJsonString, "cpuUsage");
         log.info(String.format("CPU Usage Metrics: %s", cpuUsageInfoJsonString));
+        Chart cpuUsageChart = getChart(cpuUsage);
 
         String memoryRssInfoJsonString = memoryRssInfoFuture.get(10, TimeUnit.SECONDS);
         Values memoryRss = getValues(memoryRssInfoJsonString, "memoryRss");
+        Chart memoryRssChart = getChart(memoryRss);
 
-        metricsInfo.setCpuUsage(cpuUsage);
-        metricsInfo.setMemoryRss(memoryRss);
-        return metricsInfo;
+        metricsCharts.setCpuUsage(cpuUsageChart);
+        metricsCharts.setMemoryRss(memoryRssChart);
+        return metricsCharts;
+    }
+
+    @Override
+    public String getGrafanaUrl() {
+        return pathConfig.getGrafanaUrl();
     }
 }

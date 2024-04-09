@@ -215,11 +215,11 @@ down_automl_deployment() {
 }
 
 case "$op" in
-up_automl_deployment)
+up)
     echo "Deploying AutoML-deployment server"
     up_automl_deployment
     ;;
-down_automl_deployment)
+down)
     echo "Closing AutoML-deployment server"
     down_automl_deployment
     ;;
