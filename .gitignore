@@ -12,3 +12,6 @@ target/
 
 image-classification/
 datasets/
+deploy/
+bak/
+.env

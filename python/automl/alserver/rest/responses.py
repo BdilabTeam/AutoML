@@ -28,6 +28,7 @@ class Response(_JSONResponse):
     """
 
     media_type = "application/json"
+    
 
     def render(self, content: Any) -> bytes:
         if orjson is None:

@@ -51,7 +51,7 @@ public class MonitorServiceImpl implements MonitorService {
     private String queryPrometheus(String queryStatement){
         try{
             LocalDateTime end = LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault());
-            LocalDateTime start = end.minusMinutes(15);
+            LocalDateTime start = end.minusMinutes(30);
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             String url = "http://" + prometheusServerIp + ":" + prometheusServerPort + "/api/v1/query_range?query=" + URLEncoder.encode(queryStatement,"UTF-8").replaceAll("\\+", "%20") + "&start=" + formatter.format(start) + "&end=" + formatter.format(end) + "&step=3";
             URI uri = URI.create(url);
@@ -132,17 +132,31 @@ public class MonitorServiceImpl implements MonitorService {
                 executorService
         );
         MetricsCharts metricsCharts = new MetricsCharts();
-        String cpuUsageInfoJsonString = cpuUsageInfoFuture.get(10, TimeUnit.SECONDS);
-        Values cpuUsage = getValues(cpuUsageInfoJsonString, "cpuUsage");
-        log.info(String.format("CPU Usage Metrics: %s", cpuUsageInfoJsonString));
-        Chart cpuUsageChart = getChart(cpuUsage);
+        try {
+            String cpuUsageInfoJsonString = cpuUsageInfoFuture.get(10, TimeUnit.SECONDS);
+            Values cpuUsage = getValues(cpuUsageInfoJsonString, "cpuUsage");
+            log.info(String.format("CPU Usage Metrics: %s", cpuUsageInfoJsonString));
+            Chart cpuUsageChart = getChart(cpuUsage);
 
-        String memoryRssInfoJsonString = memoryRssInfoFuture.get(10, TimeUnit.SECONDS);
-        Values memoryRss = getValues(memoryRssInfoJsonString, "memoryRss");
-        Chart memoryRssChart = getChart(memoryRss);
+            String memoryRssInfoJsonString = memoryRssInfoFuture.get(10, TimeUnit.SECONDS);
+            Values memoryRss = getValues(memoryRssInfoJsonString, "memoryRss");
+            Chart memoryRssChart = getChart(memoryRss);
 
-        metricsCharts.setCpuUsage(cpuUsageChart);
-        metricsCharts.setMemoryRss(memoryRssChart);
+            metricsCharts.setCpuUsage(cpuUsageChart);
+            metricsCharts.setMemoryRss(memoryRssChart);
+        } catch (Exception e) {
+            metricsCharts.setCpuUsage(new Chart());
+            metricsCharts.setMemoryRss(new Chart());
+            log.error(e.getMessage());
+        }
+//        Chart cpuUsageChart = getChart(cpuUsage);
+//
+//        String memoryRssInfoJsonString = memoryRssInfoFuture.get(10, TimeUnit.SECONDS);
+//        Values memoryRss = getValues(memoryRssInfoJsonString, "memoryRss");
+//        Chart memoryRssChart = getChart(memoryRss);
+//
+//        metricsCharts.setCpuUsage(cpuUsageChart);
+//        metricsCharts.setMemoryRss(memoryRssChart);
         return metricsCharts;
     }
 

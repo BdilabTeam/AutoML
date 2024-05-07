@@ -58,3 +58,6 @@ class ExperimentOverview(BaseModel):
 
 class ModelRepository(BaseModel):
     models: Optional[List[str]] = Field(description="模型列表")
+
+class EvaluateResponse(BaseModel):
+    metrics: Optional[Dict[str, Any]] = Field(description="测试评估指标")

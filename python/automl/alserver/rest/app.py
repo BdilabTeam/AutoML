@@ -81,6 +81,12 @@ def create_app(
             methods=['DELETE'],
             tags=["experiment"]
         ),
+        APIRoute(
+            "/api/v1/experiment/evaluate",
+            endpoints.evaluate_model,
+            methods=['POST'],
+            tags=["experiment"]
+        ),
         # APIRoute(
         #     "/api/v1/monitoring/info",
         #     endpoints.get_monitor_info,
@@ -115,11 +121,5 @@ def create_app(
         route=endpoints.get_experiment_job_logs
     )
     
-    # app.add_middleware(
-    #     CORSMiddleware, 
-    #     allow_origins=["*"],
-    #     allow_credentials=False,
-    #     allow_methods=["*"],
-    #     allow_headers=["*"],
-    # )
+
     return app

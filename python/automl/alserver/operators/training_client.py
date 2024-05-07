@@ -1,6 +1,7 @@
 import multiprocessing
 import logging
 import time
+from time import sleep
 from typing import Callable, List, Dict, Any, Set
 import queue
 from kubernetes import client, config, watch
@@ -550,7 +551,7 @@ class TrainingClient(object):
                     # grouping the every 50 log lines of the same pod
                     for _ in range(50):
                         try:
-                            logline = log_queue.get(timeout=1)
+                            logline = log_queue.get(timeout=5)
                             if logline is None:
                                 finished[index] = True
                                 break
@@ -660,8 +661,8 @@ class TrainingClient(object):
             func=func,
             parameters=parameters,
             base_image=base_image,
-            # container_name=constants.TFJOB_CONTAINER,
-            container_name=name,
+            container_name=constants.TFJOB_CONTAINER,
+            # container_name=name,
             packages_to_install=packages_to_install,
             pip_index_url=pip_index_url,
             host_ip=host_ip,

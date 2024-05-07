@@ -16,8 +16,8 @@ DEFAULT_PARALLEL_WORKERS = 1
 
 PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
 ENV_FILE_PATH = os.path.join(os.getcwd(), ".env")
-PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-zh.json')
-MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'automl-models-metadata-zh.jsonl')
+PROMPT_TEMPLATE_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'prompt-templates', 'model-selection-prompt-v1.json')
+MODEL_METADATA_FILE_PATH = os.path.join(PARENT_DIR, 'autoselect', 'resources', 'automl-models-metadata.jsonl')
 
 HOST_INFO_FILE_PATH = os.path.join(PARENT_DIR, 'autoschedule', 'host_info.json')
 KUBE_CONFIG_FILE_PATh = "/root/.kube/config"
@@ -209,8 +209,7 @@ class Settings(BaseSettings):
     # OpenAI API
     llm_name_or_path: str = Field(
         # default="qwen1.5-14b-chat",
-        # default="gpt-3.5-turbo",
-        default=None
+        default="gpt-3.5-turbo",
     )
     embedding_name_or_path: str = Field(
         # default="text-davinci-003",
@@ -233,7 +232,4 @@ class Settings(BaseSettings):
     host_info_file_path: str = Field(
         default=HOST_INFO_FILE_PATH,
         description="Host info file path"
-    )
-    image_url: str = Field(
-        default="http://60.204.186.96:31185"
     )

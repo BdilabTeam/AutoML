@@ -60,7 +60,7 @@ def _get_top_k_models(
     ]
     return top_k_models_info
 
-class ModelSelection:
+class ModelSelection():
     def __init__(self, settings: ModelSelectionSettings) -> None:
         if not Path(settings.prompt_template_file_path).exists:
             raise ValueError(f"Prompt template file {settings.prompt_template_file_path} does not exist.")
@@ -69,8 +69,6 @@ class ModelSelection:
         if not Path(settings.model_metadata_file_path).exists:
             raise ValueError(f"Model metadata file {settings.model_metadata_file_path} does not exist.")
         self._model_metadata_file_path = settings.model_metadata_file_path
-        
-        self._settings = settings
         
     async def aselect_model(
         self,

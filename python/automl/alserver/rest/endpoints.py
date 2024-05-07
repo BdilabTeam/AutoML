@@ -107,3 +107,35 @@ class Endpoints(object):
         model_repository = self._data_plane.get_model_repository()
         return model_repository
     
+    def evaluate_model(
+        self,
+        experiment_name: str = Form(description="实验名称", regex="^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$", message="包含不超过 63 个字符, 由小写字母、数字或 \"-\" 组成\n, 以字母或数字开头和结尾"),
+        task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Form(description="任务类型"),
+        files: List[UploadFile] = File(description="上传单文件或文件夹"),
+    ) -> output_schema.EvaluateResponse:
+        if len(files) == 0:
+            raise DataFormatError("数据文件不能为空")
+        # 检查文件类型
+        path_parts = Path(files[0].filename).parts
+        if len(path_parts) == 1 and len(files) == 1:
+            if files[0].filename.endswith('csv'):
+                file_type = 'csv'
+            else:
+                raise DataFormatError(f"仅[csv]扩展文件类型")
+        elif len(path_parts) == 3:
+            for file in files:
+                # Check the depth of the folder. The length should be less than or equal to 2.
+                if len(path_parts) != 3:
+                    raise DataFormatError("图片数据文件格式错误")
+                if not file.filename.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
+                    raise DataFormatError(f"图片格式错误, 扩展名必须为:[.jpg, .jpeg, .png, .gif, .bmp]")
+            file_type = 'image_folder'
+        else:
+            raise DataFormatError("数据文件格式错误")
+        
+        metrics = self._data_plane.evaluate_model(
+            experiment_name=experiment_name,
+            file_type=file_type,
+            files=files
+        )
+        return output_schema.EvaluateResponse(metrics=metrics)

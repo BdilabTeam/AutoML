@@ -25,9 +25,11 @@ class TestAutoTrain:
             trainer_id="structured-data-classification/densenet",
             tp_directory=os.path.dirname(__name__),
             tp_epochs=1,
+            # mp_enable_categorical_to_numerical=False,
         )
         trainer.train(
             inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'structured-data-classification.csv')
+            # inputs="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/autotrain/datasets/structured-data-classification-2.csv"
         )
         summary = trainer.get_summary()
         print(f"{'*'*5}summary:\n{summary}")

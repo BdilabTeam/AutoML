@@ -69,6 +69,7 @@ public class ExperimentServiceImpl implements ExperimentService {
     @Override
     @Transactional
     public void deploy(String experimentName, String endpointName) {
+        // TODO endpointName-random
         // Check whether the experiment exists
         Experiment experiment = experimentMapper.selectOne(new QueryWrapper<Experiment>().lambda().eq(Experiment::getExperimentName, experimentName));
         if (null == experiment) {
@@ -89,7 +90,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         service.setMetadata(objectMeta);
         Map<String, String> annotations = new HashMap<String, String>() {
             {
-                put("autoscaling.knative.dev/minScale", "1");
+                put("autoscaling.knative.dev/minScale", "0");
                 put("automl/experimentName", experimentName);
                 put("automl/taskType", experiment.getTaskType());
                 put("automl/modelType", experiment.getModelType());
