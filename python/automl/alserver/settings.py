@@ -144,7 +144,7 @@ class Settings(BaseSettings):
         description=f"Database driver name."
     )
     host_mysql: str = Field(
-        default="124.70.188.119",
+        default="10.8.104.110",
         description=f"Database host."
     )
     port_mysql: int = Field(
@@ -208,8 +208,8 @@ class Settings(BaseSettings):
     )
     # OpenAI API
     llm_name_or_path: str = Field(
-        # default="qwen1.5-14b-chat",
-        default="gpt-3.5-turbo",
+        default="qwen1.5-14b-chat",
+        # default="gpt-3.5-turbo",
         # default=None
     )
     embedding_name_or_path: str = Field(
@@ -218,13 +218,9 @@ class Settings(BaseSettings):
     )
     openai_api_key: str = Field(
         default="EMPTY"
-        # default="sk-kUx6CDr4B0Elct2aq015N9tyu6siuSxsMrS0j4g86Ssf3w1l"
-        # default="sk-no-key-required"
     )
     openai_api_base: str = Field(
-        # default="http://10.78.180.40:7002/v1"
-        # default="https://api.chatanywhere.com.cn"
-        default="http://localhost:8080/v1"
+        default="http://10.8.104.183:7002/v1"
     )
     # Monitor
     monitor_enabled: bool = Field(
@@ -236,5 +232,5 @@ class Settings(BaseSettings):
         description="Host info file path"
     )
     image_url: str = Field(
-        default="http://60.204.186.96:31185"
+        default="http://10.8.104.110:31185"
     )
