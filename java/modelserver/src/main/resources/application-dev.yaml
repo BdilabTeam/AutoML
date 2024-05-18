@@ -1,12 +1,12 @@
 server:
-  ip: 124.70.188.119  # master ip
+  ip: 10.8.104.100  # master ip
   port: 32081
 spring:
   datasource:
     dynamic:
       datasource:
         mysql:
-          url: jdbc:mysql://124.70.188.119:3307/automl?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&autoReconnect=true&failOverReadOnly=false&useUnicode=true&characterEncoding=UTF-8
+          url: jdbc:mysql://10.8.104.110:3307/automl?useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&autoReconnect=true&failOverReadOnly=false&useUnicode=true&characterEncoding=UTF-8
           username: root
           password: bdilab@1308
 
@@ -16,12 +16,12 @@ kubernetes:
 
 istio:
   ingressgateway:
-    ip: 124.70.188.119
+    ip: 10.8.104.100
     port: 32300
 
 prometheus:
   server:
-    ip: 124.70.188.119
+    ip: 10.8.104.100
     port: 30001
   monitor:
     pod:
@@ -29,4 +29,4 @@ prometheus:
       memory: node_namespace_pod_container:container_memory_rss{namespace='%s', pod=~'%s.*', container='%s'}
 
 grafana:
-  url: http://124.70.188.119:30000
+  url: http://10.8.104.100:30000

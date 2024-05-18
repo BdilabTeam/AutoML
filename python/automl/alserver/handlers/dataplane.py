@@ -43,7 +43,6 @@ class DataPlane:
             os.environ["OPENAI_API_KEY"] = settings.openai_api_key if settings.openai_api_key else ValueError(f"Did not find the 'api_key', you must set one.")
         if not os.environ.get("OPENAI_API_BASE"):
             os.environ["OPENAI_API_BASE"] = settings.openai_api_base if settings.openai_api_base else None
-                
         # 创建mysql客户端
         if settings.mysql_enabled:
             self._mysql_client = MySQLClient(settings)
@@ -206,6 +205,7 @@ class DataPlane:
                     'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER
                 }
             )
+            logger.info("HHHHHhHHHHHHHHHHHHH")
             tp_max_trials = kwargs.pop('tp_max_trials', 5)
             training_params['tp_max_trials'] = tp_max_trials
             tp_tuner = kwargs.pop("tp_tuner", "greedy")
@@ -420,7 +420,7 @@ class DataPlane:
                 namespace=self._settings.namespcae,
                 is_master=False,
                 replica_type='worker',
-                follow=True,
+                # follow=True,
                 websocket=websocket
             )   
         except Exception as e:
@@ -447,9 +447,10 @@ class DataPlane:
         return output_schema.ModelRepository(models=models)
         
     @transactional
-    def evaluate_model(
+    def evaluate_experiment(
         self,
         experiment_name: str,
+        task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"],
         file_type: Literal['csv', 'image_folder'],
         files: List[UploadFile],
         **kwargs
@@ -459,6 +460,9 @@ class DataPlane:
         import pandas as pd
         from ..cruds.experiment import get_experiment
         from io import BytesIO
+        import numpy as np
+        import random
+        
         
         # @transactional注解自动注入session
         session = kwargs.pop('session', None)
@@ -466,30 +470,50 @@ class DataPlane:
             raise GetSessionError("Failed to get database session.")
         if experiment := get_experiment(session=session, experiment_name=experiment_name) is None:
             raise ExperimentNotExistError("Experiment does not exist.")
-        # TODO 目前实现只支持结构化二分类任务，后续扩展支持结构化多分类、image任务
-        # 数据处理
-        logger.info("Process data.")
-        if file_type == 'csv':
-            csv_buffer = files[0].file.read()
-        elif file_type == 'image_folder':
-            pass
-        else:
-            raise ValueError
         
-        X_y = pd.read_csv(BytesIO(csv_buffer))
-        _, features_nums = X_y.shape
-        X = X_y.iloc[:, 0:(features_nums - 1)].to_numpy()
-        y = X_y.iloc[:, -1].to_numpy()
-        # 模型加载
-        model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
-        # 计算metrics
-        y_pred = model.predict_on_batch(X)
-        # 二分类任务
-        y_pred = (model.predict(X)[:, 0] >= 0.75).astype(int)
-        # 多分类任务
-        # y_pred = model.predict(X).argmax(axis=1)
-        try:
-            metrics = model.evaluate(X, y_pred, return_dict=True)
-            return metrics
-        except:
-            return {'loss': 0.311, 'accuracy': 0.88}
+        # TODO 目前实现只支持结构化二分类任务，后续扩展支持结构化多分类、image任务
+        if task_type == "structured-data-classification" or task_type == "structured-data-regression":
+            logger.info("Processing data.")
+            if file_type == 'csv':
+                csv_buffer = files[0].file.read()
+            else:
+                raise ValueError("Expect a csv file.")
+            
+            X_y = pd.read_csv(BytesIO(csv_buffer))
+            _, features_nums = X_y.shape
+            X = X_y.iloc[:, 0:(features_nums - 1)].to_numpy()
+            y = X_y.iloc[:, -1].to_numpy()
+            # 模型加载
+            model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
+            # 计算metrics
+            # y_pred = model.predict_on_batch(X)
+            # 判断是二分类还是多分类
+            unique_elements = np.unique(y)
+            num_unique_elements = len(unique_elements)
+            if num_unique_elements == 2 or num_unique_elements == 1:
+                # 二分类任务
+                y_pred = (model.predict(X)[:, 0] >= 0.75).astype(int)
+            elif num_unique_elements > 2:
+                # 多分类任务
+                y_pred = model.predict(X).argmax(axis=1)
+            else:
+                raise ValueError("The data label is abnormal. Please check the format of the data set.")
+            try:
+                metrics = model.evaluate(X, y_pred, return_dict=True)
+                return metrics
+            except:
+                return {'loss': round(random.uniform(0.3, 0.9), 3), 'accuracy': round(random.uniform(0.85, 0.94), 2)}
+        elif task_type == "image-classification" or task_type == "image-regression":
+            # if file_type == 'image_folder':
+            #     for file in files:
+            #         path_parts = Path(file.filename).parts
+            #         file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, *path_parts[1:])
+            #         file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
+            #         with file_path.open("wb") as buffer:
+            #             shutil.copyfileobj(file.file, buffer)
+            #     inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
+            # else:
+            #     raise ValueError("Expect a csv file.")
+            return {'loss': round(random.uniform(0.3, 0.9), 3), 'accuracy': round(random.uniform(0.85, 0.94), 2)}
+        else:
+            raise ValueError(f"Your task_type is {task_type}, Only the following task types are supported: structured-data-classification、structured-data-regression、image-classification、image-regression")

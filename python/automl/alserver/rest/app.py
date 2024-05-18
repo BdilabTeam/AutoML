@@ -83,7 +83,7 @@ def create_app(
         ),
         APIRoute(
             "/api/v1/experiment/evaluate",
-            endpoints.evaluate_model,
+            endpoints.evaluate_experiment,
             methods=['POST'],
             tags=["experiment"]
         ),

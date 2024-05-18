@@ -32,7 +32,7 @@ class Endpoints(object):
         experiment_name: str = Form(description="实验名称", regex="^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$", message="包含不超过 63 个字符, 由小写字母、数字或 \"-\" 组成\n, 以字母或数字开头和结尾"),
         task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Form(description="任务类型"),
         task_desc: str = Form(max_length=150, example="钢材淬透性预测", description="任务描述"),
-        model_type: Literal["densenet", "resnet"] = Form(description="基础模型"),
+        model_type: Literal["densenet", "resnet", "xception", "convnet"] = Form(description="基础模型"),
         files: List[UploadFile] = File(description="上传单文件或文件夹"),
         tp_max_trials: int = Form(ge=1, description="最大试验输"),
         tp_tuner: Literal["greedy", "bayesian", "hyperband", "random"] = Form(description="参数调优算法"),
@@ -107,7 +107,7 @@ class Endpoints(object):
         model_repository = self._data_plane.get_model_repository()
         return model_repository
     
-    def evaluate_model(
+    def evaluate_experiment(
         self,
         experiment_name: str = Form(description="实验名称", regex="^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$", message="包含不超过 63 个字符, 由小写字母、数字或 \"-\" 组成\n, 以字母或数字开头和结尾"),
         task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Form(description="任务类型"),
@@ -133,8 +133,9 @@ class Endpoints(object):
         else:
             raise DataFormatError("数据文件格式错误")
         
-        metrics = self._data_plane.evaluate_model(
+        metrics = self._data_plane.evaluate_experiment(
             experiment_name=experiment_name,
+            task_type=task_type,
             file_type=file_type,
             files=files
         )

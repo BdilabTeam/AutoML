@@ -96,11 +96,16 @@ public class ExperimentServiceImpl implements ExperimentService {
                 put("automl/modelType", experiment.getModelType());
             }
         };
-        Map<String, String> nodeSelector = new HashMap<String, String>() {
+        Map<String, String> labels = new HashMap<String, String>() {
             {
-                put("kubernetes.io/hostname", "node1");
+                put("webhooks.knative.dev/exclude", "true");
             }
         };
+//        Map<String, String> nodeSelector = new HashMap<String, String>() {
+//            {
+//                put("kubernetes.io/hostname", "node1");
+//            }
+//        };
         List<String> commands = new ArrayList<String>() {
             {
                 add("python");
@@ -134,9 +139,10 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withNewTemplate()
                 .withNewMetadata()
                 .withAnnotations(annotations)
+                .withLabels(labels)
                 .endMetadata()
                 .withNewSpec()
-                .withNodeSelector(nodeSelector)
+//                .withNodeSelector(nodeSelector)
                 .withContainers(container)
                 .withVolumes(volume).endSpec()
                 .endTemplate()
@@ -146,7 +152,9 @@ public class ExperimentServiceImpl implements ExperimentService {
 
         log.info("Creating the inference endpoint.");
         try {
+            log.info(service.toString());
             io.fabric8.knative.serving.v1.Service created_service = defaultKnativeClient.services().create(service);
+            log.info("Create Successfully");
             defaultKnativeClient.services().resource(created_service).waitUntilReady(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             defaultKnativeClient.services().resource(service).delete();
@@ -211,7 +219,8 @@ public class ExperimentServiceImpl implements ExperimentService {
             Instant instant = Instant.parse(creationTimestamp);
             LocalDateTime creationTime = LocalDateTime.ofInstant(instant, ZoneOffset.UTC);
             inferenceServiceInfo.setCreateTime(creationTime);
-            inferenceServiceInfo.setTrafficPercent(item.getSpec().getTraffic().get(0).getPercent());
+//            inferenceServiceInfo.setTrafficPercent(item.getSpec().getTraffic().get(0).getPercent());
+            inferenceServiceInfo.setTrafficPercent(100L);
             String status = "Ready";
             List<Condition> conditions = item.getStatus().getConditions();
             for (int i = conditions.size() - 1; i >= 0; i--) {

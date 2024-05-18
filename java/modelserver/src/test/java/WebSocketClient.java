@@ -19,10 +19,11 @@ public class WebSocketClient {
             String endpointName = "image";
 //            String uri = "ws://124.70.188.119:32081/api/v1/automl/inference-service/logs?endpointName=" + endpointName;
 //            String uri = "ws://124.70.188.119:32081/api/v1/automl/inference-service/logs?endpointName=image";
+            String uri = "ws://124.70.188.119:32081/api/v1/automl/inference-service/logs?endpointName=test";
 //            String uri = "ws://60.204.186.96:31185/api/v1/experiment/job/logs?experiment_job_name=test";
-//            String uri = "ws://124.70.188.119:32081/api/v1/automl/inference-service/logs?endpointName=test0416-infer";
-            String uri = "ws://60.204.186.96:31185/api/v1/experiment/job/logs?experiment_job_name=test0418";
+//            container.connectToServer(WebSocketClient.class, new URI(uri));
             container.connectToServer(WebSocketClient.class, new URI(uri));
+
             latch.await(120, TimeUnit.SECONDS); // 等待连接建立，超时时间为 5 秒
             if (session != null && session.isOpen()) {
                 session.getBasicRemote().sendText("Hello, WebSocket Server!"); // 发送消息给服务器

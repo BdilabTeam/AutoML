@@ -1,17 +1,14 @@
 package com.bdilab.automl.common.utils;
 
 import org.springframework.web.multipart.MultipartFile;
-import org.tensorflow.Tensor;
 import org.tensorflow.ndarray.ByteNdArray;
 import org.tensorflow.ndarray.NdArrays;
 import org.tensorflow.ndarray.Shape;
 import org.tensorflow.ndarray.buffer.DataBuffers;
-import org.tensorflow.types.TUint8;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;

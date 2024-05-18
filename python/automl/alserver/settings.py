@@ -209,21 +209,22 @@ class Settings(BaseSettings):
     # OpenAI API
     llm_name_or_path: str = Field(
         # default="qwen1.5-14b-chat",
-        # default="gpt-3.5-turbo",
-        default=None
+        default="gpt-3.5-turbo",
+        # default=None
     )
     embedding_name_or_path: str = Field(
         # default="text-davinci-003",
         default="sentence-transformers/all-mpnet-base-v2",
     )
     openai_api_key: str = Field(
-        # default="EMPTY"
-        default="sk-kUx6CDr4B0Elct2aq015N9tyu6siuSxsMrS0j4g86Ssf3w1l"
+        default="EMPTY"
+        # default="sk-kUx6CDr4B0Elct2aq015N9tyu6siuSxsMrS0j4g86Ssf3w1l"
         # default="sk-no-key-required"
     )
     openai_api_base: str = Field(
         # default="http://10.78.180.40:7002/v1"
-        default="https://api.chatanywhere.com.cn"
+        # default="https://api.chatanywhere.com.cn"
+        default="http://localhost:8080/v1"
     )
     # Monitor
     monitor_enabled: bool = Field(
