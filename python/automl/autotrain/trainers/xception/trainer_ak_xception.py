@@ -11,7 +11,7 @@ import tensorflow as tf
 
 from .configuration_xception import XceptionTrainerConfig
 from ...utils import TaskType
-from ...utils.trainer_utils import BaseTrainer, Trial, TrialsTracker, BestModelTracker, TrainerTracker
+from ...utils.trainer_utils import BaseTrainer, Trial, TrialsTracker, BestModelTracker, TrainerTracker, ConfigTracker
 
 
 class AKBaseTrainerTracker(TrainerTracker):
@@ -93,63 +93,42 @@ class AKXceptionMainTrainer:
         inputs: str,
         **kwargs
     ) -> AKBaseTrainerTracker:
+        data_pipeline_params = {}
+        if self._config.dp_batch_size:
+            data_pipeline_params["batch_size"] = self._config.dp_batch_size
+        if self._config.dp_color_mode:
+            data_pipeline_params["color_mode"] = self._config.dp_color_mode
+        if self._config.dp_image_size:
+            data_pipeline_params["image_size"] = self._config.dp_image_size
+        if self._config.dp_interpolation:
+            data_pipeline_params["interpolation"] = self._config.dp_interpolation
+        if self._config.dp_shuffle:
+            data_pipeline_params["shuffle"] = self._config.dp_shuffle
+        if self._config.dp_seed:
+            data_pipeline_params["seed"] = self._config.dp_seed
+        if self._config.dp_validation_split:
+            data_pipeline_params["validation_split"] = self._config.dp_validation_split
+        train_data = ak.image_dataset_from_directory(
+            directory=inputs,
+            subset='training',
+            **data_pipeline_params
+        )
+        
         if self._config.task_type == TaskType.IMAGE_CLASSIFICATION.value:
-            data_pipeline_params = {}
-            if self._config.dp_batch_size:
-                data_pipeline_params["batch_size"] = self._config.dp_batch_size
-            if self._config.dp_color_mode:
-                data_pipeline_params["color_mode"] = self._config.dp_color_mode
-            if self._config.dp_image_size:
-                data_pipeline_params["image_size"] = self._config.dp_image_size
-            if self._config.dp_interpolation:
-                data_pipeline_params["interpolation"] = self._config.dp_interpolation
-            if self._config.dp_shuffle:
-                data_pipeline_params["shuffle"] = self._config.dp_shuffle
-            if self._config.dp_seed:
-                data_pipeline_params["seed"] = self._config.dp_seed
-            if self._config.dp_validation_split:
-                data_pipeline_params["validation_split"] = self._config.dp_validation_split
-            train_data = ak.image_dataset_from_directory(
-                directory=inputs,
-                subset='training',
-                **data_pipeline_params
-            )
-
+            y_train = np.asarray([label.decode('utf-8') for label in train_data.as_numpy_iterator().next()[1]])
             history = self._auto_fit(train_data)
         elif self._config.task_type == TaskType.IMAGE_REGRESSION.value:
-            # 数据准备
-            train_dir = inputs
-            items = os.listdir(train_dir)
-            # 获取'文件夹'名称
-            folder_names = [item for item in items if os.path.isdir(os.path.join(train_dir, item))]
-
-            file_paths = []
-            labels = []
-            for folder_name in folder_names:
-                files = glob.glob(os.path.join(train_dir, folder_name, '*'))
-                file_paths.extend(files)
-                labels.extend([float(folder_name)] * len(files))
-                
-            dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
-
-            def load_image(file_path, label):
-                image = tf.io.read_file(file_path)
-                image = tf.image.decode_image(image, channels=3)
-                return image, label
-
-            dataset = dataset.map(load_image)
-
-            x_train = []
-            y_train = []
-            for x, y in dataset:
-                x_train.append(x)
-                y_train.append(y)
-            # 将特征和标签转换为张量
-            x_train = np.asarray(tf.stack(x_train))
-            y_train = np.asarray(tf.stack(y_train))
+            x_train = train_data.as_numpy_iterator().next()[0]
+            y_train = np.asarray([float(label.decode('utf-8')) for label in train_data.as_numpy_iterator().next()[1]])
             history = self._auto_fit(x_train, y_train)
         else:
             raise ValueError(f"`Task type` must be `{TaskType.IMAGE_CLASSIFICATION.value}` or `{TaskType.IMAGE_REGRESSION.value}`")
+        
+        # Label2Id
+        sorted_labels = np.unique(y_train)
+        label2ids = {label: index for index, label in enumerate(sorted_labels)}
+        id2labels = {index: label for index, label in enumerate(sorted_labels)}
+        config_tracker = ConfigTracker(label2ids=label2ids, id2labels=id2labels)
 
         best_keras_model = self._auto_model.tuner.get_best_model()
         try:
@@ -157,7 +136,7 @@ class AKXceptionMainTrainer:
             plot_model(best_keras_model, to_file=model_graph_path, show_layer_activations=True, show_dtype=True, show_shapes=True, show_layer_names=False)
         except:
             model_graph_path = None
-
+            
         best_model_tracker = BestModelTracker(
             history=history.history,
             hyperparameters=self._auto_model.tuner.get_best_hyperparameters().pop().get_config(),
@@ -183,7 +162,8 @@ class AKXceptionMainTrainer:
         
         return AKBaseTrainerTracker(
             best_model_tracker=best_model_tracker,
-            trials_tracker=trials_tracker
+            trials_tracker=trials_tracker,
+            config_tracker=config_tracker
         )
 
 class AKXceptionForImageClassificationTrainer(BaseTrainer):

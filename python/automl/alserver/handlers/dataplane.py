@@ -205,7 +205,6 @@ class DataPlane:
                     'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER
                 }
             )
-            logger.info("HHHHHhHHHHHHHHHHHHH")
             tp_max_trials = kwargs.pop('tp_max_trials', 5)
             training_params['tp_max_trials'] = tp_max_trials
             tp_tuner = kwargs.pop("tp_tuner", "greedy")
@@ -245,8 +244,6 @@ class DataPlane:
             return output_schema.ExperimentInfo(
                 # experiment_id=experiment.id,
                 experiment_name=experiment.experiment_name,
-                # task_type=experiment.task_type,
-                # model_type=experiment.model_type,
             )
         except:
             logger.error("Failed to create, start rollback operation")
@@ -462,7 +459,7 @@ class DataPlane:
         from io import BytesIO
         import numpy as np
         import random
-        
+        import glob
         
         # @transactional注解自动注入session
         session = kwargs.pop('session', None)
@@ -471,49 +468,274 @@ class DataPlane:
         if experiment := get_experiment(session=session, experiment_name=experiment_name) is None:
             raise ExperimentNotExistError("Experiment does not exist.")
         
-        # TODO 目前实现只支持结构化二分类任务，后续扩展支持结构化多分类、image任务
-        if task_type == "structured-data-classification" or task_type == "structured-data-regression":
-            logger.info("Processing data.")
-            if file_type == 'csv':
-                csv_buffer = files[0].file.read()
+        logger.info("Getting the summary of the experiment.")
+        try:
+            with open(dataplane_utils.get_experiment_summary_file_path(experiment_name=experiment_name)) as f:
+                summary = json.load(f)
+        except Exception as e:
+            raise ParseExperimentSummaryError(f"Failed to parse the summary of the experiment, for a specific reason: {e}")
+        
+        if not (config_tracker := summary.get("config_tracker")):
+            raise ValueError("Expect config_tracker to be non-null")
+        
+        if not (label2ids := config_tracker.get("label2ids")):
+            raise ValueError("Expect label2ids to be non-null")
+        logger.info(f"label2ids: {label2ids}")
+        
+        if not (id2labels := config_tracker.get("id2labels")):
+            raise ValueError("Expect id2labels to be non-null")
+        logger.info(f"id2labels: {id2labels}")
+        
+        num_labels = len(label2ids.keys())
+        
+        workspace_dir = dataplane_utils.generate_experiment_workspace_dir(experiment_name=experiment_name)
+        evaluate_data_dir = os.path.join(workspace_dir, 'evaluate_datasets')
+        
+        # 加载模型
+        model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
+        # 获取指标名称
+        metrics = {}
+        try:
+            if task_type == "structured-data-classification" or task_type == "structured-data-regression":
+                logger.info("Processing data.")
+                if file_type == 'csv':
+                    csv_buffer = files[0].file.read()
+                else:
+                    raise ValueError("Expect a csv file.")
+                
+                X_y = pd.read_csv(BytesIO(csv_buffer))
+                _, features_nums = X_y.shape
+                x_val = X_y.iloc[:, 0:(features_nums - 1)].to_numpy()
+                y_val = X_y.iloc[:, -1].to_numpy()
+                
+                if task_type == "structured-data-classification":
+                    if num_labels == 2 or num_labels == 1:
+                        # 二分类任务
+                        y_pred_probabilities = model.predict_on_batch(x_val)
+                        y_pred_indexs = (y_pred_probabilities[:, 0] >= 0.5).astype(int)
+                    elif num_labels > 2:
+                        # 多分类任务
+                        y_pred_probabilities = model.predict_on_batch(x_val)
+                        y_pred_indexs = y_pred_probabilities.argmax(axis=1)
+                    else:
+                        raise ValueError("The data label is abnormal. Please check the format of the data set.")
+                    logger.info(f"y_pred_probabilities: {y_pred_probabilities}")
+                    y_pred_labels = [id2labels.get(str(y_pred_index)) for y_pred_index in y_pred_indexs]
+                    
+                    y_val_labels = [str(y_val_label) for y_val_label in y_val]
+                    y_val_indexs = np.asarray([label2ids.get(str(y_val_label)) for y_val_label in y_val_labels])
+                    
+                    accuracy = tf.metrics.Accuracy()
+                    accuracy.update_state(y_val_indexs, y_pred_indexs)
+                    accuracy_res = accuracy.result().numpy()
+                    
+                    precision = tf.metrics.Precision()
+                    precision.update_state(y_val_indexs, y_pred_indexs)
+                    precision_res = precision.result().numpy()
+                    
+                    recall = tf.metrics.Recall()
+                    recall.update_state(y_val_indexs, y_pred_indexs)
+                    recall_res = recall.result().numpy()
+                    
+                    log_loss = tf.metrics.LogCoshError()
+                    log_loss.update_state(y_val_indexs, y_pred_indexs)
+                    log_loss_res = log_loss.result().numpy()
+                    
+                    metrics.update(
+                        {
+                            "accuracy": float(accuracy_res),
+                            "precision": float(precision_res),
+                            "recall": float(recall_res),
+                            "log_loss_res": float(log_loss_res),
+                            "y_true": y_val_labels,
+                            "y_pred": y_pred_labels
+                        }
+                    )
+                    logger.info(f"Metrics: {metrics}")
+                    
+                elif task_type == "structured-data-regression":
+                    y_pred_probabilities = model.predict_on_batch(x_val)
+                    y_pred_indexs = np.array(y_pred_probabilities).flatten()
+                    y_pred_labels = y_pred_indexs.tolist()
+                    
+                    y_val_labels = [str(y_val_label) for y_val_label in y_val]
+                    y_val_indexs = np.asarray(y_val)
+                    
+                    mse = tf.metrics.MeanSquaredError()
+                    mse.update_state(y_val_indexs, y_pred_indexs)
+                    mse_res = mse.result().numpy()
+                    
+                    rmse = tf.metrics.RootMeanSquaredError()
+                    rmse.update_state(y_val_indexs, y_pred_indexs)
+                    rmse_res = rmse.result().numpy()
+                    
+                    mae = tf.metrics.MeanAbsoluteError()
+                    mae.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                    mae_res = mae.result().numpy()
+                    
+                    mape = tf.metrics.MeanAbsolutePercentageError()
+                    mape.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                    mape_res = mape.result().numpy()
+                    
+                    metrics.update(
+                        {
+                            "mean_squared_error": float(mse_res),
+                            "root_mean_squared_error": float(rmse_res),
+                            "mean_absolute_error": float(mae_res),
+                            "mean_absolute_percentage_error": float(mape_res),
+                            "y_true": y_val_labels,
+                            "y_pred": y_pred_labels
+                        }
+                    )
+                    logger.info(f"Metrics: {metrics}")
+                else:
+                    raise ValueError("Unexpected task type.")
+
+            elif task_type == "image-classification" or task_type == "image-regression":
+                if file_type == 'image_folder':
+                      # 存储临时文件
+                    for file in files:
+                        path_parts = Path(file.filename).parts
+                        file_path = Path(evaluate_data_dir, *path_parts[1:])
+                        file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
+                        with file_path.open("wb") as buffer:
+                            shutil.copyfileobj(file.file, buffer)
+                    
+                    # categories = os.listdir(evaluate_data_dir)
+                    # # 获取'文件夹'名称
+                    # folder_names = [category for category in categories if os.path.isdir(os.path.join(evaluate_data_dir, category))]
+                    # file_paths = []
+                    # labels = []
+                    # for folder_name in folder_names:
+                    #     files = glob.glob(os.path.join(evaluate_data_dir, folder_name, '*'))
+                    #     file_paths.extend(files)
+                    #     if task_type == "image-classification":
+                    #         labels.extend([folder_name] * len(files))
+                    #     elif task_type == "image-regression":
+                    #         labels.extend([float(folder_name)] * len(files))
+                        
+                    # dataset = tf.data.Dataset.from_tensor_slices((file_paths, labels))
+
+                    # def load_image(file_path, label):
+                    #     image = tf.io.read_file(file_path)
+                    #     image = tf.image.decode_image(image, channels=3)
+                    #     # 将图片裁剪或填充为 256x256
+                    #     image = tf.image.resize_with_crop_or_pad(image, 256, 256)
+                    #     return image, label
+
+                    # dataset = dataset.map(load_image)
+
+                    # x_train = []
+                    # y_true = []
+                    # for x, y in dataset:
+                    #     x_train.append(x)
+                    #     y_true.append(y)
+                    # # 将特征和标签转换为张量
+                    # x_train = np.asarray(tf.stack(x_train))
+                    # y_true = np.asarray(tf.stack(y_true))
+                    
+                    val_data = ak.image_dataset_from_directory(
+                        directory=evaluate_data_dir,
+                    )
+                    
+                    x_val = val_data.as_numpy_iterator().next()[0]
+                    y_val_labels = [label.decode('utf-8') for label in val_data.as_numpy_iterator().next()[1]]
+                    y_val_indexs = np.asarray([label2ids.get(str(y_val_label)) for y_val_label in y_val_labels])
+                    
+                    # 计算metrics
+                    if task_type == "image-classification":
+                        if num_labels == 2 or num_labels == 1:
+                            # 二分类任务
+                            y_pred_probabilities = model.predict_on_batch(x_val)
+                            y_pred_indexs = (y_pred_probabilities[:, 0] >= 0.75).astype(int)
+                        elif num_labels > 2:
+                            # 多分类任务
+                            y_pred_probabilities = model.predict_on_batch(x_val)
+                            y_pred_indexs = y_pred_probabilities.argmax(axis=1)
+                        else:
+                            raise ValueError("The data label is abnormal. Please check the format of the data set.")
+                        logger.info(f"y_pred_probabilities: {y_pred_probabilities}")
+                        y_pred_labels = [id2labels.get(str(y_pred_index)) for y_pred_index in y_pred_indexs]
+                        
+                        accuracy = tf.metrics.Accuracy()
+                        accuracy.update_state(y_val_indexs, y_pred_indexs)
+                        accuracy_res = accuracy.result().numpy()
+                        
+                        precision = tf.metrics.Precision()
+                        precision.update_state(y_val_indexs, y_pred_indexs)
+                        precision_res = precision.result().numpy()
+                        
+                        recall = tf.metrics.Recall()
+                        recall.update_state(y_val_indexs, y_pred_indexs)
+                        recall_res = recall.result().numpy()
+                        
+                        log_loss = tf.metrics.LogCoshError()
+                        log_loss.update_state(y_val_indexs, y_pred_indexs)
+                        log_loss_res = log_loss.result().numpy()
+                        
+                        metrics.update(
+                            {
+                                "accuracy": float(accuracy_res),
+                                "precision": float(precision_res),
+                                "recall": float(recall_res),
+                                "log_loss_res": float(log_loss_res),
+                                "y_true": y_val_labels,
+                                "y_pred": y_pred_labels
+                            }
+                        )
+                        logger.info(f"Metrics: {metrics}")
+                    elif task_type == "image-regression":
+                        x_val = val_data.as_numpy_iterator().next()[0]
+                        y_val_labels = [float(label.decode('utf-8')) for label in val_data.as_numpy_iterator().next()[1]]
+                        y_val_indexs = np.asarray(y_val_labels)
+                        
+                        y_pred_probabilities = model.predict_on_batch(x_val)
+                        y_pred_indexs = np.array(y_pred_probabilities).flatten()
+                        y_pred_labels = [str(y_pred_label) for y_pred_label in y_pred_indexs]
+                        
+                        mse = tf.metrics.MeanSquaredError()
+                        mse.update_state(y_val_indexs, y_pred_indexs)
+                        mse_res = mse.result().numpy()
+                        
+                        rmse = tf.metrics.RootMeanSquaredError()
+                        rmse.update_state(y_val_indexs, y_pred_indexs)
+                        rmse_res = rmse.result().numpy()
+                        
+                        mae = tf.metrics.MeanAbsoluteError()
+                        mae.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                        mae_res = mae.result().numpy()
+                        
+                        mape = tf.metrics.MeanAbsolutePercentageError()
+                        mape.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                        mape_res = mape.result().numpy()
+                        
+                        metrics.update(
+                            {
+                                "mean_squared_error": float(mse_res),
+                                "root_mean_squared_error": float(rmse_res),
+                                "mean_absolute_error": float(mae_res),
+                                "mean_absolute_percentage_error": float(mape_res),
+                                "y_true": y_val_labels,
+                                "y_pred": y_pred_labels
+                            }
+                        )
+                        logger.info(f"Metrics: {metrics}")
+                    # metrics = model.evaluate(x_val, y_val_indexs, return_dict=True)
+                else:
+                    raise ValueError("Expect folder")
             else:
-                raise ValueError("Expect a csv file.")
+                raise ValueError(f"Your task_type is {task_type}, Only the following task types are supported: structured-data-classification、structured-data-regression、image-classification、image-regression")
             
-            X_y = pd.read_csv(BytesIO(csv_buffer))
-            _, features_nums = X_y.shape
-            X = X_y.iloc[:, 0:(features_nums - 1)].to_numpy()
-            y = X_y.iloc[:, -1].to_numpy()
-            # 模型加载
-            model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
-            # 计算metrics
-            # y_pred = model.predict_on_batch(X)
-            # 判断是二分类还是多分类
-            unique_elements = np.unique(y)
-            num_unique_elements = len(unique_elements)
-            if num_unique_elements == 2 or num_unique_elements == 1:
-                # 二分类任务
-                y_pred = (model.predict(X)[:, 0] >= 0.75).astype(int)
-            elif num_unique_elements > 2:
-                # 多分类任务
-                y_pred = model.predict(X).argmax(axis=1)
-            else:
-                raise ValueError("The data label is abnormal. Please check the format of the data set.")
-            try:
-                metrics = model.evaluate(X, y_pred, return_dict=True)
-                return metrics
-            except:
-                return {'loss': round(random.uniform(0.3, 0.9), 3), 'accuracy': round(random.uniform(0.85, 0.94), 2)}
-        elif task_type == "image-classification" or task_type == "image-regression":
-            # if file_type == 'image_folder':
-            #     for file in files:
-            #         path_parts = Path(file.filename).parts
-            #         file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, *path_parts[1:])
-            #         file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
-            #         with file_path.open("wb") as buffer:
-            #             shutil.copyfileobj(file.file, buffer)
-            #     inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
-            # else:
-            #     raise ValueError("Expect a csv file.")
-            return {'loss': round(random.uniform(0.3, 0.9), 3), 'accuracy': round(random.uniform(0.85, 0.94), 2)}
-        else:
-            raise ValueError(f"Your task_type is {task_type}, Only the following task types are supported: structured-data-classification、structured-data-regression、image-classification、image-regression")
+            logger.info(f"y_val: {y_val_labels}\ny_pred: {y_pred_labels}\nEvaluate Metrics: {metrics}")
+            return metrics
+    
+        except Exception as e: 
+            raise ValueError(e)
+            # 用于保证前端测试不报错，最终应删除    
+            # if task_type == "image-classification" or task_type == "structured-data-classification":
+            #     return {'loss': round(random.uniform(0.3, 0.9), 3), 'accuracy': round(random.uniform(0.85, 0.94), 2)}
+            # elif task_type == "image-regression" or task_type == "structured-data-regression":
+            #     return {'loss': round(random.uniform(0.3, 0.9), 3), 'mean_squared_error': round(random.uniform(1.5, 5.5), 2)}
+        finally:
+            if os.path.exists(evaluate_data_dir):
+                shutil.rmtree(evaluate_data_dir)

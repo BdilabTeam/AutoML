@@ -28,7 +28,7 @@ class TestAutoTrain:
             # mp_enable_categorical_to_numerical=False,
         )
         trainer.train(
-            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'structured-data-classification.csv')
+            inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'structured-data-classification-3.csv')
             # inputs="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/autotrain/datasets/structured-data-classification-2.csv"
         )
         summary = trainer.get_summary()

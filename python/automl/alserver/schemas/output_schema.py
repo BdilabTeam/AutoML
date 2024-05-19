@@ -61,3 +61,5 @@ class ModelRepository(BaseModel):
 
 class EvaluateResponse(BaseModel):
     metrics: Optional[Dict[str, Any]] = Field(description="测试评估指标")
+    # y_true: Optional[List] = Field(description="真实标签")
+    # y_pred: Optional[List] = Field(description="预测标签")

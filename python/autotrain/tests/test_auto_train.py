@@ -51,7 +51,7 @@ class TestAutoTrain:
             tp_project_name="structured-data-regression",
             trainer_id="structured-data-regression/densenet",
             tp_directory=os.path.dirname(__name__),
-            tp_epochs=1
+            tp_epochs=1,
         )
         trainer.train(
             inputs=os.path.join(PARENT_DIR, 'autotrain', 'datasets', 'structured-data-regression.csv')

@@ -12,7 +12,7 @@ class XceptionTrainerConfig(BaseTrainerConfig):
         task_type: str,
         trainer_class_name: str,
         # Data Pipeline
-        dp_batch_size: Optional[int] = 4,
+        dp_batch_size: Optional[int] = 16,
         dp_color_mode: Optional[str] = None,
         dp_image_size: Optional[Tuple[float, float]] = None,
         dp_interpolation: Optional[str] = None,
@@ -45,7 +45,7 @@ class XceptionTrainerConfig(BaseTrainerConfig):
         tp_max_model_size: Optional[int] = None,
         # AutoModel.fit()
         tp_batch_size: int = 8,
-        tp_epochs: Optional[int] = None,
+        tp_epochs: Optional[int] = 100,
         tp_validation_split: float = 0.2,
     ):
         super().__init__(task_type=task_type, trainer_class_name=trainer_class_name, tp_project_name=tp_project_name, tp_directory=tp_directory)

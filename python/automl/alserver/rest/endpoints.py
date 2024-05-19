@@ -65,9 +65,8 @@ class Endpoints(object):
         else:
             raise DataFormatError("数据文件格式错误")
 
-        # TODO 获取调度信息
-        host_ip = '60.204.186.96'
-        
+        host_ip = None
+        # host_ip = "60.204.186.96"
         experiment_info = self._data_plane.create_experiment(
             experiment_name=experiment_name,
             task_type=task_type,
