@@ -570,11 +570,11 @@ class DataPlane:
                     rmse_res = rmse.result().numpy()
                     
                     mae = tf.metrics.MeanAbsoluteError()
-                    mae.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                    mae.update_state(y_val_indexs, y_pred_indexs)
                     mae_res = mae.result().numpy()
                     
                     mape = tf.metrics.MeanAbsolutePercentageError()
-                    mape.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                    mape.update_state(y_val_indexs, y_pred_indexs)
                     mape_res = mape.result().numpy()
                     
                     metrics.update(
@@ -702,11 +702,11 @@ class DataPlane:
                         rmse_res = rmse.result().numpy()
                         
                         mae = tf.metrics.MeanAbsoluteError()
-                        mae.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                        mae.update_state(y_val_indexs, y_pred_indexs)
                         mae_res = mae.result().numpy()
                         
                         mape = tf.metrics.MeanAbsolutePercentageError()
-                        mape.update_state([1.1, 0.9, 0.5], [0.5, 0.9, 0.5])
+                        mape.update_state(y_val_indexs, y_pred_indexs)
                         mape_res = mape.result().numpy()
                         
                         metrics.update(
