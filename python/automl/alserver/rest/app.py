@@ -87,6 +87,12 @@ def create_app(
             methods=['POST'],
             tags=["experiment"]
         ),
+        APIRoute(
+            "/api/v1/experiment/model/export/{experiment_name}",
+            endpoints.export_best_model,
+            methods=['GET'],
+            tags=["experiment"]
+        ),
         # APIRoute(
         #     "/api/v1/monitoring/info",
         #     endpoints.get_monitor_info,

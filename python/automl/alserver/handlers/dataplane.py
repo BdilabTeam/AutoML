@@ -739,3 +739,28 @@ class DataPlane:
         finally:
             if os.path.exists(evaluate_data_dir):
                 shutil.rmtree(evaluate_data_dir)
+                
+    def export_best_model(self, experiment_name: str) -> bytes:
+        """导出最优模型文件"""
+        from io import BytesIO
+        from zipfile import ZipFile
+        from ..cruds.experiment import get_experiment
+        
+        session = self.get_session()
+        if not (experiment := get_experiment(session=session, experiment_name=experiment_name)):
+            raise ExperimentNotExistError(f"Name: {experiment_name} for experiment does not exist.")
+        
+        best_model_folder_path = dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name)
+        if not os.path.exists(best_model_folder_path):
+            raise NotADirectoryError("Model folder not found")
+
+        # 创建一个内存中的 BytesIO 对象用于保存 zip 文件
+        mem_zip = BytesIO()
+        with ZipFile(mem_zip, mode="w") as zipf:
+            for root, dirs, files in os.walk(best_model_folder_path):
+                for file in files:
+                    zipf.write(os.path.join(root, file))
+
+        # 将内存中的 zip 文件重置到开头，准备返回
+        mem_zip.seek(0)
+        return mem_zip.getvalue()

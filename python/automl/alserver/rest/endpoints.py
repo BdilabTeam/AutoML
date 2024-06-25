@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Any, Union, Literal
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from fastapi import Body, File, UploadFile, Form, WebSocket
 
 from ..handlers import DataPlane
@@ -139,3 +139,14 @@ class Endpoints(object):
             files=files
         )
         return output_schema.EvaluateResponse(metrics=metrics)
+    
+    def export_best_model(self, experiment_name: str = Path(title = "实验名称", description="实验名称")):
+        model_zipf_bytes = self._data_plane.export_best_model(experiment_name=experiment_name)
+        # 返回 zip 文件，设置正确的 Content-Disposition 头部以触发下载
+        return Response(
+            content=model_zipf_bytes,
+            media_type="application/zip",
+            headers={
+                "Content-Disposition": f"attachment; filename={experiment_name}.zip"
+            }
+        )
