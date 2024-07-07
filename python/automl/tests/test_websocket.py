@@ -27,5 +27,4 @@ class TestWebSocket:
             except Exception as e:
                 print("WebSocket closed:", e)
             finally:
-                websocket.close()
-                
+                websocket.close()             

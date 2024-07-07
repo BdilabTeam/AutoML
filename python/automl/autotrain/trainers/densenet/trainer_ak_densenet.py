@@ -1,10 +1,9 @@
 import os
 from typing import Any
 from functools import partial
-from dataclasses import asdict
-
+import numpy as np
 import pandas as pd
-
+import tensorflow as tf
 import autokeras as ak
 from keras_tuner.engine import hyperparameters as hp
 from keras.utils import plot_model
@@ -13,7 +12,7 @@ from sklearn.model_selection import train_test_split
 
 from .configuration_densenet import DenseNetTrainerConfig
 from ...utils import TaskType
-from ...utils.trainer_utils import BaseTrainer, BestModelTracker, Trial, TrialsTracker, TrainerTracker
+from ...utils.trainer_utils import BaseTrainer, BestModelTracker, Trial, TrialsTracker, TrainerTracker, ConfigTracker
 
 class AKBaseTrainerTracker(TrainerTracker):
     pass
@@ -105,10 +104,16 @@ class AKDenseNetMainTrainer:
                 x_train, x_val, y_train, y_val = train_test_split(X, y, test_size=0.2)
             else:
                 raise ValueError("`inputs` must be pd.DataFrame or str")
+            
+            sorted_labels = np.unique([str(label) for label in y])
+            label2ids = {label: index for index, label in enumerate(sorted_labels)}
+            id2labels = {index: label for index, label in enumerate(sorted_labels)}
+            config_tracker = ConfigTracker(label2ids=label2ids, id2labels=id2labels)
         else:
             raise ValueError("You have to specify the `inputs` field")
 
         # 训练（超参数调优+模型结构搜索）
+        # history = self._auto_fit(dataset)
         history = self._auto_fit(x=x_train, y=y_train, validation_data=(x_val, y_val),)
         
         best_keras_model = self._auto_model.tuner.get_best_model()
@@ -143,6 +148,7 @@ class AKDenseNetMainTrainer:
         return AKBaseTrainerTracker(
             best_model_tracker=best_model_tracker,
             trials_tracker=trials_tracker,
+            config_tracker=config_tracker
         )
     
     

@@ -26,10 +26,16 @@ class Trial:
 class TrialsTracker:
     trials: List[Trial]
 
+@dataclass 
+class ConfigTracker:
+    label2ids: Dict
+    id2labels: Dict
+    
 @dataclass
 class TrainerTracker(object):
-    best_model_tracker: BestModelTracker
-    trials_tracker: TrialsTracker
+    best_model_tracker: Optional[BestModelTracker]
+    trials_tracker: Optional[TrialsTracker]
+    config_tracker: Optional[ConfigTracker]
 
 class BaseTrainer(object):
     

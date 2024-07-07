@@ -81,8 +81,8 @@ def get_experiment_best_model_dir(experiment_name: str):
     return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, BEST_MODEL_FOLDER_NAME)
 
 def get_external_workspace_dir(experiment_name: str):
-    # return get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于本地部署
-    return "/nfs/automl/workspace/python" + get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于通过k8s部署
+    return get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于本地部署
+    # return "/nfs/automl/workspace/python" + get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于通过k8s部署
     
 def get_server_host(ip, port):
     return "http://" + str(ip) + ":" + str(port)

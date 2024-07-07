@@ -28,6 +28,8 @@ COPY autotrain/pyproject.toml autotrain/
 RUN cd autotrain && poetry install --no-root --no-interaction --no-cache
 COPY autotrain autotrain
 RUN cd autotrain && poetry install --no-interaction --no-cache
+# 不通过poetry，单独安装
+RUN pip install --upgrade pip && pip install autokeras==1.1.0 && pip install --upgrade tensorflow==2.15.0
 
 
 FROM ${BASE_IMAGE} as prod

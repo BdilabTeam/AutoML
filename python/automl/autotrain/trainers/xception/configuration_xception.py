@@ -12,7 +12,7 @@ class XceptionTrainerConfig(BaseTrainerConfig):
         task_type: str,
         trainer_class_name: str,
         # Data Pipeline
-        dp_batch_size: Optional[int] = 4,
+        dp_batch_size: Optional[int] = 16,
         dp_color_mode: Optional[str] = None,
         dp_image_size: Optional[Tuple[float, float]] = None,
         dp_interpolation: Optional[str] = None,

@@ -64,6 +64,12 @@ def create_app(
             tags=["experiment"]
         ),
         APIRoute(
+            "/api/v1/experiment",
+            endpoints.patch_experiment,
+            methods=['PATCH'],
+            tags=["experiment"]
+        ),
+        APIRoute(
             "/api/v1/experiment/overview/{experiment_name}",
             endpoints.get_experiment_overview,
             methods=['GET'],
@@ -85,6 +91,12 @@ def create_app(
             "/api/v1/experiment/evaluate",
             endpoints.evaluate_experiment,
             methods=['POST'],
+            tags=["experiment"]
+        ),
+        APIRoute(
+            "/api/v1/experiment/model/export/{experiment_name}",
+            endpoints.export_best_model,
+            methods=['GET'],
             tags=["experiment"]
         ),
         # APIRoute(

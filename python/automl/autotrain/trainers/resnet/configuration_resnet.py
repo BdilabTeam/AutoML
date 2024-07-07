@@ -12,7 +12,7 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         task_type: str,
         trainer_class_name: str,
         # Data Pipeline
-        dp_batch_size: Optional[int] = 4,
+        dp_batch_size: Optional[int] = 16,
         dp_color_mode: Optional[str] = "rgb",
         dp_image_size: Optional[Tuple[float, float]] = (256, 256),
         dp_interpolation: Optional[str] = "bilinear",
