@@ -2,8 +2,10 @@ import os
 import re
 import json
 import shutil
+import inspect
+import textwrap
 from pathlib import Path
-from typing import Dict, Any, Literal, List, TypeVar
+from typing import Dict, Any, Literal, List, TypeVar, Union
 from dotenv import load_dotenv
 
 from ..settings import Settings
@@ -166,7 +168,7 @@ class DataPlane:
             raise GetSessionError("Failed to get database session.")
         
         if get_experiment(session=session, experiment_name=experiment_name):
-                raise ExperimentNameError("The experiment name has already been used, please re-enter it.")
+            raise ExperimentNameError("The experiment name has already been used, please re-enter it.")
             
         try:
             logger.info("Database - Add experiment items")
@@ -210,8 +212,10 @@ class DataPlane:
             tp_tuner = kwargs.pop("tp_tuner", "greedy")
             training_params['tp_tuner'] = tp_tuner
             experiment.tuner_type = tp_tuner
+
+            experiment.training_params = json.dumps(training_params, ensure_ascii=False)
             
-            logger.info(f"Saving the training parameter.")
+            logger.info(f"Saving the training parameter to json file.")
             training_params_file_path = dataplane_utils.get_experiment_training_params_file_path(experiment_name=experiment_name)
             try:
                 dataplane_utils.save_dict_to_json_file(data=training_params, json_file=training_params_file_path)
@@ -764,3 +768,92 @@ class DataPlane:
         # 将内存中的 zip 文件重置到开头，准备返回
         mem_zip.seek(0)
         return mem_zip.getvalue()
+
+    @transactional
+    def patch_experiment(
+        self, 
+        experiment_name: str,
+        task_desc: str,
+        # files: List[UploadFile],
+        training_params: Dict,
+        **kwargs
+    ):
+        from autotrain import AutoTrainFunc
+        from kubeflow.training.models import KubeflowOrgV1TFJob, V1ObjectMeta, KubeflowOrgV1TFJobSpec, V1ReplicaSpec, V1PodTemplateSpec
+        from ..cruds.experiment import get_experiment
+        
+        session = kwargs.pop('session', None)
+        if not session:
+            raise GetSessionError("Failed to get database session.")
+        try: 
+            experiment = get_experiment(session=session, experiment_name=experiment_name)
+        except:    
+            raise ExperimentNotExistError(f"Name: {experiment_name} for experiment does not exist.")
+
+        if task_desc:
+            experiment.task_desc = task_desc
+            
+        if tp_tuner := training_params.get("tp_tuner"):
+            experiment.tuner_type = tp_tuner
+        
+        previous_training_params =  json.loads(experiment.training_params)
+        previous_training_params.update(training_params)
+        updated_training_params = previous_training_params
+        logger.info(f"updated_training_params: {updated_training_params}")
+        
+        logger.info("Getting the info of the experiment job")
+        try:
+            experiment_job: KubeflowOrgV1TFJob = self._training_client.get_tfjob(name=experiment_name, namespace=self._settings.namespcae)
+        except Exception as e:
+            raise GetExperimentJobStatusError(f"Failed to get the tfjob of the experiment '{experiment_name}', for a specific reason: {e}")
+        
+        logger.info("Get the training function and its parameters")
+        train_func = AutoTrainFunc.from_model_type(experiment.model_type)
+        
+        # Extract function implementation.
+        func_code = inspect.getsource(train_func)
+        
+        # Function might be defined in some indented scope (e.g. in another function).
+        # We need to dedent the function code.
+        func_code = textwrap.dedent(func_code)
+
+        # Wrap function code to execute it from the file. For example:
+        # def train(parameters):
+        #     print('Start Training...')
+        # train({'lr': 0.01})
+        if updated_training_params is None:
+            func_code = f"{func_code}\n{train_func.__name__}()\n"
+        else:
+            func_code = f"{func_code}\n{train_func.__name__}({updated_training_params})\n"
+
+        # Prepare execute script template.
+        exec_script = textwrap.dedent(
+            """
+                program_path=$(mktemp -d)
+                read -r -d '' SCRIPT << EOM\n
+                {func_code}
+                EOM
+                printf "%s" "$SCRIPT" > $program_path/ephemeral_script.py
+                python3 -u $program_path/ephemeral_script.py"""
+        )
+
+        # Add function code to the execute script.
+        exec_script = exec_script.format(func_code=func_code)
+        
+        experiment_job.spec.tf_replica_specs["Worker"].template.spec.containers[0].args = [exec_script]
+        experiment_job.metadata.resource_version = None
+        # if experiment_job.metadata.annotations:
+        #     experiment_job.metadata.annotations.update({"experiment-version": datetime.now().strftime("%Y-%m-%d")})
+        # else:
+        #     experiment_job.metadata.annotations = {"experiment-version": datetime.now().strftime("%Y-%m-%d")}
+            
+        try:
+            self._training_client.delete_tfjob(name=experiment_name, namespace=self._settings.namespcae)
+            self._training_client.create_tfjob(tfjob=experiment_job, namespace=self._settings.namespcae)
+            # self._training_client.patch_tfjob(tfjob=experiment_job, name=experiment_name, namespace=self._settings.namespcae)
+        except Exception as e:
+            raise Exception(f"Fail to patch the job, for a specific reason: {e}")
+        
+        return output_schema.ExperimentInfo(
+            experiment_name=experiment.experiment_name,
+        )

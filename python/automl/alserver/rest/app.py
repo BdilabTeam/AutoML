@@ -64,6 +64,12 @@ def create_app(
             tags=["experiment"]
         ),
         APIRoute(
+            "/api/v1/experiment",
+            endpoints.patch_experiment,
+            methods=['PATCH'],
+            tags=["experiment"]
+        ),
+        APIRoute(
             "/api/v1/experiment/overview/{experiment_name}",
             endpoints.get_experiment_overview,
             methods=['GET'],

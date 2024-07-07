@@ -81,6 +81,27 @@ class Endpoints(object):
         )
         return experiment_info
     
+    def patch_experiment(
+        self, 
+        experiment_name: str = Form(description="实验名称", regex="^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$", message="包含不超过 63 个字符, 由小写字母、数字或 \"-\" 组成\n, 以字母或数字开头和结尾"),
+        task_desc: str = Form(max_length=150, example="钢材淬透性预测", description="任务描述"),
+        # files: List[UploadFile] = File(description="上传单文件或文件夹"),
+        training_params: Union[Dict, Any] = Form(description="训练参数")
+    ) -> output_schema.ExperimentInfo:
+        # 手动检查training_params字段值是否为dict格式
+        if not isinstance(training_params, dict):
+            try:
+                training_params = json.loads(training_params)
+            except (TypeError, ValueError):
+                raise DataFormatError(f"training_params字段值错误, 期望为dict格式")
+            
+        return self._data_plane.patch_experiment(
+            experiment_name=experiment_name,
+            task_desc=task_desc,
+            # files=files,
+            training_params=training_params
+        )
+    
     def delete_experiment(self, experiment_name: str = Path(title = "实验名称", description = "实验名称")) -> JSONResponse:
         self._data_plane.delete_experiment(experiment_name=experiment_name)
         return JSONResponse(content=f'Success to delete {experiment_name}')
