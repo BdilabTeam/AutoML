@@ -77,8 +77,27 @@ class DataPlane:
             )
             # 守护线程
             threading.Thread(target=self._resource_monitor_service.start(), daemon=True).start()
+        
+        # 创建 MinIO 客户端
+        try:
+            from minio import Minio
+            if not settings.minio_endpoint or not settings.access_key or not settings.secret_key:
+                raise ValueError(
+                    f"If you want to create minio client, you must specify the following key words: minio_endpoint、access_key、secret_key\
+                        currently, the endpoint is {settings.minio_endpoint}, the access_key is {settings.access_key}, the secret_key is {settings.secret_key}"
+                )
+                
+            self._minio_client = Minio(
+                endpoint=settings.minio_endpoint, 
+                access_key=settings.access_key, 
+                secret_key=settings.secret_key, 
+                secure=False
+            )
+        except Exception as e:
+            logger.exception(e)
             
         self._settings = settings
+        
 
     
     def get_session(self):
@@ -195,6 +214,14 @@ class DataPlane:
                 inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
             else:
                 raise ValueError
+            
+            # 数据上传至minio
+            dataplane_utils.upload_dir_to_minio(
+                minio_client=self._minio_client,
+                bucket_name=dataplane_utils.BUCKET_NAME,
+                dir_path=data_dir,
+                prefix=f"{experiment_name}/{dataplane_utils.DATASETS_FOLDER_NAME}"
+            )
                     
             logger.info("Get the training function and its parameters")
             train_func = AutoTrainFunc.from_model_type(model_type)
@@ -204,7 +231,14 @@ class DataPlane:
                     'task_type': task_type,
                     'model_type': model_type,
                     'inputs': inputs,
-                    'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER
+                    'tp_directory': dataplane_utils.WORKSPACE_DIR_IN_CONTAINER,
+                    # 训练结果文件推送至minio
+                    "experiment_name": experiment_name,
+                    "minio_config": {
+                        "minio_endpoint": self._settings.minio_endpoint,
+                        "minio_access_key": self._settings.access_key,
+                        "minio_secret_key": self._settings.secret_key
+                    }
                 }
             )
             tp_max_trials = kwargs.pop('tp_max_trials', 5)
@@ -249,8 +283,8 @@ class DataPlane:
                 # experiment_id=experiment.id,
                 experiment_name=experiment.experiment_name,
             )
-        except:
-            logger.error("Failed to create, start rollback operation")
+        except Exception as e:
+            logger.error(f"Failed to create, start rollback operation, for a specific reason: {e}")
             dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
             self.delete_experiment_job(experiment_name=experiment_name)
             raise
@@ -268,6 +302,7 @@ class DataPlane:
         delete_experiment(session=session, experiment_name=experiment_name)
         self.delete_experiment_job(experiment_name=experiment_name)
         dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
+        dataplane_utils.delete_dir_from_minio(self._minio_client, bucket_name=dataplane_utils.BUCKET_NAME, prefix=experiment_name)
 
 
     def get_experiment_overview(self, experiment_name: str) -> output_schema.ExperimentOverview:
@@ -404,6 +439,7 @@ class DataPlane:
             experiment_cards.append(experiment_card)
         return output_schema.ExperimentCards(experiment_cards=experiment_cards)
     
+    
     def delete_experiment_job(self, experiment_name: str):
         try:
             self._training_client.delete_tfjob(
@@ -432,6 +468,7 @@ class DataPlane:
     def get_gpu_and_host(self, threshold):
         return self._resource_monitor_service.get_gpu_and_host(threshold=threshold)
     
+    
     def get_model_repository(self) -> output_schema.ModelRepository:
         from ..cruds.experiment import get_all_experiments
         
@@ -446,6 +483,7 @@ class DataPlane:
                 logger.exception(e)
         
         return output_schema.ModelRepository(models=models)
+    
         
     @transactional
     def evaluate_experiment(
@@ -743,6 +781,7 @@ class DataPlane:
         finally:
             if os.path.exists(evaluate_data_dir):
                 shutil.rmtree(evaluate_data_dir)
+    
                 
     def export_best_model(self, experiment_name: str) -> bytes:
         """导出最优模型文件"""
@@ -768,6 +807,7 @@ class DataPlane:
         # 将内存中的 zip 文件重置到开头，准备返回
         mem_zip.seek(0)
         return mem_zip.getvalue()
+
 
     @transactional
     def patch_experiment(
@@ -857,3 +897,19 @@ class DataPlane:
         return output_schema.ExperimentInfo(
             experiment_name=experiment.experiment_name,
         )
+        
+    
+    def get_dataset_overview(
+        self,
+        experiment_name: str,
+        **kwargs
+    ):
+        data_dir = dataplane_utils.get_experiment_data_dir(experiment_name=experiment_name)
+        if os.path.isdir(
+            os.path.join(data_dir, dataplane_utils.IMAGE_FOLDER_NAME)
+        ):
+            # 图像文件
+            pass
+        else:
+            # 结构化数据文件
+            pass

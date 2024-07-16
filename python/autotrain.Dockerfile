@@ -25,9 +25,9 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # COPY autotrain/pyproject.toml autotrain/poetry.lock autotrain/
 COPY autotrain/pyproject.toml autotrain/
-RUN cd autotrain && poetry install --no-root --no-interaction --no-cache
+RUN cd autotrain && poetry install --no-root --no-interaction --no-cache --with storage
 COPY autotrain autotrain
-RUN cd autotrain && poetry install --no-interaction --no-cache
+RUN cd autotrain && poetry install --no-interaction --no-cache --with storage
 # 不通过poetry，单独安装
 RUN pip install --upgrade pip && pip install autokeras==1.1.0 && pip install --upgrade tensorflow==2.15.0
 

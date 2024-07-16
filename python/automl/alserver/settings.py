@@ -3,7 +3,7 @@
 # import importlib
 # import inspect
 
-# from typing import Type, no_type_check
+# from typing import Type, no_type_check, Optional
 # from pydantic import Field, BaseSettings as _BaseSettings
 # from contextlib import contextmanager
 
@@ -238,13 +238,26 @@
 #         default="http://10.8.104.110:31185"   # prod
 #         # default="http://60.204.186.96:31185" # test
 #     )
+    # Minio
+    # minio_endpoint: Optional[str] = Field(
+    #     default="124.70.188.119:32099",
+    #     description="Minio Server 'Address:Port'"
+    # )
+    # access_key: Optional[str] = Field(
+    #     default="On4njJ3sVByQusX61wPf",
+    #     description="Minio access key"
+    # )
+    # secret_key: Optional[str] = Field(
+    #     default="jMiu55a8CpuledMn1yU4IC7fm9TvAqiUYWblxYtT",
+    #     description="Minio secret key"
+    # )
 
 import sys
 import os
 import importlib
 import inspect
 
-from typing import Type, no_type_check
+from typing import Type, no_type_check, Optional
 from pydantic import Field, BaseSettings as _BaseSettings
 from contextlib import contextmanager
 
@@ -478,4 +491,17 @@ class Settings(BaseSettings):
     )
     image_url: str = Field(
         default="http://60.204.186.96:31185"
+    )
+    # Minio
+    minio_endpoint: Optional[str] = Field(
+        default="124.70.188.119:32090",
+        description="Minio Server 'Address:Port'"
+    )
+    access_key: Optional[str] = Field(
+        default="lUAFGmD6TL57zCcFJTmo",
+        description="Minio access key"
+    )
+    secret_key: Optional[str] = Field(
+        default="ZMIG5DToDNtL5I86oeEDcvPhIE5PhlFe67oMVN0a",
+        description="Minio secret key"
     )

@@ -105,7 +105,7 @@ class AKDenseNetMainTrainer:
             else:
                 raise ValueError("`inputs` must be pd.DataFrame or str")
             
-            sorted_labels = list(set(y))
+            sorted_labels = np.unique([str(label) for label in y])
             label2ids = {label: index for index, label in enumerate(sorted_labels)}
             id2labels = {index: label for index, label in enumerate(sorted_labels)}
             config_tracker = ConfigTracker(label2ids=label2ids, id2labels=id2labels)

@@ -3,6 +3,10 @@ PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
 
 from autotrain import AutoTrainFunc
 
+MINIO_ENDPOINT = "124.70.188.119:32090"
+MINIO_ACCESS_KEY= "lUAFGmD6TL57zCcFJTmo"
+MINIO_SECRET_KEY = "ZMIG5DToDNtL5I86oeEDcvPhIE5PhlFe67oMVN0a"
+
 class TestTrainFunc:
     def test_train_densenet(self):
         training_params = {
@@ -15,7 +19,13 @@ class TestTrainFunc:
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
             "tp_epochs": 10,
-            "tp_validation_split": 0.2
+            "tp_validation_split": 0.2,
+            "experiment_name": "densenet",
+            "minio_config": {
+                "minio_endpoint": MINIO_ENDPOINT,
+                "minio_access_key": MINIO_ACCESS_KEY,
+                "minio_secret_key": MINIO_SECRET_KEY
+            }
         }
         
         train_func = AutoTrainFunc.from_model_type('densenet')
@@ -34,6 +44,12 @@ class TestTrainFunc:
             "tp_epochs": 10,
             "tp_validation_split": 0.2,
             "dp_enable_auto_feature_extract": True,
+            "experiment_name": "densenet",
+            "minio_config": {
+                "minio_endpoint": MINIO_ENDPOINT,
+                "minio_access_key": MINIO_ACCESS_KEY,
+                "minio_secret_key": MINIO_SECRET_KEY
+            }
         }
         
         train_func = AutoTrainFunc.from_model_type('densenet')
@@ -50,7 +66,13 @@ class TestTrainFunc:
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
             "tp_epochs": 10,
-            "tp_validation_split": 0.2
+            "tp_validation_split": 0.2,
+            "experiment_name": "resnet",
+            "minio_config": {
+                "minio_endpoint": MINIO_ENDPOINT,
+                "minio_access_key": MINIO_ACCESS_KEY,
+                "minio_secret_key": MINIO_SECRET_KEY
+            }
         }
         
         train_func = AutoTrainFunc.from_model_type('resnet')
@@ -67,7 +89,13 @@ class TestTrainFunc:
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
             "tp_epochs": 10,
-            "tp_validation_split": 0.2
+            "tp_validation_split": 0.2,
+            "experiment_name": "convnet",
+            "minio_config": {
+                "minio_endpoint": MINIO_ENDPOINT,
+                "minio_access_key": MINIO_ACCESS_KEY,
+                "minio_secret_key": MINIO_SECRET_KEY
+            }
         }
         
         train_func = AutoTrainFunc.from_model_type('convnet')
@@ -84,7 +112,13 @@ class TestTrainFunc:
             "tp_tuner": "greedy",
             "tp_batch_size": 32,
             "tp_epochs": 10,
-            "tp_validation_split": 0.2
+            "tp_validation_split": 0.2,
+            "experiment_name": "xception",
+            "minio_config": {
+                "minio_endpoint": MINIO_ENDPOINT,
+                "minio_access_key": MINIO_ACCESS_KEY,
+                "minio_secret_key": MINIO_SECRET_KEY
+            }
         }
         
         train_func = AutoTrainFunc.from_model_type('xception')

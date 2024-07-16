@@ -1,5 +1,5 @@
 from pydantic import BaseModel as _BaseModel, Field
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any, Optional, Literal
 
 class BaseModel(_BaseModel):
     class Config:
@@ -63,3 +63,12 @@ class EvaluateResponse(BaseModel):
     metrics: Optional[Dict[str, Any]] = Field(description="测试评估指标")
     # y_true: Optional[List] = Field(description="真实标签")
     # y_pred: Optional[List] = Field(description="预测标签")
+
+class FileInfo(BaseModel):
+    file_name: Optional[str] = Field(description="文件名称")
+    file_path: Optional[str] = Field(description="文件路径")
+    file_type: Literal["file", "directory"] = Field(description="文件类型")
+    
+class DatasetInfoResponse(BaseModel):
+    file_infos: List[FileInfo] = Field(description="文件列表")
+    
