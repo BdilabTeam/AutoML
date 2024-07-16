@@ -171,3 +171,6 @@ class Endpoints(object):
                 "Content-Disposition": f"attachment; filename={experiment_name}.zip"
             }
         )
+    
+    def get_dataset_overview(self, experiment_name: str = Path(title = "实验名称", description="实验名称")):
+        pass

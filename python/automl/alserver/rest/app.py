@@ -111,6 +111,12 @@ def create_app(
             methods=['GET'],
             tags=["model-repository"]
         ),
+        APIRoute(
+            "/api/v1/dataset/overview/{experiment_name}",
+            endpoints.get_dataset_overview,
+            methods=['GET'],
+            tags=["dataset"]
+        ),
     ]
     
     app = FastAPI(

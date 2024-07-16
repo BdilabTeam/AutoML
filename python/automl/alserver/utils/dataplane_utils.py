@@ -1,8 +1,10 @@
+import concurrent.futures
 import os
 import json
 import shutil
 from typing import Dict, Any
 from pathlib import Path
+import concurrent
 
 EXPERIMENT_SUMMARY_FILE_NAME = 'summary.json'
 EXPERIMENT_TRAINING_PARAMETERS_FILE_NAME = 'traininig-parameters.json'
@@ -19,6 +21,8 @@ EXCLUDE_ATTRIBUTES = [
     'tp_project_name', 'tp_overwrite',  'tp_directory',
     'tp_tuner', 'dp_feature_extractor_class_name'
 ]
+
+BUCKET_NAME = "automl"
 
 PARENT_DIR = os.path.dirname(os.path.dirname(__file__))
 
@@ -86,3 +90,44 @@ def get_external_workspace_dir(experiment_name: str):
     
 def get_server_host(ip, port):
     return "http://" + str(ip) + ":" + str(port)
+
+def upload_dir_to_minio(minio_client, bucket_name, dir_path, prefix=''):
+    for root, dirs, files in os.walk(dir_path):
+        for file in files:
+            # 构造 MinIO 中的路径
+            minio_path = os.path.join(prefix, root.replace(dir_path, '')[1:], file)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+                future = executor.submit(
+                    minio_client.fput_object,
+                    bucket_name=bucket_name,
+                    object_name=minio_path,
+                    file_path=os.path.join(root, file), 
+                )
+                future.add_done_callback(lambda _: print(f"上传成功: {minio_path}"))
+            # try:
+            #     # 上传文件到 MinIO
+            #     client.fput_object(
+            #         bucket_name=bucket_name,
+            #         object_name=minio_path,
+            #         file_path=os.path.join(root, file),
+            #     )
+            #     print(f"上传成功: {minio_path}")
+            # except Exception as exc:
+            #     print(f"上传失败: {minio_path}, 错误信息: {exc}")
+
+def delete_dir_from_minio(minio_client, bucket_name, prefix = ''):
+    from minio.deleteobjects import DeleteObject
+    
+    delete_object_list = list(
+        map(
+            lambda x: DeleteObject(x.object_name),
+            minio_client.list_objects(
+                BUCKET_NAME,
+                prefix,
+                recursive=True,
+            ),
+        )
+    )
+    errors = minio_client.remove_objects(BUCKET_NAME, delete_object_list)
+    for error in errors:
+        print("error occurred when deleting object", error)
