@@ -21,10 +21,10 @@
     </parent>
 
     <dependencies>
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-web</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-web</artifactId>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -43,11 +43,11 @@
             <scope>test</scope>
         </dependency>
 
-<!--        &lt;!&ndash; 添加支持HTTPS的依赖 &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-security</artifactId>-->
-<!--        </dependency>-->
+        <!--        &lt;!&ndash; 添加支持HTTPS的依赖 &ndash;&gt;-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-security</artifactId>-->
+        <!--        </dependency>-->
 
         <!--mybatis-plus-->
         <dependency>
@@ -130,14 +130,14 @@
         </dependency>
 
         <!--Redis Session外部存储依赖-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.boot</groupId>-->
-<!--            <artifactId>spring-boot-starter-data-redis</artifactId>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.springframework.session</groupId>-->
-<!--            <artifactId>spring-session-data-redis</artifactId>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.boot</groupId>-->
+        <!--            <artifactId>spring-boot-starter-data-redis</artifactId>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.springframework.session</groupId>-->
+        <!--            <artifactId>spring-session-data-redis</artifactId>-->
+        <!--        </dependency>-->
 
         <!--knative客户端-->
         <dependency>
@@ -217,27 +217,27 @@
             <artifactId>simpleclient_pushgateway</artifactId>
             <version>0.16.0</version>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.tensorflow</groupId>-->
-<!--            <artifactId>tensorflow-core-platform</artifactId>-->
-<!--            <version>0.3.3</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.tensorflow</groupId>-->
-<!--            <artifactId>tensorflow</artifactId>-->
-<!--            <version>1.15.0</version>-->
-<!--        </dependency>-->
-<!--        <dependency>-->
-<!--            <groupId>org.tensorflow</groupId>-->
-<!--            <artifactId>libtensorflow</artifactId>-->
-<!--            <version>1.15.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.tensorflow</groupId>-->
+        <!--            <artifactId>tensorflow-core-platform</artifactId>-->
+        <!--            <version>0.3.3</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.tensorflow</groupId>-->
+        <!--            <artifactId>tensorflow</artifactId>-->
+        <!--            <version>1.15.0</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.tensorflow</groupId>-->
+        <!--            <artifactId>libtensorflow</artifactId>-->
+        <!--            <version>1.15.0</version>-->
+        <!--        </dependency>-->
 
-<!--        <dependency>-->
-<!--            <groupId>org.tensorflow</groupId>-->
-<!--            <artifactId>libtensorflow_jni_gpu</artifactId>-->
-<!--            <version>1.15.0</version>-->
-<!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>org.tensorflow</groupId>-->
+        <!--            <artifactId>libtensorflow_jni_gpu</artifactId>-->
+        <!--            <version>1.15.0</version>-->
+        <!--        </dependency>-->
 
         <dependency>
             <groupId>org.tensorflow</groupId>

@@ -138,7 +138,7 @@ class DataPlane:
             models = await self._model_selection_service.aselect_model(
                 user_input=user_input,
                 task=task_type,
-                top_k=model_nums * 2,
+                top_k=model_nums * 5,
                 model_nums=model_nums,
                 model_selection_llm=model_selection_llm,
                 output_fixing_llm=output_fixing_llm,
@@ -212,8 +212,6 @@ class DataPlane:
                     with file_path.open("wb") as buffer:
                         shutil.copyfileobj(file.file, buffer)
                 inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
-            else:
-                raise ValueError
             
             # 数据上传至minio
             dataplane_utils.upload_dir_to_minio(
@@ -225,6 +223,7 @@ class DataPlane:
                     
             logger.info("Get the training function and its parameters")
             train_func = AutoTrainFunc.from_model_type(model_type)
+            # TODO 为yolo适配训练参数
             training_params.update(
                 {
                     'tp_project_name': dataplane_utils.TP_PROJECT_NAME,

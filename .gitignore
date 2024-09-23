@@ -15,3 +15,4 @@ datasets/
 deploy/
 bak/
 .env
+ipynb/

@@ -32,7 +32,7 @@ class Endpoints(object):
         experiment_name: str = Form(description="实验名称", regex="^[a-z0-9]([-a-z0-9]{0,61}[a-z0-9])?$", message="包含不超过 63 个字符, 由小写字母、数字或 \"-\" 组成\n, 以字母或数字开头和结尾"),
         task_type: Literal["structured-data-classification", "structured-data-regression", "image-classification", "image-regression"] = Form(description="任务类型"),
         task_desc: str = Form(max_length=150, example="钢材淬透性预测", description="任务描述"),
-        model_type: Literal["densenet", "resnet", "xception", "convnet"] = Form(description="基础模型"),
+        model_type: Literal["densenet", "resnet", "xception", "convnet", "yolov8"] = Form(description="基础模型"),
         files: List[UploadFile] = File(description="上传单文件或文件夹"),
         tp_max_trials: int = Form(ge=1, description="最大试验输"),
         tp_tuner: Literal["greedy", "bayesian", "hyperband", "random"] = Form(description="参数调优算法"),
@@ -63,6 +63,7 @@ class Endpoints(object):
                     raise DataFormatError(f"图片格式错误, 扩展名必须为:[.jpg, .jpeg, .png, .gif, .bmp]")
             file_type = 'image_folder'
         else:
+            # TODO 适配yolo系列模型数据格式
             raise DataFormatError("数据文件格式错误")
 
         host_ip = None
