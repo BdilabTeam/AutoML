@@ -351,7 +351,7 @@ class DataPlane:
             if best_model_tracker:
                 best_model = output_schema.BestModel(
                 history=best_model_tracker.get("history"),
-                parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
+                parameters=best_model_tracker.get("hyperparameters") if best_model_tracker.get("hyperparameters") else None,
                 model_graph_url=self._settings.image_url + re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
             else:
@@ -366,7 +366,7 @@ class DataPlane:
                             trial_status=trial.get("status"),
                             default_metric=round(trial.get("score"), 5),
                             best_step=trial.get('best_step'),
-                            parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
+                            parameters=trial.get('hyperparameters') if trial.get('hyperparameters') else None,
                             model_graph_url=self._settings.image_url + re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
                         )
                     )

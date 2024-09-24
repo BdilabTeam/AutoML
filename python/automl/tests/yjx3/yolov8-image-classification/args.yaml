@@ -94,7 +94,7 @@ shear: 0.0
 perspective: 0.0
 flipud: 0.0
 fliplr: 0.5
-bgr: 0.0
+bgr: 0.5583985148770784
 mosaic: 1.0
 mixup: 0.0
 copy_paste: 0.0

@@ -45,6 +45,8 @@ pyyaml = "^6.0.1"
 # autokeras = "1.1.0"
 pydot = "1.3.0"
 ultralytics = "^8.2.91"
+opencv-python-headless = "4.5.3.56"
+ray[tune] = "^2.36.0"
 
 
 [tool.poetry.group.storage]
