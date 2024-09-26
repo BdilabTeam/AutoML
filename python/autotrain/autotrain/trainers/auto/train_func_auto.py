@@ -8,7 +8,8 @@ TRAIN_FUNC_MAPPING_NAMES = OrderedDict(
         ('densenet', 'train_densenet'),
         ('resnet', 'train_resnet'),
         ('xception', 'train_xception'),
-        ('convnet', 'train_convnet')
+        ('convnet', 'train_convnet'),
+        ('yolov8', 'train_yolov8')
     ]
 )
 

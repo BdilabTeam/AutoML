@@ -38,6 +38,12 @@ MODEL_FOR_TRAINER_MAPPING_NAMES = OrderedDict(
                 "AKConvNetForImageClassificationTrainer",
                 "AKConvNetForImageRegressionTrainer"
             )
+        ),
+        (
+            "yolov8",
+            (
+                "YoloV8ForImageClassificationTrainer",
+            )
         )
     ]
 )
@@ -70,7 +76,8 @@ TRAINER_MAPPING_NAMES = OrderedDict(
         ("image-classification/xception", "AKXceptionForImageClassificationTrainer"),
         ("image-regression/xception", "AKXceptionForImageRegressionTrainer"),
         ("image-classification/convnet", "AKConvNetForImageClassificationTrainer"),
-        ("image-regression/convnet", "AKConvNetForImageRegressionTrainer")
+        ("image-regression/convnet", "AKConvNetForImageRegressionTrainer"),
+        ("image-classification/yolov8", "YoloV8ForImageClassificationTrainer"),
     ]
 )
 

@@ -14,4 +14,4 @@ class Experiment(Base):
     model_type: Mapped[str] = mapped_column(type_=String(50))
     tuner_type: Mapped[str] = mapped_column(init=False, nullable=True, type_=String(50))
     workspace_dir: Mapped[str] = mapped_column(init=False, type_=String(100), nullable=True, doc="实验工作目录")
-    training_params: Mapped[str] = mapped_column(init=False, type_=String(1000), nullable=True, doc="实验训练参数")
+    training_params: Mapped[str] = mapped_column(init=False, type_=String(5000), nullable=True, doc="实验训练参数")

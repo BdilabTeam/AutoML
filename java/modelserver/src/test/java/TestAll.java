@@ -57,6 +57,22 @@ public class TestAll {
             }
         }
     }
+
+    @Test
+    public void timestamp() {
+        // 获取当前时间戳
+        long currentTimestamp = Instant.now().toEpochMilli();
+        System.out.println("当前时间戳: " + currentTimestamp);
+
+        // 获取过去半天（12小时）的时间戳
+        long halfDayAgoTimestamp = LocalDateTime.now()
+                .minusHours(2)
+                .atZone(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+        System.out.println("过去半天时间戳: " + halfDayAgoTimestamp);
+    }
+
     @org.junit.Test
     public void timestamp2Datetime() {
         long timestamp = 1711903526;

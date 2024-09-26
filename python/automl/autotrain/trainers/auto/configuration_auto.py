@@ -10,7 +10,8 @@ CONFIG_MAPPING_NAMES = OrderedDict(
         ("densenet", "DenseNetTrainerConfig"),
         ("resnet", "ResNetTrainerConfig"),
         ("xception", "XceptionTrainerConfig"),
-        ("convnet", "ConvNetTrainerConfig")
+        ("convnet", "ConvNetTrainerConfig"),
+        ("yolov8", "YoloV8TrainerConfig")  # 添加这一行
     ]
 )
 

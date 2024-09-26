@@ -139,3 +139,17 @@ class TestAutoTrain:
         )
         summary = trainer.get_summary()
         print(f"{'*'*5}summary:\n{summary}")
+
+    def test_yolov8_for_image_classification(self):
+        trainer = AutoTrainer.from_repository(
+            trainer_id="image-classification/yolov8",
+            tp_directory="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/tests/yjx3",
+            tp_project_name="yolov8-image-classification",
+            epochs=10,
+            pretrained_model="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/tests/cls/yolov8n-cls.pt"  # 使用预训练的YOLOv8模型
+        )
+        trainer.train(
+            inputs="/Users/treasures_y/Documents/code/HG/AutoML/python/automl/tests/datasets/image-classification"
+        )
+        summary = trainer.get_summary()
+        print(f"{'*'*5}summary:\n{summary}")

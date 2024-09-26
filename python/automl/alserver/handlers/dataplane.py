@@ -138,7 +138,7 @@ class DataPlane:
             models = await self._model_selection_service.aselect_model(
                 user_input=user_input,
                 task=task_type,
-                top_k=model_nums * 2,
+                top_k=model_nums * 5,
                 model_nums=model_nums,
                 model_selection_llm=model_selection_llm,
                 output_fixing_llm=output_fixing_llm,
@@ -212,8 +212,6 @@ class DataPlane:
                     with file_path.open("wb") as buffer:
                         shutil.copyfileobj(file.file, buffer)
                 inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
-            else:
-                raise ValueError
             
             # 数据上传至minio
             dataplane_utils.upload_dir_to_minio(
@@ -225,6 +223,7 @@ class DataPlane:
                     
             logger.info("Get the training function and its parameters")
             train_func = AutoTrainFunc.from_model_type(model_type)
+            # TODO 为yolo适配训练参数
             training_params.update(
                 {
                     'tp_project_name': dataplane_utils.TP_PROJECT_NAME,
@@ -352,7 +351,7 @@ class DataPlane:
             if best_model_tracker:
                 best_model = output_schema.BestModel(
                 history=best_model_tracker.get("history"),
-                parameters=best_model_tracker.get("hyperparameters").get("values") if best_model_tracker.get("hyperparameters") else None,
+                parameters=best_model_tracker.get("hyperparameters") if best_model_tracker.get("hyperparameters") else None,
                 model_graph_url=self._settings.image_url + re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), best_model_tracker.get('model_graph_path')) if  best_model_tracker.get('model_graph_path') else ""
             )
             else:
@@ -367,7 +366,7 @@ class DataPlane:
                             trial_status=trial.get("status"),
                             default_metric=round(trial.get("score"), 5),
                             best_step=trial.get('best_step'),
-                            parameters=trial.get('hyperparameters').get('values') if trial.get('hyperparameters') else None,
+                            parameters=trial.get('hyperparameters') if trial.get('hyperparameters') else None,
                             model_graph_url=self._settings.image_url + re.sub(r"/metadata", os.path.join("/api/v1/metadata", experiment_name), trial.get('model_graph_path')) if trial.get('model_graph_path') else ""
                         )
                     )
