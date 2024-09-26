@@ -69,12 +69,12 @@ public class MonitorServiceImpl implements MonitorService {
         // 获取 result 字段的值
         JsonNode resultNode = rootNode.get("data").get("result");
 
+        ArrayList<List<Object>> values = new ArrayList<>();
         // 遍历 result 数组中的元素
         for (JsonNode node : resultNode) {
             // 默认只有一组
             // 获取 values 字段的值
             JsonNode valuesNode = node.get("values");
-            ArrayList<List<Object>> values = new ArrayList<>();
             for (JsonNode valueNode : valuesNode) {
                 ArrayList<Object> valueList = new ArrayList<>();
                 List value = objectMapper.treeToValue(valueNode, List.class);
@@ -105,40 +105,40 @@ public class MonitorServiceImpl implements MonitorService {
                 }
                 values.add(valueList);
             }
-//            return new Values(values);
-            // TODO 构造兜底数据
-            for (int i = 0; i < 50; i++) {
-                ArrayList<Object> valueList = new ArrayList<>();
-                long currentTimestamp = Instant.now().toEpochMilli();
-                Instant instant = Instant.ofEpochSecond(currentTimestamp);
-                LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
-                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-                String formattedDateTime = dateTime.format(formatter);
-                valueList.add(formattedDateTime);
-
-                // 转换指标值格式
-                if (metricType.equals("cpuUsage")){
-                    // 生成一个0.0到8.0之间的随机double数
-                    double cpuUsageM = Math.random() * 8;
-                    // 创建 DecimalFormat 对象，并设置保留四位小数的格式
-                    DecimalFormat df = new DecimalFormat("#.####");
-                    // 格式化数字
-                    String formattedCpuUsage = df.format(cpuUsageM);
-                    valueList.add(formattedCpuUsage);
-                } else if (metricType.equals("memoryRss")) {
-                    Random random = new Random();
-                    int min = 0;
-                    int max = 300;
-                    int memoryRssMi = random.nextInt(max - min + 1) + min;
-                    valueList.add(memoryRssMi);
-                } else {
-                    log.error(String.format("不支持指标类型：%s", metricType));
-                }
-                values.add(valueList);
-            }
             return new Values(values);
         }
-        return null;
+
+        // TODO 构造兜底数据
+        for (int i = 0; i < 50; i++) {
+            ArrayList<Object> valueList = new ArrayList<>();
+            long currentTimestamp = Instant.now().toEpochMilli();
+            Instant instant = Instant.ofEpochSecond(currentTimestamp);
+            LocalDateTime dateTime = LocalDateTime.ofInstant(instant, ZoneId.systemDefault());
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            String formattedDateTime = dateTime.format(formatter);
+            valueList.add(formattedDateTime);
+
+            // 转换指标值格式
+            if (metricType.equals("cpuUsage")){
+                // 生成一个0.0到8.0之间的随机double数
+                double cpuUsageM = Math.random() * 8;
+                // 创建 DecimalFormat 对象，并设置保留四位小数的格式
+                DecimalFormat df = new DecimalFormat("#.####");
+                // 格式化数字
+                String formattedCpuUsage = df.format(cpuUsageM);
+                valueList.add(formattedCpuUsage);
+            } else if (metricType.equals("memoryRss")) {
+                Random random = new Random();
+                int min = 0;
+                int max = 300;
+                int memoryRssMi = random.nextInt(max - min + 1) + min;
+                valueList.add(memoryRssMi);
+            } else {
+                log.error(String.format("不支持指标类型：%s", metricType));
+            }
+            values.add(valueList);
+        }
+        return new Values(values);
     }
 
     private Chart getChart(Values values) {
