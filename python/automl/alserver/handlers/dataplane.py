@@ -526,6 +526,9 @@ class DataPlane:
                     file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
                     with file_path.open("wb") as buffer:
                         shutil.copyfileobj(file.file, buffer)
+            else:
+                raise ValueError("Expect folder")
+            
             # 评估
             results = model.val(
                 data=file_path,
