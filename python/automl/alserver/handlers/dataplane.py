@@ -506,34 +506,62 @@ class DataPlane:
         session = kwargs.pop('session', None)
         if not session:
             raise GetSessionError("Failed to get database session.")
-        if experiment := get_experiment(session=session, experiment_name=experiment_name) is None:
+        if (experiment := get_experiment(session=session, experiment_name=experiment_name)) is None:
             raise ExperimentNotExistError("Experiment does not exist.")
         
-        logger.info("Getting the summary of the experiment.")
-        try:
-            with open(dataplane_utils.get_experiment_summary_file_path(experiment_name=experiment_name)) as f:
-                summary = json.load(f)
-        except Exception as e:
-            raise ParseExperimentSummaryError(f"Failed to parse the summary of the experiment, for a specific reason: {e}")
-        
-        if not (config_tracker := summary.get("config_tracker")):
-            raise ValueError("Expect config_tracker to be non-null")
-        
-        if not (label2ids := config_tracker.get("label2ids")):
-            raise ValueError("Expect label2ids to be non-null")
-        logger.info(f"label2ids: {label2ids}")
-        
-        if not (id2labels := config_tracker.get("id2labels")):
-            raise ValueError("Expect id2labels to be non-null")
-        logger.info(f"id2labels: {id2labels}")
-        
-        num_labels = len(label2ids.keys())
-        
+        # 创建评估集目录
         workspace_dir = dataplane_utils.generate_experiment_workspace_dir(experiment_name=experiment_name)
         evaluate_data_dir = os.path.join(workspace_dir, 'evaluate_datasets')
         
-        # 加载模型
-        model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
+        if experiment.model_type == "yolov8":   # 适配YOLO系列模型
+            # 加载yolov8模型
+            from ultralytics import YOLO
+            model = YOLO(model=dataplane_utils.get_yolo_experiment_best_model_dir(experiment_name=experiment.experiment_name))
+            
+            if file_type == 'image_folder':
+                # 存储临时文件
+                for file in files:
+                    path_parts = Path(file.filename).parts
+                    file_path = Path(evaluate_data_dir, *path_parts[1:])
+                    file_path.parent.mkdir(parents=True, exist_ok=True) # 确保目录存在
+                    with file_path.open("wb") as buffer:
+                        shutil.copyfileobj(file.file, buffer)
+            # 评估
+            results = model.val(
+                data=file_path,
+            )
+            metrics.update(
+                {
+                    "accuracy_top1": float(results.top1),
+                    "accuracy_top5": float(results.top5)
+                }
+            )
+            logger.info(f"Metrics: {metrics}")
+            
+        else:   # Autokeras模型
+            logger.info("Getting the summary of the experiment.")
+            try:
+                with open(dataplane_utils.get_experiment_summary_file_path(experiment_name=experiment_name)) as f:
+                    summary = json.load(f)
+            except Exception as e:
+                raise ParseExperimentSummaryError(f"Failed to parse the summary of the experiment, for a specific reason: {e}")
+            
+            if not (config_tracker := summary.get("config_tracker")):
+                raise ValueError("Expect config_tracker to be non-null")
+            
+            if not (label2ids := config_tracker.get("label2ids")):
+                raise ValueError("Expect label2ids to be non-null")
+            logger.info(f"label2ids: {label2ids}")
+            
+            if not (id2labels := config_tracker.get("id2labels")):
+                raise ValueError("Expect id2labels to be non-null")
+            logger.info(f"id2labels: {id2labels}")
+            
+            num_labels = len(label2ids.keys())
+            
+            # 加载模型
+            model = tf.keras.models.load_model(dataplane_utils.get_experiment_best_model_dir(experiment_name=experiment_name))
+            
         # 获取指标名称
         metrics = {}
         try:

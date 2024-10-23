@@ -84,6 +84,9 @@ def get_experiment_training_params_file_path(experiment_name: str):
 def get_experiment_best_model_dir(experiment_name: str):
     return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, BEST_MODEL_FOLDER_NAME)
 
+def get_yolo_experiment_best_model_dir(experiment_name: str):
+    return os.path.join(get_experiment_workspace_dir(experiment_name), TP_PROJECT_NAME, 'weights')
+
 def get_external_workspace_dir(experiment_name: str):
     return get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于本地部署
     # return "/nfs/automl/workspace/python" + get_experiment_workspace_dir(experiment_name=experiment_name)   # 适用于通过k8s部署
