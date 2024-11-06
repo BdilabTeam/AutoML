@@ -1,0 +1,35 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: autokeras-server-test
+  namespace: zauto
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: node1
+      containers:
+      - name: autokeras-server
+        image: registry.cn-hangzhou.aliyuncs.com/treasures/automl-autokeras-server:latest
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 1000  # 这里设置你想要的运行用户的 UID
+        command:
+        - "cd yolo_server/"
+        - "python"
+        - "-m"
+        - "yolo_server"
+        - "--model_name=structured_data_regressor"
+        - "--model_dir=../treasures/structured_data_regressor/best_model/"
+        volumeMounts:
+        - name: model-dir
+          mountPath: /treasures
+          readOnly: true
+      volumes:
+      - name: model-dir
+        persistentVolumeClaim:
+          claimName: autokeras-server-pvc
+          readOnly: true

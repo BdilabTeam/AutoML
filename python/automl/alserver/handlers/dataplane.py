@@ -541,6 +541,8 @@ class DataPlane:
             )
             logger.info(f"Metrics: {metrics}")
             
+            return metrics
+            
         else:   # Autokeras模型
             logger.info("Getting the summary of the experiment.")
             try:

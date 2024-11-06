@@ -112,7 +112,7 @@ public class ExperimentServiceImpl implements ExperimentService {
                 add("-m");
                 add("autokeras_server");
                 add(String.format("--model_name=%s", endpointName));
-                add(String.format("--model_dir=%s", Utils.getBestModelDirInContainer(experimentName)));
+                add(String.format("--model_dir=%s", experiment.getModelType().equals("yolov8")? Utils.getYOLOBestModelDirInContainer(experimentName): Utils.getBestModelDirInContainer(experimentName)));
             }
         };
         // 构造volumeMount

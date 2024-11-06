@@ -31,6 +31,10 @@ public class Utils {
         return  String.join("/", getExperimentWorkspaceDirInContainer(experimentName), TP_PROJECT_NAME, BEST_MODEL_FOLDER_NAME);
     }
 
+    public static String getYOLOBestModelDirInContainer(String experimentName) {
+        return  String.join("/", getExperimentWorkspaceDirInContainer(experimentName), TP_PROJECT_NAME, "weights");
+    }
+
     //文件的数据转换成可以推理的格式
     public static List<Object> FileToData(MultipartFile file){
         List<Object> data = null;
