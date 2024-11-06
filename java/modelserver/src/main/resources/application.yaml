@@ -1,0 +1,53 @@
+spring:
+  profiles:
+    active: dev
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    dynamic:
+      primary: mysql
+      strict: false
+      datasource:
+        mysql:
+          # mysql 5.x 连接驱动
+          #    driver-class-name: com.mysql.jdbc.Driver
+          # mysql 8.x 连接驱动
+          driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+      time-between-eviction-runs-millis: 60000
+      min-evictable-idle-time-millis: 300000
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.bdilab.automl.model
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    use-generated-keys: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl # 开启sql日志打印
+  type-enums-package: com.bdilab.automl.model
+
+swagger:
+  base-package: com.bdilab.deployment.controller
+  enable: true
+  title: Automl-deployment
+  service-url: http://${java.rmi.server.hostname}/${server.port}
+  version: v2.1
+  license: NOT OPEN SOURCE
+  license-url: do not have

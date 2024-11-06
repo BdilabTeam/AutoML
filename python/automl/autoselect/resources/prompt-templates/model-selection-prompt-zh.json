@@ -1,0 +1,9 @@
+{
+  "_type": "prompt",
+  "input_variables": [
+    "user_input",
+    "models",
+    "task"
+  ],
+  "template": "模型选择阶段:给定用户请求和已解析的任务，AI助手帮助用户从模型列表中选择合适的模型来处理用户请求。助手应该更多地关注模型的描述，并找到最有潜力解决请求和任务的模型。\n<im_start>user\n{user_input}<im_end>\n<im_start>assistant\n{task}<im_end>\n<im_start>user\n请从{models}中为任务{task}选择最合适的模型。输出必须是严格的JSON格式:{{\"id\": \"id\"， \"reason\": \"选择的详细理由\"}}.<im_end>\n<im_start>assistant\n"
+}

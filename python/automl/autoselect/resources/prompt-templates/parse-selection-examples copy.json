@@ -1,0 +1,6 @@
+[
+    {
+        "example_input":"Based on your request for image classification and the given dataset of over 100 types of flowers, I recommend the following 1 model:\n\n1. timm/vit_large_patch14_clip_224.openai_ft_in12k_in1k: This model is a Vision Transformer (ViT) model pre-trained on a large dataset of images and fine-tuned on ImageNet-1k. It has a larger architecture compared to some of the other models on the list, which may lead to better performance on your dataset.",
+        "example_output":"[{{\"id\": \"timm/vit_large_patch14_clip_224.openai_ft_in12k_in1k\", \"reason\": \"This model is a Vision Transformer (ViT) model pre-trained on a large dataset of images and fine-tuned on ImageNet-1k. It has a larger architecture compared to some of the other models on the list, which may lead to better performance on your dataset.\"}}]"
+    }
+]

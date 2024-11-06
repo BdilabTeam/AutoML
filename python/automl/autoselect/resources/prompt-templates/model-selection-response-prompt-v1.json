@@ -1,0 +1,10 @@
+{
+    "_type": "few_shot",
+    "input_variables": [
+      "user_input"
+    ],
+    "prefix": "Output Parse Stage: The AI assistant can parse user input to several tasks: [{{\"id\": id, \"reason\": reason}}]. The \"id\" field denotes the id of model, and the \"reason\" field is the reason why user recommend this model. If the user input can't be parsed, you need to reply empty JSON [].",
+    "example_prompt_path": "resources/prompt-templates/parse-selection-example-prompt.json",
+    "examples": "resources/prompt-templates/parse-selection-examples copy.json",
+    "suffix": "<im_start>Now I input {{ {user_input} }}.<im_end>\n<im_start>assistant\n"
+  }

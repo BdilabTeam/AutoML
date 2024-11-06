@@ -1,0 +1,100 @@
+[tool.poetry]
+name = "automl"
+version = "0.0.1"
+description = "AutoML project"
+authors = ["automl-team"]
+readme = "README.md"
+repository = "https://github.com/BdilabTeam/AutoML.git"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+packages = [
+    { include = "alserver" },
+    { include = "autotrain" },
+    { include = "autoselect" },
+    { include = "autoschedule" }
+]
+
+[[tool.poetry.source]]
+name = "tsinghua"
+url = "https://pypi.tuna.tsinghua.edu.cn/simple"
+priority = "default"
+
+[[tool.poetry.source]]
+name = "aliyun"
+url = "http://mirrors.aliyun.com/pypi/simple/"
+priority = "primary"
+
+[[tool.poetry.source]]
+name = "pypi"
+priority = "supplemental"
+
+[tool.poetry.dependencies]
+python = ">=3.10,<3.12"
+uvicorn = { version = "^0.19.0", extras = ["standard"] }
+fastapi = "^0.95.0"
+orjson = "^3.8.0"
+python-multipart = "^0.0.6"
+httpx = "~0.25.0"
+kubeflow-training = "~1.6.0"
+kubernetes = "~27.2.0"
+
+[tool.poetry.group.autoselect]
+optional = true
+[tool.poetry.group.autoselect.dependencies]
+pydantic = "1.10.13"
+Pillow = "~10.1.0"
+tiktoken = "~0.5.1"
+pydub = "~0.25.1"
+diffusers = "~0.21.4"
+langchain = "^0.1.1"
+python-dotenv = "^1.0.0"
+langchain-openai = "^0.0.2.post1"
+
+[tool.poetry.group.autotrain]
+optional = true
+[tool.poetry.group.autotrain.dependencies]
+scikit-learn = "1.2.2"
+# autokeras = { version = "^1.1.0", source = "tsinghua" }
+pyyaml = "^6.0.1"
+pydot = "1.3.0"
+ultralytics = "^8.2.91"
+opencv-python-headless = "4.5.3.56"
+ray[tune] = "^2.36.0"
+
+
+[tool.poetry.group.autoschedule]
+optional = true
+[tool.poetry.group.autoschedule.dependencies]
+fabric = "^3.2.2"
+
+[tool.poetry.group.storage]
+optional = true
+[tool.poetry.group.storage.dependencies]
+minio = "^7.1.17"
+SQLAlchemy = "~2.0.19"
+PyMySQL = "~1.1.0"
+
+[tool.poetry.group.test]
+optional = true
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.4"
+pytest-asyncio = "^0.23.4"
+
+[tool.poetry-version-plugin]
+source = "file"
+file_path = "../VERSION"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

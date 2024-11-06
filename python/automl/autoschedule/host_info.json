@@ -1,0 +1,11 @@
+{
+  "host_info": [
+    {
+      "host_ip": "10.170.23.190",
+      "user": "root", 
+      "password": "123456", 
+      "node_name": "master",
+      "job_dir": "dir"
+    }
+  ]
+}

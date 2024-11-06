@@ -1,0 +1,18 @@
+### VS Code ###
+.vscode/
+
+### Mac OS ###
+.DS_Store
+
+__pycache__
+
+### Java ###
+target/
+.idea
+
+image-classification/
+datasets/
+deploy/
+bak/
+.env
+ipynb/

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: automl-backend-python
+  namespace: zauto
+spec:
+  serviceName: automl-backend-python
+  replicas: 1
+  selector:
+    matchLabels:
+      team: bdilab
+  template:
+    metadata:
+      labels:
+        team: bdilab
+    spec:
+      nodeName: node1
+      containers:
+        - name: automl-python
+          image: registry.cn-hangzhou.aliyuncs.com/treasures/automl:latest
+          imagePullPolicy: IfNotPresent
+          resources:
+            requests:
+              cpu: "0.5" # 请求的CPU资源
+            limits:
+              cpu: "1" # CPU资源的限制
+          securityContext:
+            runAsUser: 0
+          ports:
+            - containerPort: 31185 # Pod端口，应和应用程序监听端口一致
+          volumeMounts:
+            - name: automl-metadata
+              mountPath: /automl/alserver/metadata
+            - name: kube-config
+              mountPath: /root/.kube/config
+            - name: code
+              mountPath: /automl
+      volumes:
+        - name: automl-metadata
+          persistentVolumeClaim:
+            claimName: automl-metadata-pvc
+        - name: kube-config
+          persistentVolumeClaim:
+            claimName: automl-kube-config-pvc
+        - name: code
+          hostPath:
+            path: /nfs/automl/workspace/python/automl
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: automl-backend-python
+  namespace: zauto
+spec:
+  type: NodePort
+  ports:
+    - port: 31185 # Service端口，映射Pod中的容器端口，可被外部访问
+      targetPort: 31185 # Pod容器端口
+      nodePort: 31185
+  selector:
+    team: bdilab
