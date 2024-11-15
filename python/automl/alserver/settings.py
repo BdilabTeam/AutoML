@@ -436,7 +436,7 @@ class Settings(BaseSettings):
     )
     # TFJob
     base_image: str = Field(
-        default='autotrain:0.1.5',
+        default='autotrain:0.1.7',
         description=''
     )
     namespcae: str = Field(

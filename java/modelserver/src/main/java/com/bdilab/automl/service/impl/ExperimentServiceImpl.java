@@ -110,7 +110,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             {
                 add("python");
                 add("-m");
-                add("autokeras_server");
+                add(String.format("%s", experiment.getModelType().equals("yolov8")? "yolo_server": "autokeras_server"));
                 add(String.format("--model_name=%s", endpointName));
                 add(String.format("--model_dir=%s", experiment.getModelType().equals("yolov8")? Utils.getYOLOBestModelDirInContainer(experimentName): Utils.getBestModelDirInContainer(experimentName)));
             }
@@ -124,7 +124,7 @@ public class ExperimentServiceImpl implements ExperimentService {
         // 构造container
         Container container = new ContainerBuilder()
                 .withName(endpointName)
-                .withImage(Utils.BASE_IMAGE)
+                .withImage(String.format("%s", experiment.getModelType().equals("yolov8")? Utils.YOLO_IMAGE: Utils.AUTOKERAS_IMAGE))
                 .withImagePullPolicy("IfNotPresent")
                 .withCommand(commands)
                 .withVolumeMounts(volumeMount)

@@ -16,7 +16,7 @@ class YoloV8TrainerConfig(BaseTrainerConfig):
         batch: int = 16,
         epochs: int = 10,
         patience: int = 100,
-        imgsz: int = 640,
+        imgsz: int = 256,
         save: bool = True,
         save_period: int = -1,
         cache: bool = False,
