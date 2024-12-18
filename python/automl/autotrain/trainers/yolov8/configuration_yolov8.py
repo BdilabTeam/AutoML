@@ -11,7 +11,7 @@ class YoloV8TrainerConfig(BaseTrainerConfig):
         self,
         task_type: str,
         trainer_class_name: str,
-        pretrained_model: str = "/autotrain/autotrain/trainers/yolov8/yolov8n-cls.pt",
+        pretrained_model: str = "/autotrain/autotrain/trainers/pretrainedmodels/yolov8n-cls.pt",
         validation_split: float = 0.2,
         batch: int = 16,
         epochs: int = 10,

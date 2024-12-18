@@ -144,8 +144,7 @@
 #         description=f"Database driver name."
 #     )
 #     host_mysql: str = Field(
-#         default="10.8.104.110",   # prod
-#         # default="124.70.188.119",   # test
+#         default="10.8.104.110",
 #         description=f"Database host."
 #     )
 #     port_mysql: int = Field(
@@ -183,7 +182,7 @@
 #     )
 #     # TFJob
 #     base_image: str = Field(
-#         default='autotrain:0.0.9',
+#         default='autotrain:0.1.7',
 #         description=''
 #     )
 #     namespcae: str = Field(
@@ -218,12 +217,10 @@
 #         default="sentence-transformers/all-mpnet-base-v2",
 #     )
 #     openai_api_key: str = Field(
-#         default="EMPTY"   # prod
-#         # default="sk-kUx6CDr4B0Elct2aq015N9tyu6siuSxsMrS0j4g86Ssf3w1l"   # test
+#         default="EMPTY"
 #     )
 #     openai_api_base: str = Field(
-#         default="http://10.8.104.183:7002/v1" # prod
-#         # default="https://api.chatanywhere.com.cn"   # test
+#         default="http://10.8.104.183:7002/v1"
 #     )
 #     # Monitor
 #     monitor_enabled: bool = Field(
@@ -235,22 +232,21 @@
 #         description="Host info file path"
 #     )
 #     image_url: str = Field(
-#         default="http://10.8.104.110:31185"   # prod
-#         # default="http://60.204.186.96:31185" # test
+#         default="http://10.8.104.110:31185"
 #     )
-    # Minio
-    # minio_endpoint: Optional[str] = Field(
-    #     default="124.70.188.119:32099",
-    #     description="Minio Server 'Address:Port'"
-    # )
-    # access_key: Optional[str] = Field(
-    #     default="On4njJ3sVByQusX61wPf",
-    #     description="Minio access key"
-    # )
-    # secret_key: Optional[str] = Field(
-    #     default="jMiu55a8CpuledMn1yU4IC7fm9TvAqiUYWblxYtT",
-    #     description="Minio secret key"
-    # )
+#         # Minio
+#     minio_endpoint: Optional[str] = Field(
+#         default="124.70.188.119:32090",
+#         description="Minio Server 'Address:Port'"
+#     )
+#     access_key: Optional[str] = Field(
+#         default="lUAFGmD6TL57zCcFJTmo",
+#         description="Minio access key"
+#     )
+#     secret_key: Optional[str] = Field(
+#         default="ZMIG5DToDNtL5I86oeEDcvPhIE5PhlFe67oMVN0a",
+#         description="Minio secret key"
+#     )
 
 import sys
 import os

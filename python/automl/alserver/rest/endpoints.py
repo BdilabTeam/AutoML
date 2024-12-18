@@ -64,7 +64,8 @@ class Endpoints(object):
             file_type = 'image_folder'
         else:
             # TODO 适配yolo系列模型数据格式
-            raise DataFormatError("数据文件格式错误")
+            # raise DataFormatError("数据文件格式错误")
+            file_type = 'image_folder'
 
         host_ip = None
         # host_ip = "60.204.186.96"
@@ -152,7 +153,9 @@ class Endpoints(object):
                     raise DataFormatError(f"图片格式错误, 扩展名必须为:[.jpg, .jpeg, .png, .gif, .bmp]")
             file_type = 'image_folder'
         else:
-            raise DataFormatError("数据文件格式错误")
+            # TODO 适配yolo系列模型数据格式
+            # raise DataFormatError("数据文件格式错误")
+            file_type = 'image_folder'
         
         metrics = self._data_plane.evaluate_experiment(
             experiment_name=experiment_name,

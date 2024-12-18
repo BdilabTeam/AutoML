@@ -121,7 +121,7 @@ public class MonitorServiceImpl implements MonitorService {
             // 转换指标值格式
             if (metricType.equals("cpuUsage")){
                 // 生成一个0.0到8.0之间的随机double数
-                double cpuUsageM = Math.random() * 8;
+                double cpuUsageM = Math.random() * 4;
                 // 创建 DecimalFormat 对象，并设置保留四位小数的格式
                 DecimalFormat df = new DecimalFormat("#.####");
                 // 格式化数字
@@ -129,7 +129,7 @@ public class MonitorServiceImpl implements MonitorService {
                 valueList.add(formattedCpuUsage);
             } else if (metricType.equals("memoryRss")) {
                 Random random = new Random();
-                int min = 0;
+                int min = 200;
                 int max = 300;
                 int memoryRssMi = random.nextInt(max - min + 1) + min;
                 valueList.add(memoryRssMi);
