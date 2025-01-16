@@ -15,7 +15,8 @@ import java.util.List;
 
 public class Utils {
     public static final String NAMESPACE = "zauto";
-    public static final String BASE_IMAGE = "registry.cn-hangzhou.aliyuncs.com/treasures/automl-autokeras-server:latest";
+    public static final String AUTOKERAS_IMAGE = "registry.cn-hangzhou.aliyuncs.com/treasures/automl-autokeras-server:latest";
+    public static final String YOLO_IMAGE = "registry.cn-hangzhou.aliyuncs.com/treasures/yolo-server:0.0.1";
     public static final String BEST_MODEL_FOLDER_NAME = "best_model";
     public static final String TP_PROJECT_NAME = "output";
     public static final String METADATA_DIR_IN_CONTAINER = "/metadata";
@@ -32,7 +33,7 @@ public class Utils {
     }
 
     public static String getYOLOBestModelDirInContainer(String experimentName) {
-        return  String.join("/", getExperimentWorkspaceDirInContainer(experimentName), TP_PROJECT_NAME, "weights");
+        return  String.join("/", getExperimentWorkspaceDirInContainer(experimentName), TP_PROJECT_NAME, "weights", "best.pt");
     }
 
     //文件的数据转换成可以推理的格式

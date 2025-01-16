@@ -65,7 +65,7 @@ class TestModelSelection:
         model_selection_llm = LLMFactory.get_model_selection_llm(llm_settings=model_selection_llm_settings)
         
         models = model_selection.select_model(
-            user_input="I want a image classification model",
+            user_input="yoloyoloyolo",
             task="image-classification",
             model_selection_llm=model_selection_llm,
             top_k=5,

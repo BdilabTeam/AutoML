@@ -1,0 +1,16 @@
+{
+    "dp_batch_size": 16,
+    "dp_color_mode": "rgb",
+    "dp_image_size": [
+        256,
+        256
+    ],
+    "dp_interpolation": "bilinear",
+    "mp_enable_normalization": true,
+    "mp_enable_image_augmentation": true,
+    "tp_max_trials": 1,
+    "tp_objective": "val_loss",
+    "tp_batch_size": 8,
+    "tp_epochs": 100,
+    "tp_validation_split": 0.2
+}

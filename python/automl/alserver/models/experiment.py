@@ -6,7 +6,10 @@ from .base import Base
 
 class Experiment(Base):
     __tablename__ = "experiment"
-    
+    __table_args__ = {
+        'mysql_charset': 'utf8mb4',
+        'mysql_collate': 'utf8mb4_unicode_ci'
+    }    
     id: Mapped[int] = mapped_column(init=False, primary_key=True, autoincrement=True)
     experiment_name: Mapped[str] = mapped_column(type_=String(50))
     task_type: Mapped[str] = mapped_column(type_=String(50))

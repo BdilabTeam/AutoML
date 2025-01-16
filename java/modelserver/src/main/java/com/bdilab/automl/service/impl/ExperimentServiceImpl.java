@@ -110,7 +110,7 @@ public class ExperimentServiceImpl implements ExperimentService {
             {
                 add("python");
                 add("-m");
-                add("autokeras_server");
+                add(String.format("%s", experiment.getModelType().equals("yolov8")? "yolo_server": "autokeras_server"));
                 add(String.format("--model_name=%s", endpointName));
                 add(String.format("--model_dir=%s", experiment.getModelType().equals("yolov8")? Utils.getYOLOBestModelDirInContainer(experimentName): Utils.getBestModelDirInContainer(experimentName)));
             }
@@ -122,13 +122,18 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .withReadOnly()
                 .build();
         // 构造container
-        Container container = new ContainerBuilder()
+        Container container1 = new ContainerBuilder()
                 .withName(endpointName)
-                .withImage(Utils.BASE_IMAGE)
+                .withImage(String.format("%s", experiment.getModelType().equals("yolov8")? Utils.YOLO_IMAGE: Utils.AUTOKERAS_IMAGE))
                 .withImagePullPolicy("IfNotPresent")
                 .withCommand(commands)
                 .withVolumeMounts(volumeMount)
                 .build();
+//        Container container2 = new ContainerBuilder()
+//                .withName("queue-proxy")
+//                .withImage("registry.cn-hangzhou.aliyuncs.com/knative-releases/knative.dev/serving/cmd/queue:latest")
+//                .withImagePullPolicy("IfNotPresent")
+//                .build();
         // 构造volume
         Volume volume = new VolumeBuilder()
                 .withName("model-dir")
@@ -143,7 +148,8 @@ public class ExperimentServiceImpl implements ExperimentService {
                 .endMetadata()
                 .withNewSpec()
 //                .withNodeSelector(nodeSelector)
-                .withContainers(container)
+                .withContainers(container1)
+                .withImagePullSecrets(new LocalObjectReference("registry-aliyun"))
                 .withVolumes(volume).endSpec()
                 .endTemplate()
                 .build();

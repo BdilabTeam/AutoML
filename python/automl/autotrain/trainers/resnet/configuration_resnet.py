@@ -49,7 +49,12 @@ class ResNetTrainerConfig(BaseTrainerConfig):
         tp_epochs: Optional[int] = 100,
         tp_validation_split: float = 0.2,
     ):
-        super().__init__(task_type=task_type, trainer_class_name=trainer_class_name, tp_project_name=tp_project_name, tp_directory=tp_directory)
+        super().__init__(
+            task_type=task_type, 
+            trainer_class_name=trainer_class_name, 
+            tp_project_name=tp_project_name, 
+            tp_directory=tp_directory
+        )
         # Data Pipeline
         self.dp_batch_size = dp_batch_size
         self.dp_color_mode = dp_color_mode
