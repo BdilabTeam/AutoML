@@ -501,3 +501,10 @@ class Settings(BaseSettings):
         default="ZMIG5DToDNtL5I86oeEDcvPhIE5PhlFe67oMVN0a",
         description="Minio secret key"
     )
+    minio_broser_url: Optional[str] = Field(
+        default="http://124.70.188.119:32099/browser",
+        description="Minio Server 'Address:Port'"
+    )
+    data_annotation_platform_url: Optional[str] = Field(
+        default="http://vision-dev.weshyper.com"
+    )

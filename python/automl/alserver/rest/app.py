@@ -117,6 +117,18 @@ def create_app(
             methods=['GET'],
             tags=["dataset"]
         ),
+        APIRoute(
+            "/api/v1/platform/minio",
+            endpoints.get_minio_url,
+            methods=['GET'],
+            tags=["platform"]
+        ),
+        APIRoute(
+            "/api/v1/platform/data-annotation",
+            endpoints.get_data_annotation_platform_url,
+            methods=['GET'],
+            tags=["platform"]
+        ),
     ]
     
     app = FastAPI(

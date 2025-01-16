@@ -163,8 +163,8 @@ class DataPlane:
         return output_schema.CandidateModels(candidate_models=candidate_models)
 
     
-    @transactional
-    def create_experiment(
+    # @transactional
+    async def create_experiment(
         self, 
         experiment_name: str,
         task_type: str,
@@ -182,9 +182,11 @@ class DataPlane:
         from kubeflow.training.constants import constants
         
         # @transactional注解自动注入session
-        session = kwargs.pop('session', None)
-        if not session:
-            raise GetSessionError("Failed to get database session.")
+        # session = kwargs.pop('session', None)
+        # if not session:
+        #     raise GetSessionError("Failed to get database session.")
+        session = self.get_session()
+        transaction = session.begin()
         
         if get_experiment(session=session, experiment_name=experiment_name):
             raise ExperimentNameError("The experiment name has already been used, please re-enter it.")
@@ -212,7 +214,26 @@ class DataPlane:
                     with file_path.open("wb") as buffer:
                         shutil.copyfileobj(file.file, buffer)
                 inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
-            
+            elif file_type == 'marked_image_folder':
+                for file in files:
+                    # 适配数据标注平台导出数据格式 -----------------------------------------
+                    filename_last_part = Path(file.filename).parts[-1]
+                    filename_last_part_without_suffix = filename_last_part.split('.')[0]
+                    if filename_last_part.endswith(('.jpg', '.jpeg', '.png', '.gif', '.bmp')):
+                        # 寻找匹配的标签文件
+                        file_path = None
+                        for file2 in files:
+                            if file2.filename.endswith(f'{filename_last_part_without_suffix}.json'):
+                                content = await file2.read()
+                                label_dict = json.loads(content.decode('utf-8'))
+                                label = label_dict['classification']['class']
+                                file_path = Path(data_dir, dataplane_utils.IMAGE_FOLDER_NAME, label, filename_last_part)
+                        if not file_path:
+                            raise ValueError(f"Failed to find the label file for the image file '{filename_last_part}'")
+                        file_path.parent.mkdir(parents=True, exist_ok=True)
+                        with file_path.open("wb") as buffer:
+                            shutil.copyfileobj(file.file, buffer)
+                inputs = Path(dataplane_utils.DATA_DIR_IN_CONTAINER, dataplane_utils.IMAGE_FOLDER_NAME).__str__()
             # 数据上传至minio
             dataplane_utils.upload_dir_to_minio(
                 minio_client=self._minio_client,
@@ -278,15 +299,20 @@ class DataPlane:
             except Exception as e:
                 raise CreateExperimentJobError(f"Failed to create a experiment job '{experiment_name}', for a specific reason: {e}")
             
+            transaction.commit()
             return output_schema.ExperimentInfo(
                 # experiment_id=experiment.id,
                 experiment_name=experiment.experiment_name,
             )
         except Exception as e:
             logger.error(f"Failed to create, start rollback operation, for a specific reason: {e}")
+            transaction.rollback()
+            
             dataplane_utils.remove_experiment_workspace_dir(experiment_name=experiment_name)
             self.delete_experiment_job(experiment_name=experiment_name)
             raise
+        finally:
+            session.close()
 
 
     @transactional
@@ -543,7 +569,8 @@ class DataPlane:
                 # logger.info(f"Metrics: {metrics}")
                 
                 # return metrics
-                
+                from time import sleep
+                sleep(2)
                 return {'loss': round(random.uniform(0.3, 0.9), 3), 'mean_squared_error': round(random.uniform(1.5, 5.5), 2)}
                 
             except Exception as e:
@@ -954,3 +981,9 @@ class DataPlane:
         else:
             # 结构化数据文件
             pass
+        
+    def get_minio_url(self):
+        return self._settings.minio_broser_url
+    
+    def get_data_annotation_platform_url(self):
+        return self._settings.data_annotation_platform_url
