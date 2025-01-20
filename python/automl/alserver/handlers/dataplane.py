@@ -987,3 +987,12 @@ class DataPlane:
     
     def get_data_annotation_platform_url(self):
         return self._settings.data_annotation_platform_url
+    
+    def get_task_types(self):
+        from autotrain.trainers.auto.trainer_auto import TRAINER_MAPPING_NAMES
+        task_types = []
+        for key, value in TRAINER_MAPPING_NAMES.items():
+            task_type = key.split("/")[0]
+            if task_type not in task_types:
+                task_types.append(task_type)
+        return task_types

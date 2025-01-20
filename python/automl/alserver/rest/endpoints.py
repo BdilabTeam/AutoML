@@ -191,3 +191,6 @@ class Endpoints(object):
     def get_data_annotation_platform_url(self):
         data_annotation_platform_url = self._data_plane.get_data_annotation_platform_url()
         return data_annotation_platform_url
+    
+    def get_task_types(self):
+        return self._data_plane.get_task_types()

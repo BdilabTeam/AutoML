@@ -16,3 +16,5 @@ deploy/
 bak/
 .env
 ipynb/
+
+deployment-1.0-SNAPSHOT.jar

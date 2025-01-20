@@ -129,6 +129,13 @@ def create_app(
             methods=['GET'],
             tags=["platform"]
         ),
+        APIRoute(
+            "/api/v1/platform/task-types",
+            endpoints.get_task_types,
+            methods=['GET'],
+            tags=["platform"]
+        ),
+        
     ]
     
     app = FastAPI(
